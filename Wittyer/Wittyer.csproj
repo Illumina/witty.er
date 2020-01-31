@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -15,7 +15,27 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Ilmn.Das.Core.BgZip" Version="3.3.7-prerelease" />
+    <Reference Include="Ilmn.Das.Core.BgZip">
+      <HintPath>..\Ilmn.Das.App.Wittyer\lib\Ilmn.Das.Core.BgZip.dll</HintPath>
+    </Reference>
+    <Reference Include="Ilmn.Das.Core.Eithers">
+      <HintPath>..\Ilmn.Das.App.Wittyer\lib\Ilmn.Das.Core.Eithers.dll</HintPath>
+    </Reference>
+    <Reference Include="Ilmn.Das.Core.InputUtils">
+      <HintPath>..\Ilmn.Das.App.Wittyer\lib\Ilmn.Das.Core.InputUtils.dll</HintPath>
+    </Reference>
+    <Reference Include="Ilmn.Das.Core.Tries">
+      <HintPath>..\Ilmn.Das.App.Wittyer\lib\Ilmn.Das.Core.Tries.dll</HintPath>
+    </Reference>
+    <Reference Include="Ilmn.Das.Std.AppUtils">
+      <HintPath>..\Ilmn.Das.App.Wittyer\lib\Ilmn.Das.Std.AppUtils.dll</HintPath>
+    </Reference>
+    <Reference Include="Ilmn.Das.Std.BioinformaticUtils">
+      <HintPath>..\Ilmn.Das.App.Wittyer\lib\Ilmn.Das.Std.BioinformaticUtils.dll</HintPath>
+    </Reference>
+    <Reference Include="Ilmn.Das.Std.VariantUtils">
+      <HintPath>..\Ilmn.Das.App.Wittyer\lib\Ilmn.Das.Std.VariantUtils.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

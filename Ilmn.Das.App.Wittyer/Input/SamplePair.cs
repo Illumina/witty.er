@@ -3,6 +3,9 @@ using JetBrains.Annotations;
 
 namespace Ilmn.Das.App.Wittyer.Input
 {
+    /// <summary>
+    /// A data interface for a sample pair
+    /// </summary>
     public interface ISamplePair
     {
         /// <summary>
@@ -24,6 +27,11 @@ namespace Ilmn.Das.App.Wittyer.Input
         string TruthSampleName { get; }
     }
 
+    /// <inheritdoc />
+    /// <summary>
+    /// The default implementation for <see cref="T:Ilmn.Das.App.Wittyer.Input.ISamplePair" />
+    /// </summary>
+    /// <seealso cref="T:Ilmn.Das.App.Wittyer.Input.ISamplePair" />
     public class SamplePair : ISamplePair
     {
         /// <inheritdoc />
@@ -63,9 +71,13 @@ namespace Ilmn.Das.App.Wittyer.Input
         public static ISamplePair CreateQueryOnly([NotNull] string queryName)
             => new SamplePair(null, queryName);
 
+        /// <summary>
+        /// The pair with both values as null.
+        /// </summary>
+        [NotNull]
         public static readonly ISamplePair NullPair = new SamplePair(null, null);
 
         internal static readonly ISamplePair Default
-            = Create(WittyerConstants.WittyMetaInfoLineKeys.DefaultTruthSampleName, WittyerConstants.WittyMetaInfoLineKeys.DefaultQuerySampleName);
+            = Create(WittyerConstants.WittyerMetaInfoLineKeys.DefaultTruthSampleName, WittyerConstants.WittyerMetaInfoLineKeys.DefaultQuerySampleName);
     }
 }

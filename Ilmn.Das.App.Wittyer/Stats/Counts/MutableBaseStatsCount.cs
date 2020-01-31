@@ -51,7 +51,8 @@ namespace Ilmn.Das.App.Wittyer.Stats.Counts
 
         public IReadOnlyDictionary<IContigInfo, IIntervalTree<uint, IInterval<uint>>> FalseCount => _falseCount;
 
-        public void AddTrueCount(IContigInfo contig, IInterval<uint> interval) =>
+        public void AddTrueCount(IContigInfo contig, IInterval<uint> interval) 
+            =>
             _trueCount.GetOrAdd(contig, _ => MergedIntervalTree.Create<uint>()).Add(interval);
 
         public void AddFalseCount(IContigInfo contig, IInterval<uint> interval) =>
@@ -65,6 +66,4 @@ namespace Ilmn.Das.App.Wittyer.Stats.Counts
             return hashCode;
         }
     }
-
-
 }

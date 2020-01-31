@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using Ilmn.Das.App.Wittyer.Utilities;
 using Ilmn.Das.Core.Tries;
 using Ilmn.Das.Std.AppUtils.Intervals;
 using Ilmn.Das.Std.BioinformaticUtils.Bed;
@@ -15,6 +16,10 @@ using JetBrains.Annotations;
 
 namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Breakend
 {
+    /// <summary>
+    /// The default implentation of <see cref="IGeneralBnd"/>
+    /// </summary>
+    /// <seealso cref="IGeneralBnd" />
     public class GeneralBnd : IGeneralBnd
     {
         private readonly IVcfVariant _baseVariant;
@@ -28,68 +33,86 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Breakend
             Mate = mate;
         }
 
+        /// <inheritdoc />
         public IContigInfo Contig => _baseVariant.Contig;
+
+        /// <inheritdoc />
         public uint Position => _baseVariant.Position;
 
-        public bool Equals(ISimpleVariant other)
-        {
-            return SimpleVariantEqualityComparer.Instance.Equals(this, other);
-        }
+        /// <inheritdoc />
+        public bool Equals(ISimpleVariant other) 
+            => SimpleVariantEqualityComparer.Instance.Equals(this, other);
 
+        /// <inheritdoc />
         public IReadOnlyList<string> Alts => _baseVariant.Alts;
+
+        /// <inheritdoc />
         public DnaString Ref => _baseVariant.Ref;
 
-        public bool Equals(IVcfVariant other)
-        {
-            return VcfVariantEqualityComparer.Instance.Equals(this, other);
-        }
+        /// <inheritdoc />
+        public bool Equals(IVcfVariant other) 
+            => VcfVariantEqualityComparer.Instance.Equals(this, other);
 
+        /// <inheritdoc />
         public IReadOnlyList<string> Ids => _baseVariant.Ids;
-        public ITry<double> Quality =>_baseVariant.Quality;
+
+        /// <inheritdoc />
+        public ITry<double> Quality => _baseVariant.Quality;
+
+        /// <inheritdoc />
         public IReadOnlyList<string> Filters => _baseVariant.Filters;
+
+        /// <inheritdoc />
         public IReadOnlyDictionary<string, string> Info => _baseVariant.Info;
+
+        /// <inheritdoc />
         public SampleDictionaries Samples => _baseVariant.Samples;
 
+        /// <inheritdoc />
         public bool Is3Prime { get; }
 
+        /// <inheritdoc />
         public ISimpleBreakEnd Mate { get; }
 
+        /// <inheritdoc />
+        public int CompareTo(IInterval<uint> other) => _interval.CompareTo(other);
+        
+        /// <inheritdoc />
+        public bool Equals(IInterval<uint> other) => _interval.Equals(other);
 
-        public int CompareTo(IInterval<uint> other)
-        {
-            return _interval.CompareTo(other);
-        }
-
-        public bool Equals(IInterval<uint> other)
-        {
-            return _interval.Equals(other);
-        }
-
+        /// <inheritdoc />
         public uint Start => _interval.Start;
+
+        /// <inheritdoc />
         public uint Stop => _interval.Stop;
+
+        /// <inheritdoc />
         public bool IsStartInclusive => _interval.IsStartInclusive;
+
+        /// <inheritdoc />
         public bool IsStopInclusive => _interval.IsStopInclusive;
 
-        public int CompareTo(IContigAndInterval other)
-        {
-            return ContigAndIntervalComparer.Default.Compare(this, other);
-        }
+        /// <inheritdoc />
+        public int CompareTo(IContigAndInterval other) 
+            => ContigAndIntervalComparer.Default.Compare(this, other);
+        
+        /// <inheritdoc />
+        public bool Equals(IContigAndInterval other) 
+            => ContigAndIntervalComparer.Default.Equals(this, other);
 
-        public bool Equals(IContigAndInterval other)
-        {
-            return ContigAndIntervalComparer.Default.Equals(this, other);
-        }
-
+        /// <summary>
+        /// Creates a new instance of <see cref="IGeneralBnd"/> from a base variant.
+        /// </summary>
+        /// <param name="variant">The variant.</param>
+        /// <returns></returns>
+        /// <exception cref="InvalidDataException">Invalid breakend because neither the alt didn't start or end with ref's first base: {variant}</exception>
         [NotNull]
-        public static GeneralBnd Create([NotNull] IVcfVariant variant)
+        [Pure]
+        public static IGeneralBnd CreateFromVariant([NotNull] IVcfVariant variant)
         {
-            if (variant.Alts.Count != 1)
-                throw new InvalidDataException(
-                    $"Only support breakend with one ALT for now, double check this one {variant}");
+            var altBnd = variant.GetSingleAlt();
 
-            var altBnd = variant.Alts[0];
-
-            var thisRef = variant.Ref.ToString();
+            var thisRef = variant.Ref[0];
 
             var mate = SimpleBreakEnd.Parse(altBnd, out var firstField, out var lastField);
 

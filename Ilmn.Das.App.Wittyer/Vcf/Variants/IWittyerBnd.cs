@@ -6,4 +6,9 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
     {
         IVcfVariant EndOriginalVariant { get; }
     }
+
+    internal interface IMutableWittyerBnd : IWittyerBnd, IMutableWittyerSimpleVariant
+    {
+
+    }
 }

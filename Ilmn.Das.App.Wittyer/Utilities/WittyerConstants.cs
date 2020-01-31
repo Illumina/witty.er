@@ -1,14 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Reflection;
+using Ilmn.Das.App.Wittyer.Input;
 using Ilmn.Das.App.Wittyer.Vcf.Variants;
-using Ilmn.Das.Std.AppUtils.Enums;
+using Ilmn.Das.Std.VariantUtils.VariantTypes;
 using Ilmn.Das.Std.VariantUtils.Vcf;
 using Ilmn.Das.Std.VariantUtils.Vcf.Headers.MetaInfoLines;
 
 namespace Ilmn.Das.App.Wittyer.Utilities
 {
+    /// <summary>
+    /// A class to hold constants
+    /// </summary>
     public static class WittyerConstants
     {
         /// <summary>
@@ -21,24 +25,41 @@ namespace Ilmn.Das.App.Wittyer.Utilities
         /// </summary>
         public const string Ciend = "CIEND";
 
+        /// <summary>
+        /// The mate identifier Info tag key
+        /// </summary>
         public const string MateId = "MATEID";
 
+        /// <summary>
+        /// The Filter sample tag key
+        /// </summary>
         public const string Ft = "FT";
 
-        public const char InfoValueDel = ',';
+        /// <summary>
+        /// The delimiter for info field's values
+        /// </summary>
+        public static readonly char InfoValueDel = VcfConstants.InfoFieldValueDelimiter[0];
 
-        public const char SampleValueDel = ',';
+        /// <summary>
+        /// The delimiter for sample field values
+        /// </summary>
+        public static readonly char SampleValueDel = InfoValueDel;
 
+        /// <summary>
+        /// The border distance (aka WHERE) delimiter
+        /// </summary>
         public const string BorderDistanceDelimiter = "|";
 
-        public const string MissingValueWow = ".";
-
-        public const string NonMatchWhat = ".";
-
+        /// <summary>
+        /// The VCF suffix
+        /// </summary>
         public const string VcfSuffix = ".vcf";
 
-        public static readonly string VcfGzSuffix = $"{VcfSuffix}.gz";
-
+        /// <summary>
+        /// The VCF gz suffix
+        /// </summary>
+        public const string VcfGzSuffix = VcfSuffix + ".gz";
+        
         /// <summary>
         /// The wit command header key
         /// </summary>
@@ -46,16 +67,39 @@ namespace Ilmn.Das.App.Wittyer.Utilities
 
         #region  input default stuff
 
+        /// <summary>
+        /// The default bp overlap
+        /// </summary>
         public const uint DefaultBpOverlap = 500;
 
-        public const double DefaultPd = 0.05;
+        /// <summary>
+        /// The default pd
+        /// </summary>
+        public const double DefaultPd = 0.25;
 
-        public static readonly IImmutableList<uint> DefaultBins = ImmutableList.Create(1000U, 10000U);
+        /// <summary>
+        /// The default bins
+        /// </summary>
+        public static readonly IImmutableList<(uint size, bool skip)> DefaultBins = ImmutableList.Create((1000U, false), (10000U, false));
+        
         /// <summary>
         /// The default includedFilter set
         /// </summary>
-        public static readonly IImmutableSet<string> DefaultIncludeFilters
+        public static readonly IReadOnlyCollection<string> DefaultIncludeFilters
             = ImmutableHashSet.Create(VcfConstants.PassFilter);
+
+        /// <summary>
+        /// The default excludedFilter set
+        /// </summary>
+        public static readonly IReadOnlyCollection<string> DefaultExcludeFilters
+            = ImmutableHashSet<string>.Empty;
+
+        /// <summary>
+        /// The default insertion <see cref="InputSpec"/>
+        /// </summary>
+        public static readonly InputSpec DefaultInsertionSpec
+            = InputSpec.Create(WittyerType.Insertion, DefaultBins,
+                100U, null, DefaultExcludeFilters, DefaultIncludeFilters, null);
 
         #endregion
 
@@ -70,44 +114,37 @@ namespace Ilmn.Das.App.Wittyer.Utilities
         /// </summary>
         public const string WittyerVersionHeader = VcfConstants.Header.MetaInfoLines.Keys.Source;
 
-
         /// <summary>
-        ///     The character representing a forward break end alt allele.
+        /// The starting bin
         /// </summary>
-        public const char BndDistalFivePrimeKey = '[';
-
-        /// <summary>
-        ///     The character representing a reverse break end alt allele.
-        /// </summary>
-        public const char BndDistalThreePrimeKey = ']';
-
-        internal const char BndContigPositionDelimiter = ':';
-
         public const uint StartingBin = 1;
 
-        public static readonly IImmutableList<WittyerVariantType> SupportedSvType =
-            ImmutableList.Create(WittyerVariantType.CopyNumberReference, WittyerVariantType.Cnv,
-                WittyerVariantType.Deletion,
-                WittyerVariantType.Insertion, WittyerVariantType.Inversion, WittyerVariantType.Duplication,
-                WittyerVariantType.TranslocationBreakend, WittyerVariantType.IntraChromosomeBreakend);
+        /// <summary>
+        /// The maximum number of annotations to keep.
+        /// </summary>
+        public const ushort MaxNumberOfAnnotations = 10;
 
-        public static readonly IImmutableSet<WittyerVariantType> BaseLevelStatsTypes =
-            ImmutableHashSet.Create(WittyerVariantType.Cnv, WittyerVariantType.Duplication, WittyerVariantType.Deletion,
-                WittyerVariantType.CopyNumberReference);
-
+        /// <summary>
+        /// The base level stats type strings
+        /// </summary>
         public static readonly IImmutableSet<string> BaseLevelStatsTypeStrings =
-            BaseLevelStatsTypes.Select(x => x.ToStringDescription()).ToImmutableHashSet();
+            ImmutableHashSet.Create(SvTypeStrings.Cnv, SvTypeStrings.Deletion, SvTypeStrings.Duplication);
 
-        public static readonly IImmutableSet<WittyerVariantType> NoOverlappingWindowTypes =
-            ImmutableHashSet.Create(WittyerVariantType.IntraChromosomeBreakend, WittyerVariantType.TranslocationBreakend,
-                WittyerVariantType.Insertion);
-
+        /// <summary>
+        /// Constants for Json
+        /// </summary>
         public static class Json
         {
-            public const string InfinteBin = "+";
+            /// <summary>
+            /// The infinte bin
+            /// </summary>
+            public const string InfiniteBin = "+";
         }
 
-        public static class WittyMetaInfoLineKeys
+        /// <summary>
+        /// The Meta info line keys for Wittyer
+        /// </summary>
+        public static class WittyerMetaInfoLineKeys
         {
             /// <summary>
             /// The WIT format key 
@@ -160,38 +197,63 @@ namespace Ilmn.Das.App.Wittyer.Utilities
             public const string OriginalSampleNameLineKey = "SAMPLENAME";
         }
 
-        public static class WittyMetaInfoLines
+        /// <summary>
+        /// The MetoInfo lines for Wittyer
+        /// </summary>
+        public static class WittyerMetaInfoLines
         {
+            /// <summary>
+            /// The wit decision header
+            /// </summary>
             public static readonly ITypedMetaInfoLine WitDecisionHeader =
-                TypedMetaInfoLine.CreateSampleFormatLine(WittyMetaInfoLineKeys.Wit, TypeField.String,
+                TypedMetaInfoLine.CreateSampleFormatLine(WittyerMetaInfoLineKeys.Wit, TypeField.String,
                     NumberField.SpecificNumber(1), "Decision for call (TP/FP/FN/N). N means not assessed.");
 
+            /// <summary>
+            /// The what matched type header
+            /// </summary>
             public static readonly ITypedMetaInfoLine WhatMatchedTypeHeader = TypedMetaInfoLine.CreateSampleFormatLine(
-                WittyMetaInfoLineKeys.What, TypeField.String, NumberField.Any,
+                WittyerMetaInfoLineKeys.What, TypeField.String, NumberField.Any,
                 "A list of match type for the top ten matches. Could be no match (.) " +
                 "or a list consisting of local match but genotype not matching (lm), " +
                 "local match with genotype match (lgm); allele match but genotype not matching (am), " +
                 "or allele match and genotype match (agm). When a list, it will match the order of WHO and WHERE.");
 
+            /// <summary>
+            /// The why failed reason header
+            /// </summary>
             public static readonly ITypedMetaInfoLine WhyFailedReasonHeader =
-                TypedMetaInfoLine.CreateSampleFormatLine(WittyMetaInfoLineKeys.Why, TypeField.String, NumberField.Any,
+                TypedMetaInfoLine.CreateSampleFormatLine(WittyerMetaInfoLineKeys.Why, TypeField.String, NumberField.Any,
                     "Why the entry failed the evaluation. Current supported values are FailedBoundary/GTmismatch/CNmismatch");
 
+            /// <summary>
+            /// The wow overlapping window header
+            /// </summary>
             public static readonly ITypedMetaInfoLine WowOverlappingWindowHeader = TypedMetaInfoLine.CreateInfoLine(
-                WittyMetaInfoLineKeys.Wow, TypeField.String, NumberField.Any,
+                WittyerMetaInfoLineKeys.Wow, TypeField.String, NumberField.Any,
                 "A list of interval to describe overlaps with other entries.");
 
+            /// <summary>
+            /// The who matched event header
+            /// </summary>
             public static readonly ITypedMetaInfoLine WhoMatchedEventHeader = TypedMetaInfoLine.CreateInfoLine(
-                WittyMetaInfoLineKeys.Who, TypeField.String, NumberField.Any,
+                WittyerMetaInfoLineKeys.Who, TypeField.String, NumberField.Any,
                 "A list of IDs that identify this entry with its matched entry. " +
-                $"This is the top ten best matches, in the same order as {WittyMetaInfoLineKeys.Wow} and {WittyMetaInfoLineKeys.Where}.");
+                "The ID is default to be the position of truth but if there are collisions, the ID will be the truth position incremented to the first unique number. " +
+                $"This is the top ten best matches, in the same order as {WittyerMetaInfoLineKeys.Wow} and {WittyerMetaInfoLineKeys.Where}.");
 
+            /// <summary>
+            /// The win stratification header
+            /// </summary>
             public static readonly ITypedMetaInfoLine WinStratificationHeader =
-                TypedMetaInfoLine.CreateInfoLine(WittyMetaInfoLineKeys.Win, TypeField.String,
+                TypedMetaInfoLine.CreateInfoLine(WittyerMetaInfoLineKeys.Win, TypeField.String,
                     NumberField.SpecificNumber(1), "The bin category the variant falls into");
 
+            /// <summary>
+            /// The where border distance header
+            /// </summary>
             public static readonly ITypedMetaInfoLine WhereBorderDistanceHeader =
-                TypedMetaInfoLine.CreateInfoLine(WittyMetaInfoLineKeys.Where, TypeField.String, NumberField.Any,
+                TypedMetaInfoLine.CreateInfoLine(WittyerMetaInfoLineKeys.Where, TypeField.String, NumberField.Any,
                     "A list of 4 number-list (1|2|3|4,1|2|3|4,1|2|3|4) describing the boundary distances between the entry and the top ten matches, the order is the same as WHERE and WHO. " +
                     "The 4 numbers are separated by pipe (|), each 4-number-list is separated by comma (,). There are cases of 8-numbered lists when INVs match with two pairs of breakends.");
         }

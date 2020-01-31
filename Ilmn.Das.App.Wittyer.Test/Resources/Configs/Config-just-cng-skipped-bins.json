@@ -1,0 +1,11 @@
+[
+  {
+    "variantType": "CopyNumberGain",
+    "binSizes": "!1,1000,!5000,10000,!20000",
+    "bpDistance": 500,
+    "percentDistance": 0.25,
+    "includedFilters": "PASS",
+    "excludedFilters": "",
+    "includeBed": null
+  }
+]

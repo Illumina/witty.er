@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <Version>0.2.0</Version>
-    <AssemblyVersion>0.2.0.0</AssemblyVersion>
-    <FileVersion>0.2.0.0</FileVersion>
+    <Version>0.3.3.0</Version>
+    <AssemblyVersion>0.3.3.0</AssemblyVersion>
+    <FileVersion>0.3.3.0</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -13,13 +13,95 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <LangVersion>7.3</LangVersion>
+    <DocumentationFile>bin\Debug\netcoreapp2.0\Ilmn.Das.App.Wittyer.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Ilmn.Das.Core.BgZip" Version="3.3.7-prerelease" />
-    <PackageReference Include="Ilmn.Das.Core.InputUtils" Version="3.1.0" />
-    <PackageReference Include="Ilmn.Das.Std.AppUtils" Version="4.7.6-prerelease" />
-    <PackageReference Include="Ilmn.Das.Std.VariantUtils" Version="2.2.5-prerelease" />
+    <None Remove="Config-default.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Config-default.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JetBrains.Annotations" Version="11.1.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.Collections.Immutable" Version="1.5.0" />
+    <PackageReference Include="System.ComponentModel.Primitives" Version="4.3.0" />
+    <PackageReference Include="System.Composition.AttributedModel" Version="1.1.0" />
+    <PackageReference Include="System.IO.MemoryMappedFiles" Version="4.3.0" />
+    <PackageReference Include="System.ValueTuple" Version="4.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="lib\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Ilmn.Das.Core.BgZip">
+      <HintPath>lib\Ilmn.Das.Core.BgZip.dll</HintPath>
+    </Reference>
+    <Reference Include="Ilmn.Das.Core.Eithers">
+      <HintPath>lib\Ilmn.Das.Core.Eithers.dll</HintPath>
+    </Reference>
+    <Reference Include="Ilmn.Das.Core.InputUtils">
+      <HintPath>lib\Ilmn.Das.Core.InputUtils.dll</HintPath>
+    </Reference>
+    <Reference Include="Ilmn.Das.Core.Tries">
+      <HintPath>lib\Ilmn.Das.Core.Tries.dll</HintPath>
+    </Reference>
+    <Reference Include="Ilmn.Das.Std.AppUtils">
+      <HintPath>lib\Ilmn.Das.Std.AppUtils.dll</HintPath>
+    </Reference>
+    <Reference Include="Ilmn.Das.Std.BioinformaticUtils">
+      <HintPath>lib\Ilmn.Das.Std.BioinformaticUtils.dll</HintPath>
+    </Reference>
+    <Reference Include="Ilmn.Das.Std.VariantUtils">
+      <HintPath>lib\Ilmn.Das.Std.VariantUtils.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="BlockCompression.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="lib\Ilmn.Das.Core.BgZip.dll">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="lib\Ilmn.Das.Core.Eithers.dll">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="lib\Ilmn.Das.Core.InputUtils.dll">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="lib\Ilmn.Das.Core.Tries.dll">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="lib\Ilmn.Das.Std.AppUtils.dll">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="lib\Ilmn.Das.Std.BioinformaticUtils.dll">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="lib\Ilmn.Das.Std.VariantUtils.dll">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="BlockCompression.so">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="BlockCompression.dylib">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="BlockCompression.pdb">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

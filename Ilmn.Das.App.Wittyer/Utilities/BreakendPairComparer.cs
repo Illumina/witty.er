@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Ilmn.Das.App.Wittyer.Vcf.Variants.Breakend;
+using JetBrains.Annotations;
 
 namespace Ilmn.Das.App.Wittyer.Utilities
 {
@@ -8,7 +9,7 @@ namespace Ilmn.Das.App.Wittyer.Utilities
     {
         internal static readonly BreakendPairComparer Default = new BreakendPairComparer();
 
-        public bool Equals(IGeneralBnd var1, IGeneralBnd var2)
+        public bool Equals([NotNull] IGeneralBnd var1, [NotNull] IGeneralBnd var2)
         {
             // ReSharper disable once InlineOutVariableDeclaration
             string mateId;
@@ -24,7 +25,7 @@ namespace Ilmn.Das.App.Wittyer.Utilities
                    && var2.Position.Equals(var1.Mate.Position);
         }
 
-        public int GetHashCode(IGeneralBnd variant) 
+        public int GetHashCode([NotNull] IGeneralBnd variant) 
             => unchecked(variant.Contig.Name.GetHashCode() + (int)variant.Position +
                 variant.Mate.Contig.Name.GetHashCode() + (int)variant.Mate.Position);
     }

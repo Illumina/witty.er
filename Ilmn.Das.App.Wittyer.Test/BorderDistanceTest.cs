@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
-using Ilmn.Das.App.Wittyer.Utilities;
 using Ilmn.Das.App.Wittyer.Vcf.Variants;
 using Ilmn.Das.Core.Tries.Extensions;
 using Ilmn.Das.Std.BioinformaticUtils.Genomes;
@@ -51,10 +51,10 @@ namespace Ilmn.Das.App.Wittyer.Test
             var truth = CreateWittyerVariant(Truth);
 
             var expected = BorderDistance.CreateFromVariant(query, truth);
-            MultiAssert.Equal(expected.LeftBorderLeft, 187U);
-            MultiAssert.Equal(expected.LeftBorderRight, 187U);
-            MultiAssert.Equal(expected.RightBorderLeft, 836U);
-            MultiAssert.Equal(expected.RightBorderRight, 836U);
+            MultiAssert.Equal(187U, expected.PosBorderLeft);
+            MultiAssert.Equal(187U, expected.PosBorderRight);
+            MultiAssert.Equal(836U, expected.EndBorderLeft);
+            MultiAssert.Equal(836U, expected.EndBorderRight);
             MultiAssert.AssertAll();
         }
 
@@ -65,10 +65,10 @@ namespace Ilmn.Das.App.Wittyer.Test
             var truth = CreateWittyerVariant(TruthWithCiEnd);
             var expected = BorderDistance.CreateFromVariant(query, truth);
 
-            MultiAssert.Equal(expected.LeftBorderLeft, 87U);
-            MultiAssert.Equal(expected.LeftBorderRight, 287U);
-            MultiAssert.Equal(expected.RightBorderLeft, 686U);
-            MultiAssert.Equal(expected.RightBorderRight, 986U);
+            MultiAssert.Equal(87U, expected.PosBorderLeft);
+            MultiAssert.Equal(287U, expected.PosBorderRight);
+            MultiAssert.Equal(686U, expected.EndBorderLeft);
+            MultiAssert.Equal(986U, expected.EndBorderRight);
             MultiAssert.AssertAll();
         }
 
@@ -79,33 +79,39 @@ namespace Ilmn.Das.App.Wittyer.Test
             var truth = CreateWittyerBnd(TruthBnd1, TruthBnd2);
 
             var expected = BorderDistance.CreateFromVariant(query, truth);
-            MultiAssert.Equal(expected.LeftBorderLeft, 85U);
-            MultiAssert.Equal(expected.LeftBorderRight, 117U);
-            MultiAssert.Equal(expected.RightBorderLeft, 72U);
-            MultiAssert.Equal(expected.RightBorderRight, 28U);
+            MultiAssert.Equal(85U, expected.PosBorderLeft);
+            MultiAssert.Equal(117U, expected.PosBorderRight);
+            MultiAssert.Equal(72U, expected.EndBorderLeft);
+            MultiAssert.Equal(28U, expected.EndBorderRight);
             MultiAssert.AssertAll();
         }
 
-        private static IWittyerSimpleVariant CreateWittyerVariant(string vcfline)
+        [NotNull]
+        private static IWittyerSimpleVariant CreateWittyerVariant([NotNull] string vcfline)
         {
             var baseVariant = VcfVariant.TryParse(vcfline,
                     VcfVariantParserSettings.Create(ImmutableList.Create("normal"), GenomeAssembly.Grch37))
                 .GetOrThrowDebug();
-            var svType = baseVariant.ParseWittyerVariantType(null);
+            WittyerType.ParseFromVariant(baseVariant, true, null, out var svType);
 
-            return WittyerVariant.WittyerVariantInternal
-            .Create(VcfVariant.TryParse(vcfline,
-                    VcfVariantParserSettings.Create(ImmutableList.Create("normal"), GenomeAssembly.Grch37))
-                .GetOrThrowDebug(), "normal", PercentDistance, BasepairDistance, Bins, svType);
+            if (svType == null)
+                throw new NotSupportedException("This method does not handle svType null");
+
+            return WittyerVariantInternal
+                .Create(baseVariant, baseVariant.Samples["normal"], svType, Bins, PercentDistance, BasepairDistance);
         }
 
 
         [NotNull]
         private static IWittyerBnd CreateWittyerBnd([NotNull] string bndLine1, [NotNull] string bndLine2)
-            => WittyerBnd.WittyerBndInternal.Create(VcfVariant.TryParse(bndLine1,
+        {
+            var variant = VcfVariant.TryParse(bndLine1,
                     VcfVariantParserSettings.Create(ImmutableList.Create("normal"), GenomeAssembly.Grch37))
-                .GetOrThrowDebug(), VcfVariant.TryParse(bndLine2,
-                    VcfVariantParserSettings.Create(ImmutableList.Create("normal"), GenomeAssembly.Grch37))
-                .GetOrThrowDebug(), "normal", PercentDistance, BasepairDistance, Bins);
+                .GetOrThrowDebug();
+            return WittyerBndInternal.Create(variant, variant.Samples["normal"], WittyerType.TranslocationBreakend, Bins,
+                BasepairDistance, PercentDistance, VcfVariant.TryParse(bndLine2,
+                        VcfVariantParserSettings.Create(ImmutableList.Create("normal"), GenomeAssembly.Grch37))
+                    .GetOrThrowDebug());
+        }
     }
 }

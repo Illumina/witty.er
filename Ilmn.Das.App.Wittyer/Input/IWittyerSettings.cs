@@ -58,6 +58,6 @@ namespace Ilmn.Das.App.Wittyer.Input
         /// The input specs.
         /// </value>
         [NotNull]
-        IReadOnlyDictionary<WittyerVariantType, InputSpec> InputSpecs { get; }
+        IReadOnlyDictionary<WittyerType, InputSpec> InputSpecs { get; }
     }
 }

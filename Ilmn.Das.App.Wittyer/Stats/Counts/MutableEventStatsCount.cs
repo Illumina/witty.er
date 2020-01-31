@@ -17,9 +17,11 @@ namespace Ilmn.Das.App.Wittyer.Stats.Counts
             FalseCount = nonOverlapCount;
         }
 
+        [NotNull]
         internal static IMutableEventStatsCount Create(uint overlapCount, uint nonOverlapCount) 
             => new MutableEventStatsCount(overlapCount, nonOverlapCount);
 
+        [NotNull]
         internal static IMutableEventStatsCount Create() => Create(0, 0);
 
         public uint TrueCount { get; private set; }
@@ -28,7 +30,7 @@ namespace Ilmn.Das.App.Wittyer.Stats.Counts
 
         public void AddFalseEvent() => FalseCount++;
 
-        protected bool Equals(MutableEventStatsCount other) 
+        protected bool Equals([NotNull] MutableEventStatsCount other) 
             => TrueCount == other.TrueCount && FalseCount == other.FalseCount;
 
         public bool Equals([CanBeNull] IBasicStatsCount other) 
@@ -36,12 +38,11 @@ namespace Ilmn.Das.App.Wittyer.Stats.Counts
                // ReSharper disable once PossibleNullReferenceException
                TrueCount == other.TrueCount && FalseCount == other.FalseCount;
 
-        public override bool Equals(object obj)
+        public override bool Equals([CanBeNull] object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
+            if (obj is null) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
-            return Equals((MutableEventStatsCount) obj);
+            return obj is MutableEventStats cast && Equals(cast);
         }
 
         public override int GetHashCode()

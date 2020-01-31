@@ -7,6 +7,9 @@ using JetBrains.Annotations;
 
 namespace Ilmn.Das.App.Wittyer.Utilities
 {
+    /// <summary>
+    /// The static companion class for <see cref="MergedIntervalTree{T}"/>
+    /// </summary>
     public static class MergedIntervalTree
     {
         /// <summary>
@@ -29,8 +32,13 @@ namespace Ilmn.Das.App.Wittyer.Utilities
             => MergedIntervalTree<T>.Create(intervals);
     }
 
+    /// <inheritdoc />
+    /// <summary>
+    /// An IntervalTree that basically keeps only one interval per region (merges overlapping intervals into a single one)
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class MergedIntervalTree<T> : IIntervalTree<T, IInterval<T>>
-        where T : IComparable<T>
+        where T : IComparable<T> // TODO: make this generic enough to take any intervals.  Probably need to take in a merge function.
     {
         private readonly IIntervalTree<T, IInterval<T>> _tree = new IntervalTree<T>();
 

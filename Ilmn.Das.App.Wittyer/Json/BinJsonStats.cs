@@ -10,10 +10,27 @@ using Newtonsoft.Json;
 
 namespace Ilmn.Das.App.Wittyer.Json
 {
+    /// <inheritdoc />
+    /// <summary>
+    /// Binned Json stats
+    /// </summary>
+    /// <seealso cref="T:System.IEquatable`1" />
     public class BinJsonStats : IEquatable<BinJsonStats>
     {
+        /// <summary>
+        /// Gets the bin.
+        /// </summary>
+        /// <value>
+        /// The bin.
+        /// </value>
         [NotNull] public string Bin { get; }
 
+        /// <summary>
+        /// Gets the stats.
+        /// </summary>
+        /// <value>
+        /// The stats.
+        /// </value>
         [NotNull, ItemNotNull] public IEnumerable<BasicJsonStats> Stats { get; }
 
         [JsonConstructor]
@@ -23,8 +40,11 @@ namespace Ilmn.Das.App.Wittyer.Json
             Stats = stats;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BinJsonStats"/> class using the given parameters.
+        /// </summary>
         [NotNull]
-        public static BinJsonStats Create([NotNull] IPerBinStats binnedStats, string nextBin, WittyerVariantType variantType)
+        public static BinJsonStats Create([NotNull] IPerBinStats binnedStats, string nextBin, WittyerType variantType)
         {
             var result = new List<BasicJsonStats>();
             var eventStats = binnedStats.Stats[StatsType.Event];
@@ -46,10 +66,10 @@ namespace Ilmn.Das.App.Wittyer.Json
         }
 
         [NotNull]
-        private static string GenerateBinString(uint currentBin, string nextBin, WittyerVariantType variantType)
-            => variantType == WittyerVariantType.TranslocationBreakend
+        private static string GenerateBinString(uint currentBin, string nextBin, WittyerType variantType)
+            => variantType == WittyerType.TranslocationBreakend
                 ? "NA"
-                : (nextBin.Equals(WittyerConstants.Json.InfinteBin)
+                : (nextBin.Equals(WittyerConstants.Json.InfiniteBin)
                     ? currentBin + nextBin
                     : $"[{currentBin}, {nextBin})");
 
@@ -58,7 +78,7 @@ namespace Ilmn.Das.App.Wittyer.Json
         /// <inheritdoc />
         public bool Equals([CanBeNull] BinJsonStats other)
         {
-            if (ReferenceEquals(null, other)) return false;
+            if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
             return string.Equals(Bin, other.Bin) && Stats.IsScrambledEquals(other.Stats);
         }
@@ -66,7 +86,7 @@ namespace Ilmn.Das.App.Wittyer.Json
         /// <inheritdoc />
         public override bool Equals([CanBeNull] object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
+            if (obj is null) return false;
             if (ReferenceEquals(this, obj)) return true;
             return obj is BinJsonStats cast && Equals(cast);
         }

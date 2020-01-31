@@ -34,6 +34,5 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Samples
         /// </value>
         [NotNull]
         IImmutableList<FailedReason> Why { get; }
-
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace Ilmn.Das.App.Wittyer.Stats.Counts
 {
@@ -18,24 +19,25 @@ namespace Ilmn.Das.App.Wittyer.Stats.Counts
             QueryStats = query;
         }
 
+        [NotNull]
         public static MutableEventStats Create(IMutableEventStatsCount query, IMutableEventStatsCount truth) 
             => new MutableEventStats(query, truth);
 
-        public static MutableEventStats Create() =>
-            Create(MutableEventStatsCount.Create(), MutableEventStatsCount.Create());
+        [NotNull]
+        public static MutableEventStats Create() 
+            => Create(MutableEventStatsCount.Create(), MutableEventStatsCount.Create());
 
         public IMutableEventStatsCount TruthStats { get; }
         public IMutableEventStatsCount QueryStats { get; }
 
-        public bool Equals(IMutableStats other) =>
+        public bool Equals([NotNull] IMutableStats other) =>
             Equals(TruthStats, other.TruthStats) && Equals(QueryStats, other.QueryStats);
 
-        public override bool Equals(object obj)
+        public override bool Equals([CanBeNull] object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
+            if (obj is null) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
-            return Equals((MutableEventStats) obj);
+            return obj is MutableEventStats cast && Equals(cast);
         }
 
         public override int GetHashCode()
@@ -64,10 +66,12 @@ namespace Ilmn.Das.App.Wittyer.Stats.Counts
             _eventStatsCount = eventCount;
         }
 
+        [NotNull]
         internal static MutableEventAndBasesStats Create(IMutableBaseStatsCount truthBaseCount,
             IMutableBaseStatsCount queryBaseCount, IMutableStats eventCount)
             => new MutableEventAndBasesStats(truthBaseCount, queryBaseCount, eventCount);
 
+        [NotNull]
         internal static MutableEventAndBasesStats Create()
             => Create(MutableBaseStatsCount.Create(), MutableBaseStatsCount.Create(),
                 MutableEventStats.Create());
@@ -79,12 +83,11 @@ namespace Ilmn.Das.App.Wittyer.Stats.Counts
             => _eventStatsCount.Equals(other) 
                && TruthBaseStats.Equals(other.TruthBaseStats) && QueryBaseStats.Equals(other.QueryBaseStats);
 
-        public override bool Equals(object obj)
+        public override bool Equals([CanBeNull] object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
+            if (obj is null) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
-            return Equals((MutableEventAndBasesStats) obj);
+            return obj is MutableEventAndBasesStats cast && Equals(cast);
         }
 
         public override int GetHashCode()
@@ -99,5 +102,4 @@ namespace Ilmn.Das.App.Wittyer.Stats.Counts
         public IMutableEventStatsCount TruthStats => _eventStatsCount.TruthStats;
         public IMutableEventStatsCount QueryStats => _eventStatsCount.QueryStats;
     }
-
 }
