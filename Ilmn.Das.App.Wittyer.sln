@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2036
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ilmn.Das.App.Wittyer", "Ilmn.Das.App.Wittyer\Ilmn.Das.App.Wittyer.csproj", "{5B5D8677-FB99-42E6-9FF9-35589C6FDFB6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ilmn.Das.App.Wittyer.Test", "Ilmn.Das.App.Wittyer.Test\Ilmn.Das.App.Wittyer.Test.csproj", "{C7570280-589D-4B07-84C0-3015BB5FDB0A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wittyer", "Wittyer\Wittyer.csproj", "{B4105C1B-09E5-4E86-A9CD-D03890E91C6A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Readmes", "Readmes", "{C30AA211-D9AE-474B-9340-66E7636F307D}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ReleaseNotes", "ReleaseNotes", "{F1D00B2C-E9A7-4AAA-ACDE-72572A9A0FA6}"
+	ProjectSection(SolutionItems) = preProject
+		docs\release-notes\README.md = docs\release-notes\README.md
+		docs\release-notes\v0.1.0.md = docs\release-notes\v0.1.0.md
+		docs\release-notes\v0.1.1.md = docs\release-notes\v0.1.1.md
+		docs\release-notes\v0.1.2.0.md = docs\release-notes\v0.1.2.0.md
+		docs\release-notes\v0.1.2.1.md = docs\release-notes\v0.1.2.1.md
+		docs\release-notes\v0.2.0.md = docs\release-notes\v0.2.0.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5B5D8677-FB99-42E6-9FF9-35589C6FDFB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B5D8677-FB99-42E6-9FF9-35589C6FDFB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B5D8677-FB99-42E6-9FF9-35589C6FDFB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B5D8677-FB99-42E6-9FF9-35589C6FDFB6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7570280-589D-4B07-84C0-3015BB5FDB0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7570280-589D-4B07-84C0-3015BB5FDB0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7570280-589D-4B07-84C0-3015BB5FDB0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7570280-589D-4B07-84C0-3015BB5FDB0A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4105C1B-09E5-4E86-A9CD-D03890E91C6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4105C1B-09E5-4E86-A9CD-D03890E91C6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4105C1B-09E5-4E86-A9CD-D03890E91C6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4105C1B-09E5-4E86-A9CD-D03890E91C6A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F1D00B2C-E9A7-4AAA-ACDE-72572A9A0FA6} = {C30AA211-D9AE-474B-9340-66E7636F307D}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F8B9CA36-CEC4-4D1B-84CC-F8BDC6ED3947}
+	EndGlobalSection
+EndGlobal

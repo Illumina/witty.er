@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <Version>0.2.0</Version>
+    <AssemblyVersion>0.2.0.0</AssemblyVersion>
+    <FileVersion>0.2.0.0</FileVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Ilmn.Das.Core.BgZip" Version="3.3.7-prerelease" />
+    <PackageReference Include="Ilmn.Das.Core.InputUtils" Version="3.1.0" />
+    <PackageReference Include="Ilmn.Das.Std.AppUtils" Version="4.7.6-prerelease" />
+    <PackageReference Include="Ilmn.Das.Std.VariantUtils" Version="2.2.5-prerelease" />
+  </ItemGroup>
+
+</Project>

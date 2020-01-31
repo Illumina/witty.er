@@ -1,0 +1,677 @@
+{
+  "Command": "C:\\Users\\ywan\\Source\\Repos\\Ilmn.Das.App.Wittyer\\Wittyer\\bin\\Release\\netcoreapp2.0\\Wittyer.dll -t C:\\Users\\ywan\\Source\\Repos\\Ilmn.Das.App.Wittyer\\Ilmn.Das.App.Wittyer.Test\\Resources\\Cnvs\\FrankenPolaris2-Truth-reformat.vcf -i C:\\Users\\ywan\\Source\\Repos\\Ilmn.Das.App.Wittyer\\Ilmn.Das.App.Wittyer.Test\\Resources\\Cnvs\\Dragen_FrankenPolaris2.cnv.LT10kb.vcf -oZ:\\scratch\\ywan\\Witty\\Wittyer\\WIT-78\\CNVcts --em cts",
+  "EventPrecision": 0.2078853046594982,
+  "EventRecall": 0.30933333333333335,
+  "PerSampleStats": [
+    {
+      "QuerySampleName": "QUERY",
+      "TruthSampleName": "TRUTH",
+      "OverallStats": [
+        {
+          "StatsType": "Event",
+          "TruthTpCount": 232,
+          "TruthFnCount": 518,
+          "TruthTotalCount": 750,
+          "Recall": 0.30933333333333335,
+          "QueryTpCount": 232,
+          "QueryFpCount": 884,
+          "QueryTotalCount": 1116,
+          "Precision": 0.2078853046594982
+        },
+        {
+          "StatsType": "Base",
+          "TruthTpCount": 42315582,
+          "TruthFnCount": 12357120,
+          "TruthTotalCount": 54672702,
+          "Recall": 0.77398007510219635,
+          "QueryTpCount": 42315582,
+          "QueryFpCount": 18777918,
+          "QueryTotalCount": 61093500,
+          "Precision": 0.69263640158118289
+        }
+      ],
+      "DetailedStats": [
+        {
+          "VariantType": "Deletion",
+          "OverallStats": [
+            {
+              "StatsType": "Event",
+              "TruthTpCount": 152,
+              "TruthFnCount": 303,
+              "TruthTotalCount": 455,
+              "Recall": 0.33406593406593404,
+              "QueryTpCount": 152,
+              "QueryFpCount": 469,
+              "QueryTotalCount": 621,
+              "Precision": 0.24476650563607086
+            },
+            {
+              "StatsType": "Base",
+              "TruthTpCount": 16808167,
+              "TruthFnCount": 1611291,
+              "TruthTotalCount": 18419458,
+              "Recall": 0.91252234457713144,
+              "QueryTpCount": 16808167,
+              "QueryFpCount": 8211833,
+              "QueryTotalCount": 25020000,
+              "Precision": 0.6717892486011191
+            }
+          ],
+          "PerBinStats": [
+            {
+              "Bin": "[1, 1000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[1000, 10000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 10,
+                  "TruthFnCount": 24,
+                  "TruthTotalCount": 34,
+                  "Recall": 0.29411764705882354,
+                  "QueryTpCount": 11,
+                  "QueryFpCount": 22,
+                  "QueryTotalCount": 33,
+                  "Precision": 0.33333333333333331
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 143927,
+                  "TruthFnCount": 125210,
+                  "TruthTotalCount": 269137,
+                  "Recall": 0.53477225353630309,
+                  "QueryTpCount": 208192,
+                  "QueryFpCount": 105308,
+                  "QueryTotalCount": 313500,
+                  "Precision": 0.6640893141945774
+                }
+              ]
+            },
+            {
+              "Bin": "10000+",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 142,
+                  "TruthFnCount": 279,
+                  "TruthTotalCount": 421,
+                  "Recall": 0.33729216152019004,
+                  "QueryTpCount": 141,
+                  "QueryFpCount": 447,
+                  "QueryTotalCount": 588,
+                  "Precision": 0.23979591836734693
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 16664240,
+                  "TruthFnCount": 1486081,
+                  "TruthTotalCount": 18150321,
+                  "Recall": 0.91812370701322588,
+                  "QueryTpCount": 16599975,
+                  "QueryFpCount": 8106525,
+                  "QueryTotalCount": 24706500,
+                  "Precision": 0.67188695282617938
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "VariantType": "Duplication",
+          "OverallStats": [
+            {
+              "StatsType": "Event",
+              "TruthTpCount": 78,
+              "TruthFnCount": 201,
+              "TruthTotalCount": 279,
+              "Recall": 0.27956989247311825,
+              "QueryTpCount": 78,
+              "QueryFpCount": 405,
+              "QueryTotalCount": 483,
+              "Precision": 0.16149068322981366
+            },
+            {
+              "StatsType": "Base",
+              "TruthTpCount": 25078778,
+              "TruthFnCount": 6923387,
+              "TruthTotalCount": 32002165,
+              "Recall": 0.78365879308478037,
+              "QueryTpCount": 25078778,
+              "QueryFpCount": 10430222,
+              "QueryTotalCount": 35509000,
+              "Precision": 0.706265397504858
+            }
+          ],
+          "PerBinStats": [
+            {
+              "Bin": "[1, 1000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[1000, 10000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 1,
+                  "TruthFnCount": 2,
+                  "TruthTotalCount": 3,
+                  "Recall": 0.33333333333333331,
+                  "QueryTpCount": 1,
+                  "QueryFpCount": 11,
+                  "QueryTotalCount": 12,
+                  "Precision": 0.083333333333333329
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 9443,
+                  "TruthFnCount": 15855,
+                  "TruthTotalCount": 25298,
+                  "Recall": 0.3732706142778085,
+                  "QueryTpCount": 9196,
+                  "QueryFpCount": 104804,
+                  "QueryTotalCount": 114000,
+                  "Precision": 0.080666666666666664
+                }
+              ]
+            },
+            {
+              "Bin": "10000+",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 77,
+                  "TruthFnCount": 199,
+                  "TruthTotalCount": 276,
+                  "Recall": 0.27898550724637683,
+                  "QueryTpCount": 77,
+                  "QueryFpCount": 394,
+                  "QueryTotalCount": 471,
+                  "Precision": 0.16348195329087048
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 25069340,
+                  "TruthFnCount": 6907532,
+                  "TruthTotalCount": 31976872,
+                  "Recall": 0.7839834990739557,
+                  "QueryTpCount": 25069582,
+                  "QueryFpCount": 10325418,
+                  "QueryTotalCount": 35395000,
+                  "Precision": 0.70828032207938973
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "VariantType": "Insertion",
+          "OverallStats": [
+            {
+              "StatsType": "Event",
+              "TruthTpCount": 0,
+              "TruthFnCount": 0,
+              "TruthTotalCount": 0,
+              "Recall": "NaN",
+              "QueryTpCount": 0,
+              "QueryFpCount": 0,
+              "QueryTotalCount": 0,
+              "Precision": "NaN"
+            }
+          ],
+          "PerBinStats": [
+            {
+              "Bin": "NA",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "VariantType": "Inversion",
+          "OverallStats": [
+            {
+              "StatsType": "Event",
+              "TruthTpCount": 0,
+              "TruthFnCount": 0,
+              "TruthTotalCount": 0,
+              "Recall": "NaN",
+              "QueryTpCount": 0,
+              "QueryFpCount": 0,
+              "QueryTotalCount": 0,
+              "Precision": "NaN"
+            }
+          ],
+          "PerBinStats": [
+            {
+              "Bin": "[1, 1000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[1000, 10000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "10000+",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "VariantType": "TranslocationBreakend",
+          "OverallStats": [
+            {
+              "StatsType": "Event",
+              "TruthTpCount": 0,
+              "TruthFnCount": 0,
+              "TruthTotalCount": 0,
+              "Recall": "NaN",
+              "QueryTpCount": 0,
+              "QueryFpCount": 0,
+              "QueryTotalCount": 0,
+              "Precision": "NaN"
+            }
+          ],
+          "PerBinStats": [
+            {
+              "Bin": "NA",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "VariantType": "IntraChromosomeBreakend",
+          "OverallStats": [
+            {
+              "StatsType": "Event",
+              "TruthTpCount": 0,
+              "TruthFnCount": 0,
+              "TruthTotalCount": 0,
+              "Recall": "NaN",
+              "QueryTpCount": 0,
+              "QueryFpCount": 0,
+              "QueryTotalCount": 0,
+              "Precision": "NaN"
+            }
+          ],
+          "PerBinStats": [
+            {
+              "Bin": "[1, 1000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[1000, 10000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "10000+",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "VariantType": "Cnv",
+          "OverallStats": [
+            {
+              "StatsType": "Event",
+              "TruthTpCount": 0,
+              "TruthFnCount": 0,
+              "TruthTotalCount": 0,
+              "Recall": "NaN",
+              "QueryTpCount": 0,
+              "QueryFpCount": 0,
+              "QueryTotalCount": 0,
+              "Precision": "NaN"
+            },
+            {
+              "StatsType": "Base",
+              "TruthTpCount": 0,
+              "TruthFnCount": 0,
+              "TruthTotalCount": 0,
+              "Recall": "NaN",
+              "QueryTpCount": 0,
+              "QueryFpCount": 0,
+              "QueryTotalCount": 0,
+              "Precision": "NaN"
+            }
+          ],
+          "PerBinStats": [
+            {
+              "Bin": "[1, 1000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[1000, 10000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "10000+",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "VariantType": "CopyNumberReference",
+          "OverallStats": [
+            {
+              "StatsType": "Event",
+              "TruthTpCount": 2,
+              "TruthFnCount": 14,
+              "TruthTotalCount": 16,
+              "Recall": 0.125,
+              "QueryTpCount": 2,
+              "QueryFpCount": 10,
+              "QueryTotalCount": 12,
+              "Precision": 0.16666666666666666
+            },
+            {
+              "StatsType": "Base",
+              "TruthTpCount": 428637,
+              "TruthFnCount": 3822443,
+              "TruthTotalCount": 4251080,
+              "Recall": 0.1008301419874479,
+              "QueryTpCount": 428637,
+              "QueryFpCount": 135863,
+              "QueryTotalCount": 564500,
+              "Precision": 0.75932152347209925
+            }
+          ],
+          "PerBinStats": [
+            {
+              "Bin": "[1, 1000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[1000, 10000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 3,
+                  "TruthTotalCount": 3,
+                  "Recall": 0.0,
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 9934,
+                  "TruthTotalCount": 9934,
+                  "Recall": 0.0,
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "10000+",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 2,
+                  "TruthFnCount": 11,
+                  "TruthTotalCount": 13,
+                  "Recall": 0.15384615384615385,
+                  "QueryTpCount": 2,
+                  "QueryFpCount": 10,
+                  "QueryTotalCount": 12,
+                  "Precision": 0.16666666666666666
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 428637,
+                  "TruthFnCount": 3812509,
+                  "TruthTotalCount": 4241146,
+                  "Recall": 0.1010663155665945,
+                  "QueryTpCount": 428637,
+                  "QueryFpCount": 135863,
+                  "QueryTotalCount": 564500,
+                  "Precision": 0.75932152347209925
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
