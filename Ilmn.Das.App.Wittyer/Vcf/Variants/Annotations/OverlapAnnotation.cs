@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 
 namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Annotations
 {
+    /// <inheritdoc />
     /// <summary>
     ///     A class describing following tags in INFO field:
     ///     Who, What, Wow
@@ -21,18 +22,40 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Annotations
             Why = why;
         }
 
+        /// <summary>
+        /// Gets the who aka who did this overlap with (it's an id that usually is the truth entry's Position).
+        /// </summary>
+        /// <value>
+        /// The who.
+        /// </value>
         public uint Who { get; }
+
         internal MatchEnum What { get; }
+
+        /// <summary>
+        /// Gets the wow aka Overlap Window, which tracks the interval that overlapped with the target.
+        /// </summary>
+        /// <value>
+        /// The wow.
+        /// </value>
         [CanBeNull]
         public IInterval<uint> Wow { get; }
-        public BorderDistance Where { get; }
+
+        /// <summary>
+        /// Gets the where aka where the entry is relative to the target, how far it is from the borders.
+        /// </summary>
+        /// <value>
+        /// The where.
+        /// </value>
+        [NotNull] public BorderDistance Where { get; }
 
         internal FailedReason Why { get; }
 
+        /// <inheritdoc />
         public int CompareTo(OverlapAnnotation other)
         {
             if (ReferenceEquals(this, other)) return 0;
-            if (ReferenceEquals(null, other)) return 1;
+            if (other is null) return 1;
             var whereComparison = Where.CompareTo(other.Where);
             if (whereComparison != 0) return whereComparison;
 
@@ -40,13 +63,20 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Annotations
             if (whatComparison != 0) return whatComparison;
 
             var whoComparison = Who.CompareTo(other.Who);
-            if (whoComparison != 0) return whoComparison;
-
-            return Why.CompareTo(other.Why);
+            return whoComparison != 0 ? whoComparison : Why.CompareTo(other.Why);
         }
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OverlapAnnotation"/> class.
+        /// </summary>
+        /// <param name="who">The who.</param>
+        /// <param name="what">The what.</param>
+        /// <param name="wow">The wow.</param>
+        /// <param name="where">The where.</param>
+        /// <param name="why">The why.</param>
+        [Pure]
+        [NotNull]
         public static OverlapAnnotation Create(uint who, MatchEnum what, [CanBeNull] IInterval<uint> wow,
-            BorderDistance where, FailedReason why) 
+            [NotNull] BorderDistance where, FailedReason why) 
             => new OverlapAnnotation(who, what, wow, where, why);
     }
 }

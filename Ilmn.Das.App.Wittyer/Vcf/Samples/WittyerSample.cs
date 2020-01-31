@@ -2,7 +2,6 @@
 using System.IO;
 using Ilmn.Das.App.Wittyer.Utilities.Enums;
 using Ilmn.Das.App.Wittyer.Vcf.Variants.Genotype;
-using Ilmn.Das.Std.AppUtils.Collections;
 using Ilmn.Das.Std.VariantUtils.Vcf;
 using Ilmn.Das.Std.VariantUtils.Vcf.Variants;
 using Ilmn.Das.Std.VariantUtils.Vcf.Variants.Samples;
@@ -10,24 +9,36 @@ using JetBrains.Annotations;
 
 namespace Ilmn.Das.App.Wittyer.Vcf.Samples
 {
+    /// <summary>
+    /// A WittyerSample companion object
+    /// </summary>
     public static class WittyerSample
     {
+        /// <summary>
+        /// Creates based on the baseVariant and the given sample.
+        /// </summary>
+        /// <param name="baseVariant">The base variant.</param>
+        /// <param name="sample">The sample.</param>
+        /// <param name="isReference">if set to <c>true</c> [is reference].</param>
+        /// <returns></returns>
+        /// <exception cref="InvalidDataException"></exception>
+        [Pure]
         [NotNull]
-        public static IWittyerSample CreateOverall(IVcfVariant baseVariant, [CanBeNull] string sample, bool isReference)
+        public static IWittyerSample CreateFromVariant(IVcfVariant baseVariant, [CanBeNull] IVcfSample sample, bool isReference)
         {
             if (isReference)
                 return CreateReferenceSample(baseVariant, sample);
 
-            if (sample.IsNullOrEmpty())
+            if (sample == null)
                 return WittyerSampleInternal.Create(null);
 
-            var wittyerSample = WittyerSampleInternal.Create(baseVariant, sample);
+            var wittyerSample = WittyerSampleInternal.Create(sample);
 
-            var hasGt = baseVariant.Samples[sample].SampleDictionary.ContainsKey(VcfConstants.GenotypeKey);
+            var hasGt = sample.SampleDictionary.ContainsKey(VcfConstants.GenotypeKey);
 
-            if (!baseVariant.Samples[sample].SampleDictionary.TryGetValue(VcfConstants.CnSampleFieldKey, out var cnString))
+            if (!sample.SampleDictionary.TryGetValue(VcfConstants.CnSampleFieldKey, out var cnString))
                 return hasGt
-                    ? WittyerGenotypedSample.Create(wittyerSample, GenotypeInfo.Create(baseVariant, sample))
+                    ? WittyerGenotypedSample.Create(wittyerSample, GenotypeInfo.CreateFromSample(sample))
                         as IWittyerSample
                     : wittyerSample;
 
@@ -42,52 +53,43 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Samples
             var cnSample = WittyerCopyNumberSample.Create(wittyerSample, cnNumber);
             if (!hasGt) return cnSample;
 
-            var gtInfo = GenotypeInfo.Create(baseVariant, sample);
+            var gtInfo = GenotypeInfo.CreateFromSample(sample);
             return WittyerGenotypedCopyNumberSample.Create(cnSample, gtInfo);
         }
 
+        /// <summary>
+        /// Creates the specified base sample.
+        /// </summary>
+        /// <param name="baseSample">The base sample.</param>
+        /// <param name="wit">The wit.</param>
+        /// <param name="what">The what.</param>
+        /// <param name="why">The why.</param>
+        /// <returns></returns>
+        [Pure]
         [NotNull]
         public static IWittyerSample Create([NotNull] IVcfSample baseSample, WitDecision wit,
             [NotNull] IImmutableList<MatchEnum> what, [NotNull] IImmutableList<FailedReason> why)
             => WittyerSampleInternal.Create(baseSample, wit, what, why);
 
         [NotNull]
-        public static IWittyerCopyNumberSample Create([NotNull] IVcfSample baseSample, WitDecision wit,
-            [NotNull] IImmutableList<MatchEnum> what, [NotNull] IImmutableList<FailedReason> why, uint cn)
-            => WittyerCopyNumberSample.Create(
-                WittyerSampleInternal.Create(baseSample, wit, what, why), cn);
-
-        [NotNull]
-        public static IWittyerGenotypedSample Create([NotNull] IVcfSample baseSample, WitDecision wit,
-            [NotNull] IImmutableList<MatchEnum> what, [NotNull] IImmutableList<FailedReason> why, [NotNull] IGenotypeInfo gt) 
-            => WittyerGenotypedSample.Create(WittyerSampleInternal.Create(baseSample, wit, what, why), gt);
-
-        [NotNull]
-        public static IWittyerGenotypedCopyNumberSample Create([NotNull] IVcfSample baseSample, WitDecision wit,
-            [NotNull] IImmutableList<MatchEnum> what, [NotNull] IImmutableList<FailedReason> why, uint cn, [NotNull] IGenotypeInfo gt)
-            => WittyerGenotypedCopyNumberSample.Create(
-                WittyerCopyNumberSample.Create(WittyerSampleInternal.Create(baseSample, wit, what, why), cn), gt);
-
-        [NotNull]
-        internal static IWittyerGenotypedCopyNumberSample CreateReferenceSample([NotNull] IVcfVariant baseVariant, [CanBeNull] string sampleName)
+        internal static IWittyerGenotypedCopyNumberSample CreateReferenceSample([NotNull] IVcfVariant baseVariant, [CanBeNull] IVcfSample sample)
         {
-            var isPhased = false;
             var ploidy = 2;
-            if (baseVariant.Samples.Count > 0)
+            if (sample == null)
+                return WittyerGenotypedCopyNumberSample.Create(
+                    WittyerCopyNumberSample.Create(WittyerSampleInternal.Create(null), (uint)ploidy),
+                    GenotypeInfo.CreateRef(ploidy, false));
+
+            var isPhased = false;
+            if (sample.SampleDictionary.TryGetValue(VcfConstants.GenotypeKey, out var originalGt))
             {
-                var sample = sampleName == null ? baseVariant.Samples[0] : baseVariant.Samples[sampleName];
-                if (sample.SampleDictionary.TryGetValue(VcfConstants.GenotypeKey, out var originalGt))
-                {
-                    isPhased = originalGt.Contains(VcfConstants.GtPhasedValueDelimiter);
-                    ploidy = originalGt
-                        .Split(isPhased ? VcfConstants.GtPhasedValueDelimiter : VcfConstants.GtUnphasedValueDelimiter).Length;
-                }
+                isPhased = originalGt.Contains(VcfConstants.GtPhasedValueDelimiter);
+                ploidy = originalGt
+                    .Split(isPhased ? VcfConstants.GtPhasedValueDelimiter : VcfConstants.GtUnphasedValueDelimiter).Length;
             }
-           
-            return WittyerGenotypedCopyNumberSample.Create(WittyerCopyNumberSample.Create(
-                sampleName == null
-                        ? WittyerSampleInternal.Create(null)
-                        : WittyerSampleInternal.Create(baseVariant, sampleName), (uint) ploidy), GenotypeInfo.CreateRef(ploidy, isPhased));
+
+            var cnSample = WittyerCopyNumberSample.Create(WittyerSampleInternal.Create(sample), (uint) ploidy);
+            return WittyerGenotypedCopyNumberSample.Create(cnSample, GenotypeInfo.CreateRef(ploidy, isPhased));
         }
     }
 
@@ -107,15 +109,7 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Samples
             What = what;
             Why = why;
         }
-
-        [NotNull]
-        internal static WittyerSampleInternal Create([NotNull] IVcfVariant variant, string sampleName)
-        {
-            if(!variant.Samples.ContainsKey(sampleName))
-                throw new InvalidDataException($"{sampleName} not found in {variant}");
-            return Create(variant.Samples[sampleName]);
-        }
-
+        
         [NotNull]
         internal static WittyerSampleInternal Create([CanBeNull] IVcfSample baseSample) 
             => new WittyerSampleInternal(baseSample, WitDecision.NotAssessed,

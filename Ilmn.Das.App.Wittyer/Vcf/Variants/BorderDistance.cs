@@ -2,85 +2,111 @@
 using Ilmn.Das.App.Wittyer.Utilities;
 using Ilmn.Das.Std.AppUtils.Collections;
 using Ilmn.Das.Std.AppUtils.Misc;
+using JetBrains.Annotations;
 
 namespace Ilmn.Das.App.Wittyer.Vcf.Variants
 {
+    /// <inheritdoc />
+    /// <summary>
+    /// A data class for BorderDistance
+    /// </summary>
+    /// <seealso cref="T:Ilmn.Das.App.Wittyer.Vcf.Variants.BorderDistance" />
     public class BorderDistance : IComparable<BorderDistance>
     {
-        private BorderDistance(uint lbl, uint lbr, uint rbl, uint rbr)
+        private BorderDistance(uint posBorderLeft, uint posBorderRight, uint endBorderLeft, uint endBorderRight)
         {
-            LeftBorderLeft = lbl;
-            LeftBorderRight = lbr;
-            RightBorderLeft = rbl;
-            RightBorderRight = rbr;
+            PosBorderLeft = posBorderLeft;
+            PosBorderRight = posBorderRight;
+            EndBorderLeft = endBorderLeft;
+            EndBorderRight = endBorderRight;
         }
 
-        public uint LeftBorderLeft { get; }
+        /// <summary>
+        /// Gets the position border left.
+        /// </summary>
+        /// <value>
+        /// The position border left.
+        /// </value>
+        public uint PosBorderLeft { get; }
 
-        public uint LeftBorderRight { get; }
+        /// <summary>
+        /// Gets the position border right.
+        /// </summary>
+        /// <value>
+        /// The position border right.
+        /// </value>
+        public uint PosBorderRight { get; }
 
-        public uint RightBorderLeft { get; }
+        /// <summary>
+        /// Gets the end border left.
+        /// <c>Note:</c> For Breakends, this is the mate's Pos Border Left and for Insertions, this is the same as PosBorderLeft
+        /// </summary>
+        /// <value>
+        /// The end border left.
+        /// </value>
+        public uint EndBorderLeft { get; }
 
-        public uint RightBorderRight { get; }
+        /// <summary>
+        /// Gets the end border right.
+        /// <c>Note:</c> For Breakends, this is the mate's Pos Border Right and for Insertions, this is the same as PosBorderRight
+        /// </summary>
+        /// <value>
+        /// The end border right.
+        /// </value>
+        public uint EndBorderRight { get; }
 
-        public uint Score => LeftBorderLeft + LeftBorderRight + RightBorderLeft + RightBorderRight;
+        /// <summary>
+        /// Gets the score.
+        /// </summary>
+        /// <value>
+        /// The score.
+        /// </value>
+        public uint Score => PosBorderLeft + PosBorderRight + EndBorderLeft + EndBorderRight;
 
+        /// <inheritdoc />
         public int CompareTo(BorderDistance other)
         {
             if (ReferenceEquals(this, other)) return 0;
-            if (ReferenceEquals(null, other)) return 1;
-            return Score.CompareTo(other.Score);
+            return other is null ? 1 : Score.CompareTo(other.Score);
         }
 
-        public static BorderDistance Create(uint lbl, uint lbr, uint rbl, uint rbr)
-        {
-            return new BorderDistance(lbl, lbr, rbl, rbr);
-        }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BorderDistance"/> class.
+        /// </summary>
+        /// <param name="posBorderLeft">The position border left.</param>
+        /// <param name="posBorderRight">The position border right.</param>
+        /// <param name="endBorderLeft">The end border left.</param>
+        /// <param name="endBorderRight">The end border right.</param>
+        [NotNull]
+        public static BorderDistance Create(uint posBorderLeft, uint posBorderRight, uint endBorderLeft, uint endBorderRight)
+            => new BorderDistance(posBorderLeft, posBorderRight, endBorderLeft, endBorderRight);
 
+        /// <inheritdoc />
+        [NotNull]
         public override string ToString()
-        {
-            return LeftBorderLeft.FollowedBy(LeftBorderRight, RightBorderLeft, RightBorderRight)
+            => PosBorderLeft.FollowedBy(PosBorderRight, EndBorderLeft, EndBorderRight)
                 .StringJoin(WittyerConstants.BorderDistanceDelimiter);
-        }
 
-        public static BorderDistance CreateFromVariant(IWittyerSimpleVariant first, IWittyerSimpleVariant second)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BorderDistance"/> class.
+        /// </summary>
+        /// <param name="first">The first variant.</param>
+        /// <param name="second">The second variant.</param>
+        /// <returns></returns>
+        [NotNull]
+        public static BorderDistance CreateFromVariant([NotNull] IWittyerSimpleVariant first,
+            [NotNull] IWittyerSimpleVariant second)
         {
-            var firstCiPos = first.OriginalVariant.ParseCi(WittyerConstants.Cipos);
-            var secondCiPos = second.OriginalVariant.ParseCi(WittyerConstants.Cipos);
-            var lbl = GetDistance((uint) (first.OriginalVariant.Position + firstCiPos.Start),
-                (uint) (second.OriginalVariant.Position + secondCiPos.Start));
-            var lbr = GetDistance((uint) (first.OriginalVariant.Position + firstCiPos.Stop),
-                (uint) (second.OriginalVariant.Position + secondCiPos.Stop));
+            var lbl = GetDistance(first.CiPosInterval.Start, second.CiPosInterval.Start);
+            var lbr = GetDistance(first.CiPosInterval.Stop, second.CiPosInterval.Stop);
 
-            var rbl = GetDistance(first.Stop, second.Stop);
-            var rbr = rbl;
+            var rbl = GetDistance(first.CiEndInterval.Start, second.CiEndInterval.Start);
+            var rbr = GetDistance(first.CiEndInterval.Stop, second.CiEndInterval.Stop);
 
-            if (first is IWittyerVariant normalFirst && second is IWittyerVariant normalSecond)
-            {
-                var firstCiend = normalFirst.OriginalVariant.ParseCi(WittyerConstants.Ciend);
-                var secondCiend = normalSecond.OriginalVariant.ParseCi(WittyerConstants.Ciend);
-
-                rbl = GetDistance((uint) (normalFirst.Stop + firstCiend.Start),
-                    (uint) (normalSecond.Stop + secondCiend.Start));
-                rbr = GetDistance((uint) (normalFirst.Stop + firstCiend.Stop),
-                    (uint) (normalSecond.Stop + secondCiend.Stop));
-            }else if (first is IWittyerBnd bndFirst && second is IWittyerBnd bndSecond)
-            {
-                var firstCipos = bndFirst.EndOriginalVariant.ParseCi(WittyerConstants.Cipos);
-                var secondCipos = bndSecond.EndOriginalVariant.ParseCi(WittyerConstants.Cipos);
-
-                rbl = GetDistance((uint) (bndFirst.EndOriginalVariant.Position + firstCipos.Start),
-                    (uint) (bndSecond.EndOriginalVariant.Position + secondCipos.Start));
-                rbr = GetDistance((uint) (bndFirst.EndOriginalVariant.Position + firstCipos.Stop),
-                    (uint) (bndSecond.EndOriginalVariant.Position + secondCipos.Stop));
-            }
-
-                return Create(lbl, lbr, rbl, rbr);
+            return Create(lbl, lbr, rbl, rbr);
         }
 
-        internal static uint GetDistance(uint big, uint small)
-        {
-            return small > big ? small - big : big - small;
-        }
+        internal static uint GetDistance(uint big, uint small) 
+            => small > big ? small - big : big - small;
     }
 }

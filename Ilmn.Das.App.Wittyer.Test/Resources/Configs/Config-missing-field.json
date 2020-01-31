@@ -1,0 +1,10 @@
+[
+  {
+    "variantType": "Deletion",
+    "includeBed": "",
+    "binSizes": "1000,10000",
+    "percentDistance": "0.05",
+    "includedFilters": "PASS",
+    "excludedFilters": ""
+  }
+]

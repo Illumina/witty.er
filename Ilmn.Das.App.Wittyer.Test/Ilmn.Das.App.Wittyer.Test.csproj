@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
@@ -13,7 +13,115 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Ilmn.Das.Core.BgZip" Version="3.3.7-prerelease" />
+    <None Remove="Resources\Beds\chr1.bed" />
+    <None Remove="Resources\Beds\empty.bed" />
+    <None Remove="Resources\Beds\human_g1k_v37_l100_gc15_slop50.bed" />
+    <None Remove="Resources\Beds\refseq_union_cds.bed" />
+    <None Remove="Resources\Beds\refseq_union_cds_edited-with-overlaps.bed" />
+    <None Remove="Resources\Beds\refseq_union_cds_first-ten-lines.bed" />
+    <None Remove="Resources\Beds\ucsc_example_bed.bed" />
+    <None Remove="Resources\Cnvs\cts.Wittyer.Stats.json" />
+    <None Remove="Resources\Cnvs\sc.Wittyer.Stats.json" />
+    <None Remove="Resources\Configs\Config-duplicate-field.txt" />
+    <None Remove="Resources\Configs\Config-duplicate-sv-type.json" />
+    <None Remove="Resources\Configs\Config-empty.json" />
+    <None Remove="Resources\Configs\Config-just-cng-skipped-bins.json" />
+    <None Remove="Resources\Configs\Config-just-deletion-weirdcase.json" />
+    <None Remove="Resources\Configs\Config-just-deletion.json" />
+    <None Remove="Resources\Configs\Config-missing-field.json" />
+    <None Remove="Resources\Configs\Config-no-variants.json" />
+    <None Remove="Resources\Configs\Config-object-as-root.json" />
+    <None Remove="Resources\Configs\Config-unrecognized-field.json" />
+    <None Remove="Resources\Configs\Config-unrecognized-sv-type.json" />
+    <None Remove="Resources\Configs\Config-unrecognized-type.json" />
+    <None Remove="Resources\Germlines\gt.Wittyer.Stats.json" />
+    <None Update="Resources\VcfHeaders\query.wit-141.vcf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\VcfHeaders\truth.wit-141.vcf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\WIT-144\bed.bed">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\WIT-144\query.vcf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\WIT-144\truth.vcf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\Beds\chr1.bed">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Beds\human_g1k_v37_l100_gc15_slop50.bed">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Beds\refseq_union_cds.bed">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Beds\refseq_union_cds_edited-with-overlaps.bed">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Beds\empty.bed">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Beds\refseq_union_cds_first-ten-lines.bed">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Beds\ucsc_example_bed.bed">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Cnvs\cts.Wittyer.Stats.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Cnvs\sc.Wittyer.Stats.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Configs\Config-just-cng-skipped-bins.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Configs\Config-no-variants.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Configs\Config-just-deletion-weirdcase.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Configs\Config-just-deletion.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Configs\Config-empty.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Configs\Config-object-as-root.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Configs\Config-unrecognized-type.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Configs\Config-unrecognized-field.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Configs\Config-unrecognized-sv-type.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Configs\Config-duplicate-sv-type.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Configs\Config-duplicate-field.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Configs\Config-missing-field.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Germlines\gt.Wittyer.Stats.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Ilmn.Das.Std.XunitUtils" Version="2.2.1-prerelease" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.8.0" />
     <PackageReference Include="Moq" Version="4.9.0" />
@@ -23,40 +131,77 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Ilmn.Das.Core.BgZip">
+      <HintPath>..\Ilmn.Das.App.Wittyer\lib\Ilmn.Das.Core.BgZip.dll</HintPath>
+    </Reference>
+    <Reference Include="Ilmn.Das.Core.Eithers">
+      <HintPath>..\Ilmn.Das.App.Wittyer\lib\Ilmn.Das.Core.Eithers.dll</HintPath>
+    </Reference>
+    <Reference Include="Ilmn.Das.Core.InputUtils">
+      <HintPath>..\Ilmn.Das.App.Wittyer\lib\Ilmn.Das.Core.InputUtils.dll</HintPath>
+    </Reference>
+    <Reference Include="Ilmn.Das.Core.Tries">
+      <HintPath>..\Ilmn.Das.App.Wittyer\lib\Ilmn.Das.Core.Tries.dll</HintPath>
+    </Reference>
+    <Reference Include="Ilmn.Das.Std.AppUtils">
+      <HintPath>..\Ilmn.Das.App.Wittyer\lib\Ilmn.Das.Std.AppUtils.dll</HintPath>
+    </Reference>
+    <Reference Include="Ilmn.Das.Std.BioinformaticUtils">
+      <HintPath>..\Ilmn.Das.App.Wittyer\lib\Ilmn.Das.Std.BioinformaticUtils.dll</HintPath>
+    </Reference>
+    <Reference Include="Ilmn.Das.Std.VariantUtils">
+      <HintPath>..\Ilmn.Das.App.Wittyer\lib\Ilmn.Das.Std.VariantUtils.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Ilmn.Das.App.Wittyer\Ilmn.Das.App.Wittyer.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Resources\Cnvs\cts.Wittyer.Stats.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="Resources\Cnvs\Dragen_FrankenPolaris2.cnv.LT10kb.vcf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Cnvs\FrankenPolaris2-Truth-reformat.vcf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Resources\Cnvs\sc.Wittyer.Stats.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <None Update="Resources\Configs\ConfigDefault.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Germlines\Pedigree.SV.vcf.gz">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Germlines\FilterVcf.vcf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\Germlines\gt.Wittyer.Stats.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Germlines\NA12878_cascadia_pg.vcf.gz">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Somatics\Cosmic_v70_HCC1954_SVs.truth.vcf.gz">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Somatics\sc.Wittyer.Stats.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Resources\Somatics\somaticSV.vcf.gz">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\Tiny\query.vcf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\Tiny\truth.vcf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\VcfHeaders\query.vcf.gz">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources\VcfHeaders\truth.vcf.gz">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Resources\Tiny\" />
   </ItemGroup>
 
 </Project>

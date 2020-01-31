@@ -5,8 +5,14 @@ using Newtonsoft.Json;
 
 namespace Ilmn.Das.App.Wittyer.Json
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class BasicJsonStats : IEquatable<BasicJsonStats>
     {
+        /// <summary>
+        /// The Type of stats.  Either Base or Event
+        /// </summary>
         public StatsType StatsType { get; }
 
         /// <summary>
@@ -43,7 +49,7 @@ namespace Ilmn.Das.App.Wittyer.Json
         /// <value>
         /// The recall.
         /// </value>
-        public double Recall => _recall ?? (double)TruthTpCount / TruthTotalCount;
+        public double Recall => _recall ?? (double) TruthTpCount / TruthTotalCount;
 
         /// <summary>
         /// Gets the query tp count.
@@ -79,12 +85,22 @@ namespace Ilmn.Das.App.Wittyer.Json
         /// <value>
         /// The precision.
         /// </value>
-        public double Precision => _precision ?? (double)QueryTpCount / QueryTotalCount;
+        public double Precision => _precision ?? (double) QueryTpCount / QueryTotalCount;
 
+        private readonly double? _fscore;
+
+        /// <summary>
+        /// Gets the F-score.
+        /// </summary>
+        /// <value>
+        /// The F-score.
+        /// </value>
+        public double Fscore => _fscore ?? 2 * (Recall * Precision) / (Recall + Precision);
 
         [JsonConstructor]
         private BasicJsonStats(StatsType statsType, uint truthTpCount, uint truthFnCount, uint? truthTotalCount,
-            double? recall, uint queryTpCount, uint queryFpCount, uint? queryTotalCount, double? precision)
+            double? recall, uint queryTpCount, uint queryFpCount, uint? queryTotalCount, double? precision,
+            double? fscore)
         {
             StatsType = statsType;
             TruthTpCount = truthTpCount;
@@ -95,13 +111,22 @@ namespace Ilmn.Das.App.Wittyer.Json
             _queryTotalCount = queryTotalCount;
             _precision = precision;
             QueryTpCount = queryTpCount;
+            _fscore = fscore;
         }
 
+        /// <summary>
+        /// Creates an instance out of given parameters.
+        /// </summary>
         [NotNull, Pure]
         public static BasicJsonStats Create(StatsType statsType, uint truthTpCount, uint falseNegativeCount,
             uint queryTpCount, uint falsePositiveCount)
-            => new BasicJsonStats(statsType, truthTpCount, falseNegativeCount, null, null, queryTpCount, falsePositiveCount, null, null);
+            => new BasicJsonStats(statsType, truthTpCount, falseNegativeCount, null, null, queryTpCount,
+                falsePositiveCount, null, null, null);
 
+        /// <summary>
+        /// The plus operator.
+        /// </summary>
+        /// <exception cref="InvalidOperationException"></exception>
         [NotNull]
         public static BasicJsonStats operator +([NotNull] BasicJsonStats left, [NotNull] BasicJsonStats right)
         {
@@ -109,7 +134,7 @@ namespace Ilmn.Das.App.Wittyer.Json
                 throw new InvalidOperationException(string.Join("\n", "Cannot add two different stats together: ",
                     left, right));
             return Create(left.StatsType, left.TruthTpCount + right.TruthTpCount,
-                left.TruthFnCount + right.TruthFnCount,  left.QueryTpCount + right.QueryTpCount,
+                left.TruthFnCount + right.TruthFnCount, left.QueryTpCount + right.QueryTpCount,
                 left.QueryFpCount + right.QueryFpCount);
         }
 
@@ -162,7 +187,8 @@ namespace Ilmn.Das.App.Wittyer.Json
         /// <returns>
         /// The result of the operator.
         /// </returns>
-        public static bool operator ==([CanBeNull] BasicJsonStats left, [CanBeNull] BasicJsonStats right) => Equals(left, right);
+        public static bool operator ==([CanBeNull] BasicJsonStats left, [CanBeNull] BasicJsonStats right) =>
+            Equals(left, right);
 
         /// <summary>
         /// Implements the operator !=.
@@ -172,7 +198,8 @@ namespace Ilmn.Das.App.Wittyer.Json
         /// <returns>
         /// The result of the operator.
         /// </returns>
-        public static bool operator !=([CanBeNull] BasicJsonStats left, [CanBeNull] BasicJsonStats right) => !Equals(left, right);
+        public static bool operator !=([CanBeNull] BasicJsonStats left, [CanBeNull] BasicJsonStats right) =>
+            !Equals(left, right);
 
         #endregion
     }

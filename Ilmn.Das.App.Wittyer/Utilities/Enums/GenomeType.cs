@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using Ilmn.Das.Std.BioinformaticUtils.Contigs;
-using Ilmn.Das.Std.BioinformaticUtils.Genomes;
 using Ilmn.Das.Std.VariantUtils.Vcf.Variants;
 using JetBrains.Annotations;
 
@@ -9,7 +8,7 @@ namespace Ilmn.Das.App.Wittyer.Utilities.Enums
     /// <summary>
     /// For cross reference match. we always match the truth reference type
     /// </summary>
-    public enum GenomeType
+    internal enum GenomeType
     {
         Unknown = 0,
         Ucsc,
@@ -18,6 +17,7 @@ namespace Ilmn.Das.App.Wittyer.Utilities.Enums
 
     internal static class GenomeTypeUtils
     {
+        [NotNull]
         internal static IVcfVariant ConvertGenomeType([NotNull] this IVcfVariant variant, GenomeType type)
         {
             switch (type)
@@ -34,23 +34,12 @@ namespace Ilmn.Das.App.Wittyer.Utilities.Enums
             }
         }
 
-        internal static GenomeType GetGenomeType([NotNull] this IVcfVariant variant) => variant.Contig.GetGenomeType();
-
         internal static GenomeType GetGenomeType([NotNull] this IContigInfo variantContig)
         {
             var isUcsc = variantContig.ToUcscStyle().Name == variantContig.Name;
             var isGrch37 = variantContig.ToGrchStyle().Name == variantContig.Name;
             if (isUcsc && isGrch37) return GenomeType.Unknown; // means not found in either.
             return isUcsc ? GenomeType.Ucsc : GenomeType.Grch;
-        }
-
-        internal static GenomeType GetGenomeType([NotNull] this IGenomeAssembly assembly)
-        {
-            if (assembly.Equals(GenomeAssembly.Grch37))
-                return GenomeType.Grch;
-            if (assembly.Equals(GenomeAssembly.Hg19) || assembly.Equals(GenomeAssembly.Hg38))
-                return GenomeType.Ucsc;
-            return GenomeType.Unknown;
         }
     }
 }

@@ -7,25 +7,42 @@ using Ilmn.Das.App.Wittyer.Input;
 using Ilmn.Das.App.Wittyer.Utilities;
 using Ilmn.Das.App.Wittyer.Utilities.Enums;
 using Ilmn.Das.Core.Tries.Extensions;
-using Ilmn.Das.Std.AppUtils.Misc;
+using Ilmn.Das.Std.AppUtils.Collections;
 using Ilmn.Das.Std.BioinformaticUtils.Contigs;
 using Ilmn.Das.Std.VariantUtils.Vcf.Headers;
 using Ilmn.Das.Std.VariantUtils.Vcf.Headers.MetaInfoLines;
 using JetBrains.Annotations;
 using static Ilmn.Das.Std.VariantUtils.Vcf.VcfConstants.Header.MetaInfoLines.Keys;
-using static Ilmn.Das.App.Wittyer.Utilities.WittyerConstants.WittyMetaInfoLineKeys;
-using static Ilmn.Das.App.Wittyer.Utilities.WittyerConstants.WittyMetaInfoLines;
+using static Ilmn.Das.App.Wittyer.Utilities.WittyerConstants.WittyerMetaInfoLineKeys;
+using static Ilmn.Das.App.Wittyer.Utilities.WittyerConstants.WittyerMetaInfoLines;
 
 namespace Ilmn.Das.App.Wittyer.Results
 {
     internal static class VcfHeaderUtils
     {
-
-        [NotNull]
-        internal static List<IBasicMetaLine> MergeMetaLines([NotNull] this IVcfHeader truthHeader,
-            [NotNull] string cmdLine, [NotNull] IVcfHeader queryHeader)
+        internal static IEnumerable<string> MergedWith([NotNull] this IVcfHeader truthHeader, 
+            [NotNull] IVcfHeader queryHeader, [NotNull] ISamplePair pair, [CanBeNull] string cmdLine)
         {
-            var ret = new List<IBasicMetaLine>();
+            var mergedMetaLines = truthHeader.MergeMetaLines(cmdLine, queryHeader);
+            return ToWittyBuilder()
+                .AddSampleMetaInfo(truthHeader, pair, queryHeader, mergedMetaLines)
+                .Build().ToStrings();
+
+            VcfHeader.Builder ToWittyBuilder()
+            {
+                var builder = VcfHeader.CreateBuilder(truthHeader.Version)
+                    .AddSampleColumn(DefaultTruthSampleName).AddSampleColumn(DefaultQuerySampleName);
+
+                truthHeader.ReferenceGenome.DoOnSuccess(r => builder.SetReference(r));
+
+                return builder;
+            }
+        }
+        
+        [NotNull]
+        internal static IEnumerable<IBasicMetaLine> MergeMetaLines([NotNull] this IVcfHeader truthHeader,
+            [CanBeNull] string cmdLine, [NotNull] IVcfHeader queryHeader)
+        {
             var truthMetaLines = truthHeader.ColumnMetaInfoLines;
 
             var queryMetaLines = queryHeader.ColumnMetaInfoLines;
@@ -48,27 +65,49 @@ namespace Ilmn.Das.App.Wittyer.Results
 
             truthHeader.ReferenceGenome.DoOnSuccess(r => builder.SetReference(r));
 
-            ret.AddRange(altLines
-                .Concat(filterLines)
-                .Concat(contigLines)
-                .Concat(sampleMetaLines)
-                .Concat(infoLines.Where(line => !IsConflicted(line, WowOverlappingWindowHeader)
-                                                && !IsConflicted(line, WhoMatchedEventHeader)
-                                                && !IsConflicted(line, WinStratificationHeader)
-                                                && !IsConflicted(line, WhereBorderDistanceHeader)))
-                .Concat(sampleFormatLines.Where(line => !IsConflicted(line, WitDecisionHeader)
-                                                        && !IsConflicted(line, WhatMatchedTypeHeader)
-                                                        && !IsConflicted(line, WhyFailedReasonHeader)))
-                .Concat(BasicMetaLine.Create(WittyerConstants.WitCmdHeaderKey, cmdLine)
-                    .FollowedBy(BasicMetaLine.Create("fileDate", DateTime.Now.ToString("yyyyMMdd")),
-                        WowOverlappingWindowHeader, WhoMatchedEventHeader, WinStratificationHeader,
-                        WhereBorderDistanceHeader, WitDecisionHeader, WhatMatchedTypeHeader, WhyFailedReasonHeader)));
-            return ret;
+            foreach (var line in altLines.Concat(filterLines).Concat(contigLines).Concat(sampleMetaLines)
+                .Concat(GenerateWittyerLines(infoLines, sampleFormatLines, cmdLine)))
+                yield return line;
         }
 
+        internal static IEnumerable<IBasicMetaLine> GenerateWittyerLines([NotNull] IEnumerable<IMetaInfoLine> infoLines,
+            [NotNull] IEnumerable<IMetaInfoLine> sampleFormatLines, [CanBeNull] string cmdLine)
+        {
+            foreach (var line in infoLines
+                .FollowedWith(WowOverlappingWindowHeader, WhoMatchedEventHeader, WinStratificationHeader, WhereBorderDistanceHeader))
+                if (IsConflicted(line, WowOverlappingWindowHeader))
+                    yield return WowOverlappingWindowHeader;
+                else if (IsConflicted(line, WhoMatchedEventHeader))
+                    yield return WhoMatchedEventHeader;
+                else if (IsConflicted(line, WinStratificationHeader))
+                    yield return WinStratificationHeader;
+                else if (IsConflicted(line, WhereBorderDistanceHeader))
+                    yield return WinStratificationHeader;
+                else
+                    yield return line;
+
+            foreach (var line in sampleFormatLines.FollowedWith(WitDecisionHeader, WhatMatchedTypeHeader, WhyFailedReasonHeader))
+                if (IsConflicted(line, WitDecisionHeader))
+                    yield return WitDecisionHeader;
+                else if (IsConflicted(line, WhatMatchedTypeHeader))
+                    yield return WhatMatchedTypeHeader;
+                else if (IsConflicted(line, WhyFailedReasonHeader))
+                    yield return WhyFailedReasonHeader;
+                else
+                    yield return line;
+
+            yield return BasicMetaLine.Create("fileDate", DateTime.Now.ToString("yyyyMMdd"));
+            yield return BasicMetaLine.Create($"{WittyerConstants.WittyerVersionHeader}",
+                $"witty.erV{WittyerConstants.CurrentVersion}");
+
+            if (!string.IsNullOrWhiteSpace(cmdLine))
+                yield return BasicMetaLine.Create(WittyerConstants.WitCmdHeaderKey, cmdLine);
+        }
+
+        [NotNull]
         private static IEnumerable<IMetaInfoLine> MergeContigLines(
-            IImmutableDictionary<string, ContigMetaInfoLine> query,
-            IImmutableDictionary<string, ContigMetaInfoLine> truth)
+            [NotNull] IImmutableDictionary<string, ContigMetaInfoLine> query,
+            [NotNull] IImmutableDictionary<string, ContigMetaInfoLine> truth)
         {
             if(truth.Count == 0)
                 throw new InvalidDataException("Contig lines are expected to be in the header!");
@@ -77,22 +116,30 @@ namespace Ilmn.Das.App.Wittyer.Results
             foreach (var kvp in query)
             {
                 var newContig = kvp.Value.ConvertGenomeType(genomeType);
-                if (!contigSet.Keys.Contains(newContig.Contig.Name))
+                if (!contigSet.ContainsKey(newContig.Contig.Name))
                    contigSet = contigSet.Add(newContig.Contig.Name, newContig);
             }
             return contigSet.Values.OrderBy(x => x.Contig);
         }
 
+        [NotNull]
         private static ContigMetaInfoLine ConvertGenomeType([NotNull] this ContigMetaInfoLine line, GenomeType type)
         {
             var contig = line.Contig;
-            if (contig.GetGenomeType() != type) // since toGrchStyle()/toUcscStyle() does not preserve length information, this is to best preserve length
+            if (contig.GetGenomeType() == type)
+                return ContigMetaInfoLine.Create(contig);
+
+            switch (type)
             {
-                if (type == GenomeType.Grch)
+                // since toGrchStyle()/toUcscStyle() does not preserve length information, this is to best preserve length
+                case GenomeType.Grch:
                     contig = contig.ToGrchStyle();
-                if (type == GenomeType.Ucsc)
+                    break;
+                case GenomeType.Ucsc:
                     contig = contig.ToUcscStyle();
-            }            
+                    break;
+            }
+
             return ContigMetaInfoLine.Create(contig);
         }
 
@@ -106,32 +153,39 @@ namespace Ilmn.Das.App.Wittyer.Results
             //    .Aggregate(builder, (acc, line) => acc.AddPedigreeLine(line));
 
             var truth = samplePair?.TruthSampleName ?? truthHeader.SampleNames.FirstOrDefault();
-            if (truth != null)
-                builder.AddOtherLine(MetaInfoLine.Create(OriginalSampleNameLineKey, DefaultTruthSampleName, truth));
-            var truthLines = truthHeader.ColumnMetaInfoLines.SampleLines
-                .Where(l => truth == null || l.Value.Id == truth).Take(1); // take the first one or first one that matches.
-
             var query = samplePair?.QuerySampleName ?? queryHeader.SampleNames.FirstOrDefault();
-            if (query != null)
-                builder.AddOtherLine(MetaInfoLine.Create(OriginalSampleNameLineKey, DefaultQuerySampleName, query));
-            var queryLines = queryHeader.ColumnMetaInfoLines.SampleLines
-                .Where(l => query == null || l.Value.Id == query).Take(1);
 
-            return MergeMetaInfoLines(truthLines, Sample, queryLines).Concat(mergedMetaLines)
+            if (truth != query && truth != null) // only add sample lines that are not the same sample names otherwise, error out.
+            {
+                AddSampleLine(truth, DefaultTruthSampleName);
+                AddSampleLine(query, DefaultQuerySampleName);
+            }
+
+            return mergedMetaLines
                 .Aggregate(builder, (acc, line) => acc.AddLine(line));
+
+            void AddSampleLine(string sampleName, string defaultSampleName)
+            {
+                if (sampleName == null) return;
+                builder.AddOtherLine(MetaInfoLine.Create(OriginalSampleNameLineKey, defaultSampleName, sampleName));
+                var truthLine = truthHeader.ColumnMetaInfoLines.SampleLines
+                    .FirstOrException(l => sampleName.Equals(l.Value.Id)).GetOrNull()?.Value;
+                if (truthLine != null)
+                    builder.AddLine(truthLine);
+            }
         }
 
         [NotNull]
         private static IEnumerable<IMetaInfoLine> MergeMetaInfoLines(
-            [NotNull] this IEnumerable<KeyValuePair<string, IMetaInfoLine>> truthLines,
-            [NotNull] string lineKey, [NotNull] IEnumerable<KeyValuePair<string, IMetaInfoLine>> queryLines)
+            [NotNull] this IReadOnlyDictionary<string, IMetaInfoLine> truthLines,
+            [NotNull] string lineKey, [NotNull] IReadOnlyDictionary<string, IMetaInfoLine> queryLines)
             => MergeMetaLines(truthLines, queryLines, IsDescriptionEqual,
                 (t, q) => MetaInfoLine.Create(lineKey, t.Id, MergeDescription(t, q)));
 
         [NotNull]
         private static IEnumerable<IMetaInfoLine> MergeTypedMetaLines(
-            [NotNull] this IEnumerable<KeyValuePair<string, ITypedMetaInfoLine>> truthLines,
-            [NotNull] string lineKey, [NotNull] IEnumerable<KeyValuePair<string, ITypedMetaInfoLine>> queryLines)
+            [NotNull] this IReadOnlyDictionary<string, ITypedMetaInfoLine> truthLines,
+            [NotNull] string lineKey, [NotNull] IReadOnlyDictionary<string, ITypedMetaInfoLine> queryLines)
             => MergeMetaLines(truthLines, queryLines,
                 (t, q) => t.Type == q.Type && t.Number == q.Number && IsDescriptionEqual(t, q),
                 (t, q) => TypedMetaInfoLine.Create(MetaInfoLine.Create(lineKey, t.Id, MergeDescription(t, q)),
@@ -142,7 +196,11 @@ namespace Ilmn.Das.App.Wittyer.Results
 
         [NotNull]
         private static string MergeDescription([NotNull] IMetaInfoLine t, [NotNull] IMetaInfoLine q)
-            => $"{DefaultTruthSampleName}: {t.Description}        {DefaultQuerySampleName}: {q.Description}";
+            => MergeDescription(t.Description, q.Description);
+
+        [NotNull]
+        private static string MergeDescription([NotNull] string t, [NotNull] string q)
+            => $"{DefaultTruthSampleName}: {t}        {DefaultQuerySampleName}: {q}";
 
         private static bool IsConflicted([NotNull] IMetaInfoLine line, [NotNull] IMetaInfoLine target)
         {
@@ -157,37 +215,24 @@ namespace Ilmn.Das.App.Wittyer.Results
 
         [NotNull, Pure, ItemNotNull]
         private static IEnumerable<IMetaInfoLine> MergeMetaLines<T>(
-            [NotNull] IEnumerable<KeyValuePair<string, T>> truthMetaLines,
-            [NotNull] IEnumerable<KeyValuePair<string, T>> queryMetaLines,
+            [NotNull] IReadOnlyDictionary<string, T> truthMetaLines,
+            [NotNull] IReadOnlyDictionary<string, T> queryMetaLines,
             Func<T, T, bool> equalityTest, Func<T, T, IMetaInfoLine> mergeFunc) where T : IMetaInfoLine
         {
-            var query = queryMetaLines.ToList();
-            var mergedItem = new List<string>();
-            foreach (var line in truthMetaLines)
+            var mergedItem = Enumerable.ToHashSet(queryMetaLines.Keys);
+            foreach (var (_, line) in truthMetaLines)
             {
-                var count = 0;
-                while (!line.Value.Id.Equals(query[count].Value.Id) && query.Count < count)
-                    count++;
-                if (line.Value.Id.Equals(query[count].Value.Id))
-                {
-                    mergedItem.Add(line.Value.Id);
-                    if (equalityTest(line.Value, query[count].Value))
-                        yield return line.Value;
-                    yield return mergeFunc(line.Value, query[count].Value);
-                }
-
-                yield return line.Value;
-
+                var queryContains = queryMetaLines.TryGetValue(line.Id, out var queryLine);
+                if (queryContains)
+                    mergedItem.Remove(line.Id);
+                if (queryContains && !equalityTest(line, queryLine))
+                    yield return mergeFunc(line, queryLine);
+                else
+                    yield return line;
             }
 
-            foreach (var line in query)
-            {
-                if (!mergedItem.Contains(line.Value.Id))
-                    yield return line.Value;
-            }
-
+            foreach (var key in mergedItem)
+                yield return queryMetaLines[key];
         }
-
-        
     }
 }
