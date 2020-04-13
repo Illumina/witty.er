@@ -1,6 +1,6 @@
 # witty.er
 
-What is true, thank you, earnestly. A large variant evaluation tool upgraded from [wit.ty](https://git.illumina.com/DASTE/Ilmn.Das.App.Witty/blob/develop/Witty/README.md)
+What is true, thank you, earnestly. A large variant evaluation tool upgraded from [wit.ty]
 
 Developers: **[Yinan Wan](mailto:ywan@illumina.com)**, **[Kent Ho](mailto:kho@illumina.com)**
 
