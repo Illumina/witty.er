@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "Ilmn.Das.App.Wittyer": {
-      "commandName": "Project",
-      "commandLineArgs": "-h"
-    }
-  }
-}
