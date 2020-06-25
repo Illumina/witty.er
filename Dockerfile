@@ -1,7 +1,8 @@
 FROM microsoft/dotnet:2.0-sdk as builder
 WORKDIR /src
 COPY . /src
-RUN dotnet publish -f netcoreapp2.0 -r linux-x64 -c Release -o /output \
+RUN cd Wittyer \
+      && dotnet publish -f netcoreapp2.0 -r linux-x64 -c Release -o /output \
       && chmod +x /output/Wittyer
       
 FROM microsoft/dotnet:2.0.9-runtime
