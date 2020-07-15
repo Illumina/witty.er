@@ -106,7 +106,7 @@ docker run --rm \
     - The cutoff for boundary distance is strictly PD
   - When PD > BPD
     - The cutoff for boundary distance is the merged interval of CIPOS/CIEND and BPD
-    - This is the same as how we evaluate breakend in the [wit.ty](https://git.illumina.com/DASTE/Ilmn.Das.App.Witty/blob/develop/Witty/README.md#detailed-implementation)
+    - This is the same as how we evaluate breakend in the [wit.ty]
   - A typical example of what it meant by PD and BPD
 
     ![Pd and Bpd demo](docs/pd_and_bpd_demo.png)
@@ -319,7 +319,7 @@ IntraChromosomeBreakends is evaluated just like DEL/DUP, but TranslocationBreake
   - **WOW** witty.er overlap window of DEL/DUP/CNV/REF to support base level stats
   - **WHERE** A top ten list of border distances in the same order as WHAT and WHO, which consist of four numbers separated by pipes (|) describing the boundary distances between the entry and the match
   - **WIN** Additional match status information for stratification (e.g. Insertion|1-999 or Insertion|1000-9999 or TranslocationBreakend, which has no bins).
-- Detailed vcf spec can be found [here](<https://confluence.illumina.com/pages/viewpage.action?pageId=201077378#Proposedwit.tyupgrade(akawitty.er)-Detailedvcfspec>)
+- Detailed vcf spec can be found [here]
 
 ### Include Bed File
 
