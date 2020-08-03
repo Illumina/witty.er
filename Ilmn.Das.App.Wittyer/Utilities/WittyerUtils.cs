@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -178,14 +178,17 @@ namespace Ilmn.Das.App.Wittyer.Utilities
                 throw VcfVariantFormatException.Create(variant.ToString(), ImmutableHashSet.Create(VcfColumn.Info),
                     $"Invalid {ciInfoTag} found: {posString}", variant.ToStrings().ToList().AsReadOnly());
 
-            var (start, stop) = ConvertPositionToCiInterval(position, (GetParsedAbsValue(split[0]), GetParsedAbsValue(split[1])));
+            var parsedStart = GetParsedAbsValue(split[0]);
+            if (parsedStart == null)
+                throw new InvalidOperationException($"Failed to parse {ciInfoTag}={posString}!");
+            var parsedStop = GetParsedAbsValue(split[1]);
+            if (parsedStop == null)
+                throw new InvalidOperationException($"Failed to parse {ciInfoTag}={posString}!");
+            var (start, stop) = ConvertPositionToCiInterval(position, (parsedStart.Value, parsedStop.Value));
             return BedInterval.Create(start, stop);
 
-            uint GetParsedAbsValue(string val)
-            {
-                var parsed = int.Parse(val);
-                return (uint)(parsed < 0 ? -parsed : parsed);
-            }
+            uint? GetParsedAbsValue(string val) 
+                => !int.TryParse(val, out var parsed) ? (uint?) null : (uint) (parsed < 0 ? -parsed : parsed);
         }
 
         internal static (uint zeroStartInclusive, uint zeroStopExclusive) ConvertPositionToCiInterval(this uint position,
