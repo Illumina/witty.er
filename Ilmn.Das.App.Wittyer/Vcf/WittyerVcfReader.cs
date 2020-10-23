@@ -15,6 +15,7 @@ using Ilmn.Das.Std.AppUtils.Collections;
 using Ilmn.Das.Std.AppUtils.Enums;
 using Ilmn.Das.Std.AppUtils.Files.FileReader;
 using Ilmn.Das.Std.BioinformaticUtils.GenomicFeatures;
+using Ilmn.Das.Std.VariantUtils.SimpleVariants;
 using Ilmn.Das.Std.VariantUtils.Vcf;
 using Ilmn.Das.Std.VariantUtils.Vcf.Readers;
 using Ilmn.Das.Std.VariantUtils.Vcf.Variants;
@@ -140,7 +141,11 @@ namespace Ilmn.Das.App.Wittyer.Vcf
                 if (genomeType == null)
                     genomeType = baseVariant.Contig.GetGenomeType();
                 var sample = sampleName == null ? null : baseVariant.Samples[sampleName];
-                var result = CreateVariant(baseVariant.ConvertGenomeType(targetType),
+                var convertGenomeType = baseVariant.ConvertGenomeType(targetType);
+                if (convertGenomeType.Alts.FirstOrDefault()?.EndsWith(":0[") == true)
+                    convertGenomeType = convertGenomeType.ToBuilder().SetAlts(convertGenomeType.Alts
+                        .Select(x => x.Replace(":0[", ":1[")).ToReadOnlyList()).Build();
+                var result = CreateVariant(convertGenomeType,
                     sample, mutableResult.IsTruth, sampleName, _inputSpec, bndSet, errorList, 
                     _mode == EvaluationMode.CrossTypeAndSimpleCounting);
                 switch (result)

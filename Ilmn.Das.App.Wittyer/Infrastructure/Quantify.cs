@@ -145,8 +145,8 @@ namespace Ilmn.Das.App.Wittyer.Infrastructure
                 var typeTotalTpTrees = perTypeTotalTpDictionary.GetOrAdd(type,
                     _ => new ConcurrentDictionary<IContigInfo, MergedIntervalTree<uint>>());
 
-                foreach (var binGroup in variants.Where(it => // must be Assessed or matched (even if FP).
-                        it.Sample.Wit != WitDecision.NotAssessed || it.Sample.What[0] != MatchEnum.Unmatched)
+                foreach (var binGroup in variants.Where(it => // must be Assessed
+                        it.Sample.Wit != WitDecision.NotAssessed)
                     .GroupBy(v => v.Win.Start))
                 {
                     var binStart = binGroup.Key;

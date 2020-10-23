@@ -162,9 +162,11 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
             if (svTypeStr == SvTypeStrings.TranslocationBreakend)
             {
                 // breakends can be IntraChromosomeBreakend and TranslocationBreakend, so can't tell from SVTYPE.
+                    
                 var mate = variant is IBreakEnd cast
                     ? cast.Mate
                     : SimpleBreakEnd.TryParse(variant.GetSingleAlt()).GetOrThrow();
+
                 svType = variant.Contig.Equals(mate.Contig)
                     ? IntraChromosomeBreakend
                     : TranslocationBreakend;
