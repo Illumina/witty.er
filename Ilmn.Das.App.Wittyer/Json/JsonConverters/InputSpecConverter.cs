@@ -84,7 +84,7 @@ namespace Ilmn.Das.App.Wittyer.Json.JsonConverters
                     throw new JsonSerializationException($"Duplicate variant type '{variantType}' in the config file.");
                 
                 var expectedFieldNames = variantTypeEnum.HasBins
-                    ? (variantTypeEnum.HasLengths ? AllFieldNames : InsFieldNames)
+                    ? variantTypeEnum.HasLengths ? AllFieldNames : InsFieldNames
                     : TraFieldNames;
 
                 var missingFields = expectedFieldNames.Except(fieldNames);

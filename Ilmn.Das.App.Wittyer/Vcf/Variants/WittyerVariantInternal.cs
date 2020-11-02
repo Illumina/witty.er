@@ -117,7 +117,7 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
                 if (includedRegions.TryGetValue(Contig, out var tree))
                 {
                     var startPosition = CiPosInterval.Stop - 1;
-                    var endPosition = CiEndInterval.Start + 1;
+                    var endPosition = CiEndInterval.Start;
                     if (startPosition >= endPosition)
                         // means cipos or ciend goes past each other
                         // so any overlap with Start to Stop should mean included.
