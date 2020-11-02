@@ -4,5 +4,5 @@ These folders contain example output files from dragen evaluated against the NIS
 
 You can follow the instructions in the following `README`s to reproduce the examples.
 
-* [CNV Example information](CNV/README.md) 
-* [SV Example information](SV/README.md) 
+* [CNV Example information](CNV) 
+* [SV Example information](SV) 

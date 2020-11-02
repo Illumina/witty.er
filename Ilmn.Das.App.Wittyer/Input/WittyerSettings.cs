@@ -165,11 +165,12 @@ namespace Ilmn.Das.App.Wittyer.Input
 
                     if (parameters._configFile.IsArgumentAssigned)
                     {
-                        if (parameters._configOptions.Any(x => x.IsArgumentAssigned))
+                        if (parameters._configOptions.Any(x => x.IsArgumentAssigned 
+                                                               && x != parameters._bedFile))
                         {
                             Console.Error.WriteLine(
                                 "Config file argument cannot be used in combination with arguments for bin sizes, basepair distance, " +
-                                "percent distance, included filters, excluded filters, variant types, or include bed. Exiting.");
+                                "percent distance, included filters, excluded filters, or variant types. Exiting.");
                             Environment.Exit(1);
                         }
 
@@ -190,8 +191,8 @@ namespace Ilmn.Das.App.Wittyer.Input
                             Environment.Exit(1);
                         }
 
-                        parameters.InputSpecs = JsonConvert
-                            .DeserializeObject<IEnumerable<InputSpec>>(configText, InputSpecConverter.Create())
+                        var bedFile = parameters._bedFile.IsArgumentAssigned ? parameters._bedFile.Argument : null;
+                        parameters.InputSpecs = InputSpec.CreateSpecsFromString(configText, bedFile)
                             .ToImmutableDictionary(x => x.VariantType, x => x);
                     }
                     else

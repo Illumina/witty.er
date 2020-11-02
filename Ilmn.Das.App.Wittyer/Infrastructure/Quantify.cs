@@ -145,8 +145,7 @@ namespace Ilmn.Das.App.Wittyer.Infrastructure
                 var typeTotalTpTrees = perTypeTotalTpDictionary.GetOrAdd(type,
                     _ => new ConcurrentDictionary<IContigInfo, MergedIntervalTree<uint>>());
 
-                foreach (var binGroup in variants.Where(it => // must be Assessed
-                        it.Sample.Wit != WitDecision.NotAssessed)
+                foreach (var binGroup in variants
                     .GroupBy(v => v.Win.Start))
                 {
                     var binStart = binGroup.Key;
@@ -168,10 +167,15 @@ namespace Ilmn.Das.App.Wittyer.Infrastructure
                             eventStats.AddTrueEvent();
                         else if (variant.Sample.Wit == falseDecision)
                             eventStats.AddFalseEvent();
-                        else if (variant.Sample.Wit != WitDecision.NotAssessed)
+                        else if (variant.Sample.Wit == WitDecision.NotAssessed)
+                        {
+                            // purposely empty, don't do anything on this type but we need to keep this type here
+                            // for base stats.
+                        }
+                        else
                             throw new InvalidDataException(
-                                $"Unexpected {nameof(WitDecision)} value ({variant.Sample.Wit}) for variant: " +
-                                variant.OriginalVariant.ToShortString());
+                                $"Unexpected {nameof(WitDecision)} value ({variant.Sample.Wit}) for variant: "
+                                + variant.OriginalVariant.ToShortString());
 
                         if (!type.HasBaseLevelStats) continue;
 
@@ -243,23 +247,6 @@ namespace Ilmn.Das.App.Wittyer.Infrastructure
                                 stats.AddFalseCount(chr, interval);
 
                     }
-
-                    ////This is here as sanity check code, we can remove later if we want.
-
-                    //if (stats == null) // means TotalTree has no intervals
-                    //    continue;
-
-                    //// eventually get rid of this by replacing with actually keeping track of totals in the stats
-                    //// and after outputting stats, we should do sanity check and crash if not equal.
-                    //var fpTotal = stats.FalseCount.Select(kvp => kvp.Value.GetTotalMergedLength()).Sum();
-                    //var tpTotal = stats.TrueCount.Select(kvp => kvp.Value.GetTotalMergedLength()).Sum();
-                    //var expectedTotal = perBinTotalDictionary[binGroup.Key]
-                    //    .Select(kvp => kvp.Value.GetTotalMergedLength()).Sum();
-                    //var actualTotal = fpTotal + tpTotal;
-
-                    //if (actualTotal != expectedTotal)
-                    //    throw new InvalidDataException(
-                    //        $"Expected total bases to be {expectedTotal}, but got {actualTotal}!");
                 }
             }
 

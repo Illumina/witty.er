@@ -98,8 +98,6 @@ namespace Ilmn.Das.App.Wittyer.Input
             if (string.IsNullOrWhiteSpace(filePath))
                 return null;
             var file = filePath.ToFileInfo();
-            if (!file.ExistsNow())
-                throw new FileNotFoundException($"{filePath} not found!");
             return IncludeBedFile.CreateFromBedFile(file);
         }
     }
