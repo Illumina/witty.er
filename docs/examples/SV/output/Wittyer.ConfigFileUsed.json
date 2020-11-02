@@ -1,0 +1,53 @@
+[
+  {
+    "variantType": "Inversion",
+    "binSizes": "50,1000,10000",
+    "bpDistance": 2500,
+    "percentDistance": 0.25,
+    "includedFilters": "PASS",
+    "excludedFilters": "",
+    "includeBed": "NIST_v0.6/HG002_SVs_Tier1_v0.6.bed"
+  },
+  {
+    "variantType": "Insertion",
+    "binSizes": "50,100,200,500,1000",
+    "bpDistance": 250,
+    "includedFilters": "PASS",
+    "excludedFilters": "",
+    "includeBed": "NIST_v0.6/HG002_SVs_Tier1_v0.6.bed"
+  },
+  {
+    "variantType": "TranslocationBreakend",
+    "bpDistance": 500,
+    "includedFilters": "PASS",
+    "excludedFilters": "",
+    "includeBed": "NIST_v0.6/HG002_SVs_Tier1_v0.6.bed"
+  },
+  {
+    "variantType": "IntraChromosomeBreakend",
+    "binSizes": "50,1000,10000",
+    "bpDistance": 2500,
+    "percentDistance": 0.25,
+    "includedFilters": "PASS",
+    "excludedFilters": "",
+    "includeBed": "NIST_v0.6/HG002_SVs_Tier1_v0.6.bed"
+  },
+  {
+    "variantType": "Duplication",
+    "binSizes": "50,1000,10000",
+    "bpDistance": 2500,
+    "percentDistance": 0.25,
+    "includedFilters": "PASS",
+    "excludedFilters": "",
+    "includeBed": "NIST_v0.6/HG002_SVs_Tier1_v0.6.bed"
+  },
+  {
+    "variantType": "Deletion",
+    "binSizes": "50,100,200,500,1000,10000",
+    "bpDistance": 2500,
+    "percentDistance": 0.25,
+    "includedFilters": "PASS",
+    "excludedFilters": "",
+    "includeBed": "NIST_v0.6/HG002_SVs_Tier1_v0.6.bed"
+  }
+]

@@ -26,7 +26,43 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ReleaseNotes", "ReleaseNote
 		docs\release-notes\v0.3.1.md = docs\release-notes\v0.3.1.md
 		docs\release-notes\v0.3.2.md = docs\release-notes\v0.3.2.md
 		docs\release-notes\v0.3.3.md = docs\release-notes\v0.3.3.md
+		docs\release-notes\v0.3.4.md = docs\release-notes\v0.3.4.md
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{3CCBABA0-BF50-4691-86B3-B2AC662A4F30}"
+ProjectSection(SolutionItems) = preProject
+	docs\examples\README.md = docs\examples\README.md
+EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SV", "SV", "{204A99D9-C74C-4D7B-B4A2-148A819B4EAE}"
+ProjectSection(SolutionItems) = preProject
+	docs\examples\SV\config.json = docs\examples\SV\config.json
+	docs\examples\SV\HG002.sv.vcf.gz = docs\examples\SV\HG002.sv.vcf.gz
+	docs\examples\SV\README.md = docs\examples\SV\README.md
+EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CNV", "CNV", "{0405A3B5-8043-4058-A541-DF0E3CB6F63B}"
+ProjectSection(SolutionItems) = preProject
+	docs\examples\CNV\config.json = docs\examples\CNV\config.json
+	docs\examples\CNV\HG002.cnv.vcf.gz = docs\examples\CNV\HG002.cnv.vcf.gz
+	docs\examples\CNV\README.md = docs\examples\CNV\README.md
+EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "output", "output", "{8F931635-2D47-4C50-A44F-44561B11612D}"
+ProjectSection(SolutionItems) = preProject
+	docs\examples\SV\output\Wittyer.ConfigFileUsed.json = docs\examples\SV\output\Wittyer.ConfigFileUsed.json
+	docs\examples\SV\output\Wittyer.HG002.Vs.HG2.vcf.gz = docs\examples\SV\output\Wittyer.HG002.Vs.HG2.vcf.gz
+	docs\examples\SV\output\Wittyer.HG002.Vs.HG2.vcf.gz.tbi = docs\examples\SV\output\Wittyer.HG002.Vs.HG2.vcf.gz.tbi
+	docs\examples\SV\output\Wittyer.Stats.json = docs\examples\SV\output\Wittyer.Stats.json
+EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "output", "output", "{CA36CA82-F8E1-445B-9B1F-D08DE432C923}"
+ProjectSection(SolutionItems) = preProject
+	docs\examples\CNV\output\Wittyer.ConfigFileUsed.json = docs\examples\CNV\output\Wittyer.ConfigFileUsed.json
+	docs\examples\CNV\output\Wittyer.HG002.Vs.PrecisionFDA_HG002.vcf.gz = docs\examples\CNV\output\Wittyer.HG002.Vs.PrecisionFDA_HG002.vcf.gz
+	docs\examples\CNV\output\Wittyer.HG002.Vs.PrecisionFDA_HG002.vcf.gz.tbi = docs\examples\CNV\output\Wittyer.HG002.Vs.PrecisionFDA_HG002.vcf.gz.tbi
+	docs\examples\CNV\output\Wittyer.Stats.json = docs\examples\CNV\output\Wittyer.Stats.json
+EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -52,6 +88,11 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F1D00B2C-E9A7-4AAA-ACDE-72572A9A0FA6} = {C30AA211-D9AE-474B-9340-66E7636F307D}
+		{3CCBABA0-BF50-4691-86B3-B2AC662A4F30} = {C30AA211-D9AE-474B-9340-66E7636F307D}
+		{204A99D9-C74C-4D7B-B4A2-148A819B4EAE} = {3CCBABA0-BF50-4691-86B3-B2AC662A4F30}
+		{0405A3B5-8043-4058-A541-DF0E3CB6F63B} = {3CCBABA0-BF50-4691-86B3-B2AC662A4F30}
+		{8F931635-2D47-4C50-A44F-44561B11612D} = {204A99D9-C74C-4D7B-B4A2-148A819B4EAE}
+		{CA36CA82-F8E1-445B-9B1F-D08DE432C923} = {0405A3B5-8043-4058-A541-DF0E3CB6F63B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F8B9CA36-CEC4-4D1B-84CC-F8BDC6ED3947}
