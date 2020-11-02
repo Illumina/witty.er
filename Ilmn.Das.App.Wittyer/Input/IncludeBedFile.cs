@@ -24,7 +24,9 @@ namespace Ilmn.Das.App.Wittyer.Input
         /// <summary>
         /// The IntervalTree from this bed file.
         /// </summary>
-        [NotNull] public readonly GenomeIntervalTree<IContigAndInterval> IntervalTree;
+        [NotNull]
+        public GenomeIntervalTree<IContigAndInterval> IntervalTree => _intervalTree.Value;
+        [NotNull] private readonly Lazy<GenomeIntervalTree<IContigAndInterval>> _intervalTree;
 
         /// <summary>
         /// The bed file associated with this instance.  If created from <see cref="CreateFromContigIntervals"/>, this will write out a bed file.
@@ -32,10 +34,10 @@ namespace Ilmn.Das.App.Wittyer.Input
         [NotNull] public FileInfo BedFile => _fileSource.Value;
         private readonly Lazy<FileInfo> _fileSource;
 
-        private IncludeBedFile([NotNull] GenomeIntervalTree<IContigAndInterval> tree, 
+        private IncludeBedFile([NotNull] Lazy<GenomeIntervalTree<IContigAndInterval>> tree, 
             [NotNull] Lazy<FileInfo> fileSource)
         {
-            IntervalTree = tree;
+            _intervalTree = tree;
             _fileSource = fileSource;
         }
 
@@ -56,7 +58,8 @@ namespace Ilmn.Das.App.Wittyer.Input
             {
                 var tree = contigIntervals as GenomeIntervalTree<IContigAndInterval> ??
                            CreateGenomeIntervalTree(contigIntervals);
-                return new IncludeBedFile(tree, CreateBedFileLazy(tree));
+                return new IncludeBedFile(new Lazy<GenomeIntervalTree<IContigAndInterval>>(tree),
+                    CreateBedFileLazy(tree));
 
                 Lazy<FileInfo> CreateBedFileLazy(
                     IEnumerable<IContigAndInterval> thisTree)
@@ -93,19 +96,29 @@ namespace Ilmn.Das.App.Wittyer.Input
             var listOrder = new List<IContigInfo>();
             foreach (var contigInterval in contigIntervals)
             {
-                if (!dictionary.TryGetValue(contigInterval.Contig, out var tree))
+                var contig = contigInterval.Contig;
+                if (!dictionary.TryGetValue(contig, out var tree))
                 {
                     tree = MergedIntervalTree<uint>.Create(null);
-                    listOrder.Add(contigInterval.Contig);
-                    dictionary.Add(contigInterval.Contig, tree);
+                    listOrder.Add(contig);
+                    dictionary.Add(contig, tree);
                 }
                 tree.Add(contigInterval);
             }
 
             var ret = GenomeIntervalTree<IContigAndInterval>.Create();
             foreach (var contig in listOrder)
+            {
                 ret.AddRange(dictionary[contig]
-                    .Select(i => i as IContigAndInterval ?? ContigAndInterval.Create(contig, i.Start, i.Stop)));
+                    .Select(i => i as IContigAndInterval 
+                                 ?? ContigAndInterval.Create(contig, i.Start, i.Stop)));
+                var other = contig.ToUcscStyle();
+                if (other.Name == contig.Name)
+                    other = contig.ToGrchStyle();
+                if (other.Name != contig.Name)
+                    ret.AddRange(dictionary[contig]
+                        .Select(i => ContigAndInterval.Create(other, i.Start, i.Stop)));
+            }
 
             return ret;
         }
@@ -118,7 +131,10 @@ namespace Ilmn.Das.App.Wittyer.Input
         [NotNull]
         [Pure]
         public static IncludeBedFile CreateFromBedFile([NotNull] FileInfo bedFile)
-            => CreateFromBedReader(BedReader.Create(bedFile));
+            => bedFile.ExistsNow()
+                ? CreateFromBedReader(BedReader.Create(bedFile))
+                : TypeCache<string, IncludeBedFile>.GetOrAdd(bedFile.FullName,
+                    () => CreateFromBedReader(BedReader.Create(bedFile)));
 
         /// <summary>
         /// Creates a new instance of <see cref="IncludeBedFile"/> from a <see cref="BedReader"/>.
@@ -128,7 +144,8 @@ namespace Ilmn.Das.App.Wittyer.Input
         [Pure]
         public static IncludeBedFile CreateFromBedReader([NotNull] BedReader bedReader)
             => TypeCache<string, IncludeBedFile>.GetOrAdd(bedReader.FileSource.GetCompleteRealPath().FullName, () =>
-                new IncludeBedFile(CreateGenomeIntervalTree(bedReader),
+                new IncludeBedFile(new Lazy<GenomeIntervalTree<IContigAndInterval>>(
+                        () => CreateGenomeIntervalTree(bedReader)),
                     new Lazy<FileInfo>(() => bedReader.FileSource)));
 
         /// <inheritdoc/>

@@ -182,6 +182,27 @@ namespace Ilmn.Das.App.Wittyer.Input
                     includedFilters ?? WittyerConstants.DefaultIncludeFilters,
                     bedFile));
 
+        /// <summary>
+        /// Creates a new instance of <see cref="InputSpec"/> with a new value for the <see cref="InputSpec.IncludedRegions"/>
+        /// </summary>
+        /// <param name="bedFile">The new <see cref="IncludeBedFile"/>, can be null.</param>
+        [NotNull]
+        [Pure]
+        public InputSpec ReplaceBedFile([CanBeNull] IncludeBedFile bedFile) 
+            => Create(VariantType, BinSizes, BasepairDistance, PercentDistance, ExcludedFilters,
+                IncludedFilters, bedFile);
+        
+        /// <summary>
+        /// Creates an IEnumerable of <see cref="InputSpec"/>s with a possible override of the <see cref="InputSpec.IncludedRegions"/>
+        /// </summary>
+        [CanBeNull]
+        [Pure]
+        public static IEnumerable<InputSpec> CreateSpecsFromString(
+            string configText, [CanBeNull] IncludeBedFile bedFileOverride)
+            => JsonConvert
+                .DeserializeObject<IEnumerable<InputSpec>>(configText, InputSpecConverter.Create())
+                ?.Select(x => bedFileOverride == null ? x : x.ReplaceBedFile(bedFileOverride));
+
         [NotNull]
         private static IReadOnlyCollection<string> VerifyFiltersAndGetFinalIncluded(
             [NotNull] IReadOnlyCollection<string> excludedFilters, [CanBeNull] IReadOnlyCollection<string> includedFilters)

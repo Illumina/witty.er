@@ -7,6 +7,7 @@ using Ilmn.Das.App.Wittyer.Stats;
 using Ilmn.Das.App.Wittyer.Vcf.Variants;
 using Ilmn.Das.Core.Tries.Extensions;
 using Ilmn.Das.Std.AppUtils.Misc;
+using Ilmn.Das.Std.XunitUtils;
 using Xunit;
 
 namespace Ilmn.Das.App.Wittyer.Test
@@ -40,12 +41,13 @@ namespace Ilmn.Das.App.Wittyer.Test
             var (_, query, truth) = MainLauncher.GenerateResults(wittyerSettings).EnumerateSuccesses().First();
             var results = MainLauncher.GenerateSampleMetrics(truth, query, false, inputSpecs);
 
-            Assert.Equal(1U, results.OverallStats[StatsType.Event].QueryStats.TrueCount);
-            Assert.Equal(1U, results.OverallStats[StatsType.Event].QueryStats.FalseCount);
-            Assert.Equal(0.5, results.EventLevelRecallOverall.First(typeRecallTuple => typeRecallTuple.type == WittyerType.CopyNumberGain).recall);
+            MultiAssert.Equal(2U, results.OverallStats[StatsType.Event].QueryStats.TrueCount);
+            MultiAssert.Equal(1U, results.OverallStats[StatsType.Event].QueryStats.FalseCount);
+            MultiAssert.Equal(0.6666666666666666, results.EventLevelRecallOverall.First(typeRecallTuple => typeRecallTuple.type == WittyerType.CopyNumberGain).recall);
 
             var numberOfBinsReportedOn = results.EventLevelRecallPerBin.First().perBinRecall.Count();
-            Assert.Equal(2, numberOfBinsReportedOn);
+            MultiAssert.Equal(2, numberOfBinsReportedOn);
+            MultiAssert.AssertAll();
         }
     }
 }
