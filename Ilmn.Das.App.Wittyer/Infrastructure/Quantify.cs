@@ -182,16 +182,28 @@ namespace Ilmn.Das.App.Wittyer.Infrastructure
                         //Base level stats
                         if (mutableStats is MutableEventAndBasesStats mbt)
                         {
-                            GetOrAddTree(in perTypePerBinTotalTrees, in variant).Add(variant);
-                            GetOrAddTree(in typeTotalTrees, in variant).Add(variant);
-                            GetOrAddTree(in grandTotalDictionary, in variant).Add(variant);
-
-                            var baseStats = baseStatsSelector(mbt);
-
                             IIntervalTree<uint, IContigAndInterval> bedTree = null;
                             // if there's actually a bed region, but the bed region lacks this contig, we should skip this part
                             if (bedRegion != null && !bedRegion.TryGetValue(variant.Contig, out bedTree))
                                 continue;
+
+                            
+                            var foundOverlap = false;
+                            foreach (var overlapped in bedTree?.Search(variant) ?? new IContigAndInterval[] {variant})
+                            {
+                                var actualOverlap = ReferenceEquals(variant, overlapped)
+                                    ? variant
+                                    : overlapped.TryGetOverlap(variant).GetOrThrow();
+                                GetOrAddTree(in perTypePerBinTotalTrees, in variant).Add(actualOverlap);
+                                GetOrAddTree(in typeTotalTrees, in variant).Add(actualOverlap);
+                                GetOrAddTree(in grandTotalDictionary, in variant).Add(actualOverlap);
+                                foundOverlap = true;
+                            }
+
+                            if (!foundOverlap)
+                                continue;
+
+                            var baseStats = baseStatsSelector(mbt);
 
                             foreach (var annotation in variant.OverlapInfo)
                             {
@@ -245,7 +257,6 @@ namespace Ilmn.Das.App.Wittyer.Infrastructure
                         else
                             foreach (var interval in totalTree)
                                 stats.AddFalseCount(chr, interval);
-
                     }
                 }
             }
