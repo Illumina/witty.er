@@ -262,17 +262,8 @@ namespace Ilmn.Das.App.Wittyer.Vcf
             FailedReason IsSupportedVariant()
             {
                 // Check filters.
-                IReadOnlyCollection<string> includedFilters, excludedFilters;
-                if (isTruth)
-                {
-                    includedFilters = WittyerConstants.DefaultIncludeFilters;
-                    excludedFilters = WittyerConstants.DefaultExcludeFilters;
-                }
-                else
-                {
-                    includedFilters = inputSpec.IncludedFilters;
-                    excludedFilters = inputSpec.ExcludedFilters;
-                }
+                var includedFilters = inputSpec.IncludedFilters;
+                var excludedFilters = inputSpec.ExcludedFilters;
 
                 if (vcfVariant.Filters.Any(excludedFilters.Contains)
                     || includedFilters.Count > 0
@@ -295,7 +286,7 @@ namespace Ilmn.Das.App.Wittyer.Vcf
                 }
 
                 // todo: truth does not care about Sample FT tag, is that ok?
-                var sampleFilterOk = isTruth || !includedFilters.Contains(VcfConstants.PassFilter) || !vcfVariant.IsPassFilter() || IsSampleFtPassFilter();
+                var sampleFilterOk = !includedFilters.Contains(VcfConstants.PassFilter) || !vcfVariant.IsPassFilter() || IsSampleFtPassFilter();
 
                 if (!sampleFilterOk) return FailedReason.FailedSampleFilter;
 
@@ -322,11 +313,12 @@ namespace Ilmn.Das.App.Wittyer.Vcf
             var sampleBuilder = SampleDictionaries.CreateBuilder()
                 .AddSample(realName).MoveOnToDictionaries();
 
-            var dicts = (sample?.SampleDictionary ?? ImmutableDictionary<string, string>.Empty.AsEnumerable())
-                .Select(kvp => (kvp.Key, kvp.Value))
-                .FollowedWith(
-                    (WittyerConstants.WittyerMetaInfoLineKeys.Wit, NotAssessed),
-                    (WittyerConstants.WittyerMetaInfoLineKeys.Why, why.ToString()));
+            var dicts = (sample?.SampleDictionary ?? ImmutableDictionary<string, string>.Empty.AsEnumerable())?
+                        .Select(kvp => (kvp.Key, kvp.Value))
+                        .FollowedWith(
+                            (WittyerConstants.WittyerMetaInfoLineKeys.Wit, NotAssessed),
+                            (WittyerConstants.WittyerMetaInfoLineKeys.Why, why.ToString())) ??
+                        Enumerable.Empty<(string, string)>();
 
             foreach (var tuple in dicts)
                 sampleBuilder.SetSampleField(realName, tuple);
