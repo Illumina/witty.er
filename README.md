@@ -21,7 +21,7 @@ To compare a query VCF's passing variants against a truth VCF, use the following
 
 ```bash
 # first clone the repo
-git clone https://path.to.repo.git
+git clone https://github.com/Illumina/witty.er.git
 
 # compile the repo
 cd witty.er/Wittyer
@@ -31,12 +31,13 @@ dotnet publish . -c Release
 dotnet bin/Release/netcoreapp2.0/Wittyer.dll -i input.vcf -t truth.vcf -o outputdir
 
 # Or if Docker is installed and running (example is for Mac or Linux)
-# Available tags: v0.3.1, v0.3.0, v0.2.0, v0.1.2.1, v0.1.2, v0.1.1, v0.1.0
+git clone https://github.com/Illumina/witty.er.git
+docker build witty.er -t wittyer
 
 docker run --rm \
   --workdir $(pwd) \
   -v $(pwd):$(pwd) \
-  docker-general.dockerhub.illumina.com/wittyer:v0.3.1 \
+  wittyer \
   -i input.vcf -t truth.vcf -o outputdir
 ```
 
