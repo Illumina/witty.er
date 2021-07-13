@@ -31,6 +31,7 @@ dotnet publish . -c Release
 dotnet bin/Release/netcoreapp2.0/Wittyer.dll -i input.vcf -t truth.vcf -o outputdir
 
 # Or if Docker is installed and running (example is for Mac or Linux)
+# NOTE: Mac Docker has a default memory limit of 2GB, but the program needs more memory than that.  Please [follow these instructions](https://docs.docker.com/docker-for-mac/#advanced) to set the docker container memories to a minimum of 4GB.
 git clone https://github.com/Illumina/witty.er.git
 docker build witty.er -t wittyer
 
