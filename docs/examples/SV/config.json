@@ -4,7 +4,8 @@
     "binSizes": "50,100,200,500,1000",
     "bpDistance": 250,
     "includedFilters": "PASS",
-    "excludedFilters": ""
+    "excludedFilters": "",
+    "includeBed": null
   },
   {
     "variantType": "Deletion",
@@ -12,7 +13,8 @@
     "bpDistance": 2500,
     "percentDistance": 0.25,
     "includedFilters": "PASS",
-    "excludedFilters": ""
+    "excludedFilters": "",
+    "includeBed": null
   },
   {
     "variantType": "Duplication",
@@ -20,7 +22,8 @@
     "bpDistance": 2500,
     "percentDistance": 0.25,
     "includedFilters": "PASS",
-    "excludedFilters": ""
+    "excludedFilters": "",
+    "includeBed": null
   },
   {
     "variantType": "Inversion",
@@ -28,7 +31,8 @@
     "bpDistance": 2500,
     "percentDistance": 0.25,
     "includedFilters": "PASS",
-    "excludedFilters": ""
+    "excludedFilters": "",
+    "includeBed": null
   },
   {
     "variantType": "IntraChromosomeBreakend",
@@ -36,12 +40,14 @@
     "bpDistance": 2500,
     "percentDistance": 0.25,
     "includedFilters": "PASS",
-    "excludedFilters": ""
+    "excludedFilters": "",
+    "includeBed": null
   },
   {
     "variantType": "TranslocationBreakend",
     "bpDistance": 500,
     "includedFilters": "PASS",
-    "excludedFilters": ""
+    "excludedFilters": "",
+    "includeBed": null
   }
 ]
