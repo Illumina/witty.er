@@ -5,7 +5,8 @@
     "bpDistance": 10000,
     "percentDistance": 0.25,
     "includedFilters": "PASS",
-    "excludedFilters": ""
+    "excludedFilters": "",
+    "includeBed": null
   },
   {
     "variantType": "Deletion",
@@ -13,7 +14,8 @@
     "bpDistance": 10000,
     "percentDistance": 0.25,
     "includedFilters": "PASS",
-    "excludedFilters": ""
+    "excludedFilters": "",
+    "includeBed": null
   },
   {
     "variantType": "CopyNumberReference",
@@ -21,6 +23,7 @@
     "bpDistance": 10000,
     "percentDistance": 0.25,
     "includedFilters": "PASS",
-    "excludedFilters": ""
+    "excludedFilters": "",
+    "includeBed": null
   }
 ]
