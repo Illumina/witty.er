@@ -333,6 +333,8 @@ the included bed region that is assigned TP/FP/FN, but its best match(es) are co
 when determining if an entry is included allowing CIPOS and CIEND to make the bed region more permissive. For Paired Breakends, both breakends must be within the included bed region to be assessed. Also note that
 base-level stats will only count bases within the included bed regions as well.
 
+Note that providing an include bed file can result in different values for QueryTP and TruthTP. This is because QueryTP is calculated on entries in the query that are completely inside the bed regions, while TruthTP is calculated on entries in the truth that are completely inside the bed regions.
+
 ## Usage
 
 ### Examples
