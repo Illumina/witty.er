@@ -47,9 +47,11 @@ docker run --rm \
 
 * Compatibility notes:
   * Delly
-    * Remove all the CN annotations
+    * Update to latest delly which has this bug fixed or Remove all the CN annotations
   * PBSV
     * It has illegal characters (non-VCF spec legal) in reference.  Things like `R`, `K`, `W` etc.
+  * sniffles
+    * Filter out all SVTYPEs except ["DEL", "INS", "DUP", "INV", "CNV"]
 
 
 ## Contents
