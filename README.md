@@ -43,6 +43,15 @@ docker run --rm \
   -i input.vcf -t truth.vcf -o outputdir
 ```
 
+## FAQ
+
+* Compatibility notes:
+  * Delly
+    * Remove all the CN annotations
+  * PBSV
+    * It has illegal characters (non-VCF spec legal) in reference.  Things like `R`, `K`, `W` etc.
+
+
 ## Contents
 
 - [Design Description](#design-description)
