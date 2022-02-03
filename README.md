@@ -52,6 +52,8 @@ docker run --rm \
     * It has illegal characters (non-VCF spec legal) in reference.  Things like `R`, `K`, `W` etc.
   * sniffles
     * Filter out all SVTYPEs except ["DEL", "INS", "DUP", "INV", "CNV"]
+  * HGSVC truth set
+    * CIEND and CIPOS that are `0,.` or `.,0` or what not crashes since the intention is unclear.  Please filter out entries with these values for these tags.
 
 
 ## Contents
