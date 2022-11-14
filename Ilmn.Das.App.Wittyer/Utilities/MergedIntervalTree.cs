@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -73,12 +73,16 @@ namespace Ilmn.Das.App.Wittyer.Utilities
         /// <inheritdoc />
         public void Add(IInterval<T> interval)
         {
-            var overlapping = _tree.Search(interval);
-
+            var overlapping = _tree.Search(interval).ToHashSet();
             var (start, isStartInclusive, stop, isStopInclusive) = interval;
+            foreach (var candidate in _tree)
+                if (!overlapping.Contains(candidate)
+                    && IsImmediatelyAdjacent(start, isStartInclusive, stop, isStopInclusive, candidate))
+                    overlapping.Add(candidate);
+            
             var starts = (start, isStartInclusive);
             var stops = (stop, isStopInclusive);
-            foreach (var overlap in overlapping)
+            foreach (var overlap in overlapping.OrderBy(x => x.Start).ThenBy(x => x.Stop))
             {
                 _tree.Remove(overlap);
                 var (oStart, oStartInclusive, oStop, oStopInclusive) = overlap;
@@ -105,6 +109,11 @@ namespace Ilmn.Das.App.Wittyer.Utilities
                 return first.isInclusive ? first : second; // equal, so whatever is inclusive, return that one.
             }
         }
+
+        private bool IsImmediatelyAdjacent(T start, bool isStartInclusive, T stop, bool isStopInclusive,
+            IInterval<T> candidate)
+            => (isStartInclusive || candidate.IsStopInclusive) && Equals(candidate.Stop, start) ||
+               (isStopInclusive || candidate.IsStartInclusive) && Equals(candidate.Start, stop);
 
         /// <inheritdoc />
         public void Remove(IInterval<T> interval) => _tree.Remove(interval);
