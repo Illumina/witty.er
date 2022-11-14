@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Ilmn.Das.App.Wittyer.Utilities;
 using Ilmn.Das.Std.AppUtils.Intervals;
@@ -89,7 +89,7 @@ namespace Ilmn.Das.App.Wittyer.Test
             public void InsertNonOverlappingAtMiddle()
             {
                 var tree = MergedIntervalTree.Create(ExistingIntervals);
-                var target = new ClosedOpenInterval<uint>(ExistingIntervals[0].Stop, ExistingIntervals[1].Start);
+                var target = new ClosedOpenInterval<uint>(ExistingIntervals[0].Stop + 1, ExistingIntervals[1].Start - 1);
                 tree.Add(target);
 
                 // non-overlapping should have one more interval
@@ -116,7 +116,7 @@ namespace Ilmn.Das.App.Wittyer.Test
             public void InsertNonOverlappingAtBeginning()
             {
                 var tree = MergedIntervalTree.Create(ExistingIntervals);
-                var target = new ClosedOpenInterval<uint>(uint.MinValue, ExistingIntervals[0].Start);
+                var target = new ClosedOpenInterval<uint>(uint.MinValue, ExistingIntervals[0].Start - 1);
                 tree.Add(target);
 
                 // non-overlapping should have one more interval
@@ -179,7 +179,7 @@ namespace Ilmn.Das.App.Wittyer.Test
             public void InsertNonOverlappingAtEnd()
             {
                 var tree = MergedIntervalTree.Create(ExistingIntervals);
-                var target = new ClosedOpenInterval<uint>(ExistingIntervals.Last().Stop, uint.MaxValue);
+                var target = new ClosedOpenInterval<uint>(ExistingIntervals.Last().Stop + 1, uint.MaxValue);
                 tree.Add(target);
                 MultiAssert.Equal(ExistingIntervals.Count + 1, tree.Count());
                 MultiAssert.Equal(target, tree.Last());
@@ -227,6 +227,25 @@ namespace Ilmn.Das.App.Wittyer.Test
                 // should be one less since it's the # of gaps
                 MultiAssert.Equal(ExistingIntervals.Count - 1, fpTree.Count());
 
+                MultiAssert.AssertAll();
+            }
+            
+
+            [Fact]
+            public void InsertIntervalAdjacentBecomesOne()
+            {
+                var intervals = new List<IInterval<uint>>
+                (
+                    new IInterval<uint>[]
+                    {
+                        new ClosedOpenInterval<uint>(10, 15),
+                        new ClosedOpenInterval<uint>(15, 16),
+                    }
+                );
+                var tree = MergedIntervalTree.Create(intervals);
+                MultiAssert.Equal(tree.First(), tree.Last());
+                MultiAssert.Equal(tree.First().Stop, intervals[1].Stop);
+                MultiAssert.Equal(tree.First().Start, intervals[0].Start);
                 MultiAssert.AssertAll();
             }
         }
