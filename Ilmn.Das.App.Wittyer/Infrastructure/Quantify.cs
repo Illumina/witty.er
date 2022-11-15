@@ -177,7 +177,7 @@ namespace Ilmn.Das.App.Wittyer.Infrastructure
                                 $"Unexpected {nameof(WitDecision)} value ({variant.Sample.Wit}) for variant: "
                                 + variant.OriginalVariant.ToShortString());
 
-                        if (!type.HasBaseLevelStats) continue;
+                        if (!type.HasBaseLevelStats || variant.Sample.Wit == WitDecision.NotAssessed) continue;
 
                         //Base level stats
                         if (mutableStats is MutableEventAndBasesStats mbt)
