@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -163,15 +163,13 @@ namespace Ilmn.Das.App.Wittyer.Infrastructure
                     foreach (var variant in binGroup)
                     {
                         //Event level stats
+                        var assessed = true;
                         if (variant.Sample.Wit == WitDecision.TruePositive)
                             eventStats.AddTrueEvent();
                         else if (variant.Sample.Wit == falseDecision)
                             eventStats.AddFalseEvent();
                         else if (variant.Sample.Wit == WitDecision.NotAssessed)
-                        {
-                            // purposely empty, don't do anything on this type but we need to keep this type here
-                            // for base stats.
-                        }
+                            assessed = false;
                         else
                             throw new InvalidDataException(
                                 $"Unexpected {nameof(WitDecision)} value ({variant.Sample.Wit}) for variant: "
@@ -186,18 +184,21 @@ namespace Ilmn.Das.App.Wittyer.Infrastructure
                             // if there's actually a bed region, but the bed region lacks this contig, we should skip this part
                             if (bedRegion != null && !bedRegion.TryGetValue(variant.Contig, out bedTree))
                                 continue;
-
-                            
-                            var foundOverlap = false;
-                            foreach (var overlapped in bedTree?.Search(variant) ?? new IContigAndInterval[] {variant})
+                            var foundOverlap = true;
+                            if (assessed)
                             {
-                                var actualOverlap = ReferenceEquals(variant, overlapped)
-                                    ? variant
-                                    : overlapped.TryGetOverlap(variant).GetOrThrow();
-                                GetOrAddTree(in perTypePerBinTotalTrees, in variant).Add(actualOverlap);
-                                GetOrAddTree(in typeTotalTrees, in variant).Add(actualOverlap);
-                                GetOrAddTree(in grandTotalDictionary, in variant).Add(actualOverlap);
-                                foundOverlap = true;
+                                foundOverlap = false;
+                                foreach (var overlapped in bedTree?.Search(variant) ??
+                                                           new IContigAndInterval[] { variant })
+                                {
+                                    var actualOverlap = ReferenceEquals(variant, overlapped)
+                                        ? variant
+                                        : overlapped.TryGetOverlap(variant).GetOrThrow();
+                                    GetOrAddTree(in perTypePerBinTotalTrees, in variant).Add(actualOverlap);
+                                    GetOrAddTree(in typeTotalTrees, in variant).Add(actualOverlap);
+                                    GetOrAddTree(in grandTotalDictionary, in variant).Add(actualOverlap);
+                                    foundOverlap = true;
+                                }
                             }
 
                             if (!foundOverlap)
@@ -226,6 +227,12 @@ namespace Ilmn.Das.App.Wittyer.Infrastructure
                                     GetOrAddTree(in perTypePerBinTpTrees, in variant).Add(overlap);
                                     GetOrAddTree(in typeTotalTpTrees, in variant).Add(overlap);
                                     GetOrAddTree(in grandTotalTpDictionary, in variant).Add(overlap);
+                                    
+                                    if (assessed) continue;
+                                    // for not assessed variants, we haven't counted their bases to total trees yet
+                                    GetOrAddTree(in perTypePerBinTotalTrees, in variant).Add(overlap);
+                                    GetOrAddTree(in typeTotalTrees, in variant).Add(overlap);
+                                    GetOrAddTree(in grandTotalDictionary, in variant).Add(overlap);
                                 }
                             }
                         }
