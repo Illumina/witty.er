@@ -22,15 +22,15 @@
         },
         {
           "StatsType": "Base",
-          "TruthTpCount": 2746133,
+          "TruthTpCount": 2832984,
           "TruthFnCount": 393337,
-          "TruthTotalCount": 3139470,
-          "Recall": 0.874712292202187,
-          "QueryTpCount": 2747006,
-          "QueryFpCount": 142813,
-          "QueryTotalCount": 2889819,
-          "Precision": 0.95058064190179381,
-          "Fscore": 0.91106973205822694
+          "TruthTotalCount": 3226321,
+          "Recall": 0.87808497666537211,
+          "QueryTpCount": 2832984,
+          "QueryFpCount": 142608,
+          "QueryTotalCount": 2975592,
+          "Precision": 0.95207407467152749,
+          "Fscore": 0.91358392160612367
         }
       ],
       "DetailedStats": [
@@ -51,15 +51,15 @@
             },
             {
               "StatsType": "Base",
-              "TruthTpCount": 2746133,
+              "TruthTpCount": 2832984,
               "TruthFnCount": 393337,
-              "TruthTotalCount": 3139470,
-              "Recall": 0.874712292202187,
-              "QueryTpCount": 2747006,
-              "QueryFpCount": 96513,
-              "QueryTotalCount": 2843519,
-              "Precision": 0.9660586055517828,
-              "Fscore": 0.91811896667304971
+              "TruthTotalCount": 3226321,
+              "Recall": 0.87808497666537211,
+              "QueryTpCount": 2832984,
+              "QueryFpCount": 96456,
+              "QueryTotalCount": 2929440,
+              "Precision": 0.96707357037522534,
+              "Fscore": 0.92043339564352811
             }
           ],
           "PerBinStats": [
@@ -109,15 +109,15 @@
                 },
                 {
                   "StatsType": "Base",
-                  "TruthTpCount": 58681,
+                  "TruthTpCount": 58741,
                   "TruthFnCount": 39471,
-                  "TruthTotalCount": 98152,
-                  "Recall": 0.59785842366941067,
-                  "QueryTpCount": 57927,
+                  "TruthTotalCount": 98212,
+                  "Recall": 0.5981041013318128,
+                  "QueryTpCount": 57987,
                   "QueryFpCount": 8124,
-                  "QueryTotalCount": 66051,
-                  "Precision": 0.87700413316982329,
-                  "Fscore": 0.71101446867312657
+                  "QueryTotalCount": 66111,
+                  "Precision": 0.87711575985841994,
+                  "Fscore": 0.71122487856261474
                 }
               ]
             },
@@ -138,15 +138,15 @@
                 },
                 {
                   "StatsType": "Base",
-                  "TruthTpCount": 48418,
+                  "TruthTpCount": 48450,
                   "TruthFnCount": 47992,
-                  "TruthTotalCount": 96410,
-                  "Recall": 0.50220931438647443,
-                  "QueryTpCount": 49172,
+                  "TruthTotalCount": 96442,
+                  "Recall": 0.50237448414591157,
+                  "QueryTpCount": 49204,
                   "QueryFpCount": 9229,
-                  "QueryTotalCount": 58401,
-                  "Precision": 0.84197188404308143,
-                  "Fscore": 0.62915047928357715
+                  "QueryTotalCount": 58433,
+                  "Precision": 0.84205842588948021,
+                  "Fscore": 0.62930424295520981
                 }
               ]
             },
@@ -167,15 +167,15 @@
                 },
                 {
                   "StatsType": "Base",
-                  "TruthTpCount": 359990,
+                  "TruthTpCount": 361626,
                   "TruthFnCount": 59830,
-                  "TruthTotalCount": 419820,
-                  "Recall": 0.8574865418512696,
-                  "QueryTpCount": 359349,
+                  "TruthTotalCount": 421456,
+                  "Recall": 0.85803974792149118,
+                  "QueryTpCount": 360985,
                   "QueryFpCount": 10305,
-                  "QueryTotalCount": 369654,
-                  "Precision": 0.97212257949325587,
-                  "Fscore": 0.91121324136450865
+                  "QueryTotalCount": 371290,
+                  "Precision": 0.9722454146354601,
+                  "Fscore": 0.911579493248149
                 }
               ]
             },
@@ -196,15 +196,15 @@
                 },
                 {
                   "StatsType": "Base",
-                  "TruthTpCount": 119109,
+                  "TruthTpCount": 120558,
                   "TruthFnCount": 29065,
-                  "TruthTotalCount": 148174,
-                  "Recall": 0.80384547896392078,
-                  "QueryTpCount": 117571,
+                  "TruthTotalCount": 149623,
+                  "Recall": 0.80574510603316341,
+                  "QueryTpCount": 118147,
                   "QueryFpCount": 5437,
-                  "QueryTotalCount": 123008,
-                  "Precision": 0.95579962278876174,
-                  "Fscore": 0.87326155121722193
+                  "QueryTotalCount": 123584,
+                  "Precision": 0.95600563179699638,
+                  "Fscore": 0.874467474450216
                 }
               ]
             },
@@ -225,15 +225,15 @@
                 },
                 {
                   "StatsType": "Base",
-                  "TruthTpCount": 1429578,
+                  "TruthTpCount": 1482963,
                   "TruthFnCount": 115122,
-                  "TruthTotalCount": 1544700,
-                  "Recall": 0.92547290736065257,
-                  "QueryTpCount": 1432630,
-                  "QueryFpCount": 22626,
-                  "QueryTotalCount": 1455256,
-                  "Precision": 0.98445222009048583,
-                  "Fscore": 0.954051910402021
+                  "TruthTotalCount": 1598085,
+                  "Recall": 0.92796253015327723,
+                  "QueryTpCount": 1486015,
+                  "QueryFpCount": 22569,
+                  "QueryTotalCount": 1508584,
+                  "Precision": 0.98503961330625278,
+                  "Fscore": 0.95564958459672911
                 }
               ]
             },
@@ -254,15 +254,15 @@
                 },
                 {
                   "StatsType": "Base",
-                  "TruthTpCount": 730357,
+                  "TruthTpCount": 760646,
                   "TruthFnCount": 101857,
-                  "TruthTotalCount": 832214,
-                  "Recall": 0.877607201993718,
-                  "QueryTpCount": 730357,
+                  "TruthTotalCount": 862503,
+                  "Recall": 0.88190533830027262,
+                  "QueryTpCount": 760773,
                   "QueryFpCount": 40792,
-                  "QueryTotalCount": 771149,
-                  "Precision": 0.94710231096714126,
-                  "Fscore": 0.911031375926724
+                  "QueryTotalCount": 801565,
+                  "Precision": 0.94910955443413825,
+                  "Fscore": 0.91427413944979885
                 }
               ]
             }
@@ -290,8 +290,8 @@
               "TruthTotalCount": 0,
               "Recall": "NaN",
               "QueryTpCount": 0,
-              "QueryFpCount": 46300,
-              "QueryTotalCount": 46300,
+              "QueryFpCount": 46152,
+              "QueryTotalCount": 46152,
               "Precision": 0.0,
               "Fscore": "NaN"
             }
@@ -377,8 +377,8 @@
                   "TruthTotalCount": 0,
                   "Recall": "NaN",
                   "QueryTpCount": 0,
-                  "QueryFpCount": 23747,
-                  "QueryTotalCount": 23747,
+                  "QueryFpCount": 23599,
+                  "QueryTotalCount": 23599,
                   "Precision": 0.0,
                   "Fscore": "NaN"
                 }
