@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -19,7 +19,6 @@ using Ilmn.Das.Std.AppUtils.Misc;
 using Ilmn.Das.Std.BioinformaticUtils.Contigs;
 using Ilmn.Das.Std.BioinformaticUtils.GenomicFeatures;
 using Ilmn.Das.Std.VariantUtils.SimpleVariants;
-using JetBrains.Annotations;
 
 namespace Ilmn.Das.App.Wittyer.Infrastructure
 {
@@ -39,10 +38,9 @@ namespace Ilmn.Das.App.Wittyer.Infrastructure
         /// <param name="isGenotypeEvaluated">if set to <c>true</c> [is genotype evaluated].</param>
         /// <param name="inputSpecs">The input specs.</param>
         /// <returns></returns>
-        [NotNull]
-        public static SampleMetrics GenerateSampleStats([NotNull] IWittyerResult truth,
-            [NotNull] IWittyerResult query, bool isGenotypeEvaluated,
-            [NotNull] IReadOnlyDictionary<WittyerType, InputSpec> inputSpecs)
+        public static SampleMetrics GenerateSampleStats(IWittyerResult truth,
+            IWittyerResult query, bool isGenotypeEvaluated,
+            IReadOnlyDictionary<WittyerType, InputSpec> inputSpecs)
         {
             var perTypeBinnedDictionary =
                 inputSpecs.ToDictionary(kvp => kvp.Key,
@@ -105,29 +103,29 @@ namespace Ilmn.Das.App.Wittyer.Infrastructure
 
         private static (IBasicStatsCount overallBaseStats,
             IReadOnlyDictionary<WittyerType, IBasicStatsCount> perTypeOverallBaseStats)
-            GenerateStats([NotNull] IReadOnlyDictionary<WittyerType, InputSpec> inputSpecs,
-                [NotNull] IDictionary<WittyerType, BinnedDictionary> perTypeBinnedDictionary,
-                [NotNull] IWittyerResult result, bool isGenotypeEvaluated, WitDecision falseDecision,
-                [NotNull] Func<IMutableStats, IMutableEventStatsCount> eventsStatsSelector,
-                [NotNull] Func<MutableEventAndBasesStats, IMutableBaseStatsCount> baseStatsSelector)
+            GenerateStats(IReadOnlyDictionary<WittyerType, InputSpec> inputSpecs,
+                IDictionary<WittyerType, BinnedDictionary> perTypeBinnedDictionary,
+                IWittyerResult result, bool isGenotypeEvaluated, WitDecision falseDecision,
+                Func<IMutableStats, IMutableEventStatsCount> eventsStatsSelector,
+                Func<MutableEventAndBasesStats, IMutableBaseStatsCount> baseStatsSelector)
         {
             // tracks the summary OverallStats total base stats
-            var grandTotalDictionary = new ConcurrentDictionary<IContigInfo, MergedIntervalTree<uint>>();
-            var grandTotalTpDictionary = new ConcurrentDictionary<IContigInfo, MergedIntervalTree<uint>>();
+            var grandTotalDictionary = new ConcurrentDictionary<IContigInfo, List<IInterval<uint>>>();
+            var grandTotalTpDictionary = new ConcurrentDictionary<IContigInfo, List<IInterval<uint>>>();
 
             // tracks the per type OverallStats for bases
             var perTypeTotalDictionary = new ConcurrentDictionary<WittyerType,
-                ConcurrentDictionary<IContigInfo, MergedIntervalTree<uint>>>();
+                ConcurrentDictionary<IContigInfo, List<IInterval<uint>>>>();
             var perTypeTotalTpDictionary = new ConcurrentDictionary<WittyerType,
-                ConcurrentDictionary<IContigInfo, MergedIntervalTree<uint>>>();
+                ConcurrentDictionary<IContigInfo, List<IInterval<uint>>>>();
 
             // tracks the Per Type Per bin base stats
             var perTypePerBinTotalDictionary =
                 new ConcurrentDictionary<WittyerType, ConcurrentDictionary<uint,
-                    ConcurrentDictionary<IContigInfo, MergedIntervalTree<uint>>>>();
+                    ConcurrentDictionary<IContigInfo, List<IInterval<uint>>>>>();
             var perTypePerBinTpDictionary =
                 new ConcurrentDictionary<WittyerType, ConcurrentDictionary<uint,
-                    ConcurrentDictionary<IContigInfo, MergedIntervalTree<uint>>>>();
+                    ConcurrentDictionary<IContigInfo, List<IInterval<uint>>>>>();
 
             foreach (var (type, variants) in result.Variants
                 .Select(kvp => (kvp.Key, kvp.Value.AsEnumerable<IWittyerSimpleVariant>()))
@@ -137,13 +135,13 @@ namespace Ilmn.Das.App.Wittyer.Infrastructure
                 var bedRegion = inputSpecs[type].IncludedRegions?.IntervalTree;
                 var statsBinnedDictionary = perTypeBinnedDictionary[type];
                 var perBinTotalDictionary = perTypePerBinTotalDictionary.GetOrAdd(type,
-                    _ => new ConcurrentDictionary<uint, ConcurrentDictionary<IContigInfo, MergedIntervalTree<uint>>>());
+                    _ => new ConcurrentDictionary<uint, ConcurrentDictionary<IContigInfo, List<IInterval<uint>>>>());
                 var perBinTpDictionary = perTypePerBinTpDictionary.GetOrAdd(type,
-                    _ => new ConcurrentDictionary<uint, ConcurrentDictionary<IContigInfo, MergedIntervalTree<uint>>>());
+                    _ => new ConcurrentDictionary<uint, ConcurrentDictionary<IContigInfo, List<IInterval<uint>>>>());
                 var typeTotalTrees = perTypeTotalDictionary.GetOrAdd(type,
-                    _ => new ConcurrentDictionary<IContigInfo, MergedIntervalTree<uint>>());
+                    _ => new ConcurrentDictionary<IContigInfo, List<IInterval<uint>>>());
                 var typeTotalTpTrees = perTypeTotalTpDictionary.GetOrAdd(type,
-                    _ => new ConcurrentDictionary<IContigInfo, MergedIntervalTree<uint>>());
+                    _ => new ConcurrentDictionary<IContigInfo, List<IInterval<uint>>>());
 
                 foreach (var binGroup in variants
                     .GroupBy(v => v.Win.Start))
@@ -249,8 +247,9 @@ namespace Ilmn.Das.App.Wittyer.Infrastructure
                         var totalTree = perTypePerBinTotalTrees[chr];
                         if (stats == null)
                             stats = baseStatsSelector((MutableEventAndBasesStats) mutableStats);
-                        if (perTypePerBinTpTrees.TryGetValue(chr, out var tpTree))
+                        if (perTypePerBinTpTrees.TryGetValue(chr, out var tpTreeUnmerged))
                         {
+                            var tpTree = tpTreeUnmerged.ToMergedIntervalTree();
                             foreach (var wholeInterval in totalTree)
                             {
                                 var overlaps = tpTree.Search(wholeInterval).ToList();
@@ -289,15 +288,15 @@ namespace Ilmn.Das.App.Wittyer.Infrastructure
                 // must filter out keys that don't have base level stats for better cleanliness in case we want to not output Json stats etc for these
                 typedOverBases);
 
-            MergedIntervalTree<uint> GetOrAddTree(in ConcurrentDictionary<IContigInfo, MergedIntervalTree<uint>> dict,
+            List<IInterval<uint>> GetOrAddTree(in ConcurrentDictionary<IContigInfo, List<IInterval<uint>>> dict,
                 in IWittyerSimpleVariant variant)
-                => dict.GetOrAdd(variant.Contig, _ => MergedIntervalTree.Create<uint>());
+                => dict.GetOrAdd(variant.Contig, _ => new List<IInterval<uint>>());
 
-            ConcurrentDictionary<IContigInfo, MergedIntervalTree<uint>> GetOrAddGenomeTree<T>(
-                in ConcurrentDictionary<T, ConcurrentDictionary<IContigInfo, MergedIntervalTree<uint>>>
+            ConcurrentDictionary<IContigInfo, List<IInterval<uint>>> GetOrAddGenomeTree<T>(
+                in ConcurrentDictionary<T, ConcurrentDictionary<IContigInfo, List<IInterval<uint>>>>
                     perBinTpDictionary, in IGrouping<T, IWittyerSimpleVariant> binGroup)
                 => perBinTpDictionary.GetOrAdd(binGroup.Key,
-                    _ => new ConcurrentDictionary<IContigInfo, MergedIntervalTree<uint>>());
+                    _ => new ConcurrentDictionary<IContigInfo, List<IInterval<uint>>>());
         }
     }
 }
