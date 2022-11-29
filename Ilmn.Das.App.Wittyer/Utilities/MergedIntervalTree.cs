@@ -1,8 +1,9 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Ilmn.Das.Std.AppUtils.Intervals;
+using Ilmn.Das.Std.AppUtils.Misc;
 using JetBrains.Annotations;
 
 namespace Ilmn.Das.App.Wittyer.Utilities
@@ -17,8 +18,7 @@ namespace Ilmn.Das.App.Wittyer.Utilities
         /// </summary>
         /// <param name="intervals">The intervals to initialize the tree with.</param>
         /// <returns></returns>
-        [NotNull]
-        public static MergedIntervalTree<T> Create<T>([NotNull, ItemNotNull] IEnumerable<IInterval<T>> intervals)
+        public static MergedIntervalTree<T> Create<T>(IEnumerable<IInterval<T>> intervals)
             where T : IComparable<T>
             => MergedIntervalTree<T>.Create(intervals);
 
@@ -26,10 +26,23 @@ namespace Ilmn.Das.App.Wittyer.Utilities
         /// Initializes an empty instance of the <see cref="MergedIntervalTree{T}"/> class.
         /// </summary>
         /// <returns></returns>
-        [NotNull]
         public static MergedIntervalTree<T> Create<T>(params IInterval<T>[] intervals)
             where T : IComparable<T>
             => MergedIntervalTree<T>.Create(intervals);
+
+        /// <summary>
+        /// Initializes an empty instance of the <see cref="MergedIntervalTree{T}"/> class.
+        /// </summary>
+        /// <returns></returns>
+        internal static MergedIntervalTree<T> CreateAlreadyMerged<T>(IEnumerable<IInterval<T>> intervals)
+            where T : IComparable<T>
+        {
+            var ret = MergedIntervalTree<T>.Create(null);
+            foreach (var interval in intervals)
+                ret.AddInternal(interval);
+
+            return ret;
+        }
     }
 
     /// <inheritdoc />
@@ -51,15 +64,14 @@ namespace Ilmn.Das.App.Wittyer.Utilities
         /// </summary>
         /// <param name="intervals">The intervals to initialize the tree with.</param>
         /// <returns></returns>
-        [NotNull]
-        internal static MergedIntervalTree<T> Create([CanBeNull, ItemNotNull] IEnumerable<IInterval<T>> intervals)
+        internal static MergedIntervalTree<T> Create([CanBeNull] IEnumerable<IInterval<T>> intervals)
         {
             var ret = new MergedIntervalTree<T>();
+            if (intervals == null)
+                return ret;
 
-            if (intervals == null) return ret;
-
-            foreach (var interval in intervals)
-                ret.Add(interval);
+            foreach (var interval in MergeInternal(intervals, false))
+                ret.AddInternal(interval);
             return ret;
         }
 
@@ -73,47 +85,81 @@ namespace Ilmn.Das.App.Wittyer.Utilities
         /// <inheritdoc />
         public void Add(IInterval<T> interval)
         {
-            var overlapping = _tree.Search(interval).ToHashSet();
-            var (start, isStartInclusive, stop, isStopInclusive) = interval;
+            var overlapping = new HashSet<IInterval<T>>();
+            overlapping.Add(interval);
+            var removal = new List<IInterval<T>>();
             foreach (var candidate in _tree)
-                if (!overlapping.Contains(candidate)
-                    && IsImmediatelyAdjacent(start, isStartInclusive, stop, isStopInclusive, candidate))
+            {
+                if (interval.IsOverlapping(candidate))
+                {
+                    removal.Add(candidate);
                     overlapping.Add(candidate);
-            
-            var starts = (start, isStartInclusive);
-            var stops = (stop, isStopInclusive);
-            foreach (var overlap in overlapping.OrderBy(x => x.Start).ThenBy(x => x.Stop))
-            {
-                _tree.Remove(overlap);
-                var (oStart, oStartInclusive, oStop, oStopInclusive) = overlap;
-                starts = Compare(in starts, (oStart, oStartInclusive), true);
-                stops = Compare(in stops, (oStop, oStopInclusive), false);
+                }
+                else if (IsImmediatelyAdjacent(interval, candidate))
+                    overlapping.Add(candidate);
             }
-
-            var isSame = Equals(starts.start, interval.Start)
-                         && Equals(stops.stop, interval.Stop)
-                         && starts.isStartInclusive == interval.IsStartInclusive
-                         && stops.isStopInclusive == interval.IsStopInclusive;
-
-            if (!isSame)
-                interval = Interval<T>.Create(starts.start, starts.isStartInclusive, stops.stop, stops.isStopInclusive);
-
-            _tree.Add(interval);
+            foreach (var candidate in removal)
+                _tree.Remove(candidate);
             
-            (T value, bool isInclusive) Compare(in (T value, bool isInclusive) first,
+            foreach (var merged in MergeInternal(interval.FollowedBy(overlapping), true))
+                AddInternal(merged);
+        }
+        
+        internal static IEnumerable<IInterval<T>> MergeInternal(IEnumerable<IInterval<T>> source, bool checkedOverlapping)
+        {
+            IInterval<T> previousInterval = null;
+            var orderedEnumerable = source.OrderBy(x => x.Start).ThenBy(x => x.Stop).ToList();
+            foreach (var interval in orderedEnumerable)
+            {
+                if (previousInterval is null)
+                {
+                    previousInterval = interval;
+                    continue;
+                }
+
+                if (!checkedOverlapping && !previousInterval.IsOverlapping(interval) && !IsImmediatelyAdjacent(previousInterval, interval))
+                {
+                    yield return previousInterval;
+                    previousInterval = interval;
+                    continue;
+                }
+
+                var (start, isStartInclusive, stop, isStopInclusive) = previousInterval;
+                var starts = (start, isStartInclusive);
+                var stops = (stop, isStopInclusive);
+                starts = MergedIntervalTree<T>.Compare(in starts, (interval.Start, interval.IsStartInclusive), true);
+                stops = MergedIntervalTree<T>.Compare(in stops, (interval.Stop, interval.IsStopInclusive), false);
+
+                var isSame = Equals(starts.start, interval.Start)
+                             && Equals(stops.stop, interval.Stop)
+                             && starts.isStartInclusive == interval.IsStartInclusive
+                             && stops.isStopInclusive == interval.IsStopInclusive;
+
+                if (!isSame)
+                    previousInterval = Interval<T>.Create(starts.start, starts.isStartInclusive, stops.stop,
+                        stops.isStopInclusive);
+            }
+            if (previousInterval != null)
+                yield return previousInterval;
+        }
+        
+        internal void AddInternal(IInterval<T> interval) => _tree.Add(interval);
+
+        private static (T value, bool isInclusive) Compare(in (T value, bool isInclusive) first,
                 in (T value, bool isInclusive) second, bool wantsSmaller)
-            {
-                var compare = first.value.CompareTo(second.value);
-                if (compare < 0) return wantsSmaller ? first : second; // second is greater
-                if (compare > 0) return wantsSmaller ? second : first; // first is greater
-                return first.isInclusive ? first : second; // equal, so whatever is inclusive, return that one.
-            }
+        {
+            var compare = first.value.CompareTo(second.value);
+            if (compare < 0) return wantsSmaller ? first : second; // second is greater
+            if (compare > 0) return wantsSmaller ? second : first; // first is greater
+            return first.isInclusive ? first : second; // equal, so whatever is inclusive, return that one.
         }
 
-        private bool IsImmediatelyAdjacent(T start, bool isStartInclusive, T stop, bool isStopInclusive,
-            IInterval<T> candidate)
-            => (isStartInclusive || candidate.IsStopInclusive) && Equals(candidate.Stop, start) ||
-               (isStopInclusive || candidate.IsStartInclusive) && Equals(candidate.Start, stop);
+        private static bool IsImmediatelyAdjacent(IInterval<T> interval1, IInterval<T> interval2)
+        {
+            var (start, isStartInclusive, stop, isStopInclusive) = interval1;
+            return (isStartInclusive || interval2.IsStopInclusive) && Equals(interval2.Stop, start) ||
+                   (isStopInclusive || interval2.IsStartInclusive) && Equals(interval2.Start, stop);
+        }
 
         /// <inheritdoc />
         public void Remove(IInterval<T> interval) => _tree.Remove(interval);

@@ -27,6 +27,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ReleaseNotes", "ReleaseNote
 		docs\release-notes\v0.3.2.md = docs\release-notes\v0.3.2.md
 		docs\release-notes\v0.3.3.md = docs\release-notes\v0.3.3.md
 		docs\release-notes\v0.3.4.md = docs\release-notes\v0.3.4.md
+		docs\release-notes\v0.3.5.md = docs\release-notes\v0.3.5.md
+		docs\release-notes\v0.3.5.1.md = docs\release-notes\v0.3.5.1.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{3CCBABA0-BF50-4691-86B3-B2AC662A4F30}"

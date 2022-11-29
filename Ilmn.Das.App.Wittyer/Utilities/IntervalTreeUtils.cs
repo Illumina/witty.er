@@ -13,6 +13,9 @@ namespace Ilmn.Das.App.Wittyer.Utilities
     /// </summary>
     public static class IntervalTreeUtils
     {
+        public static IEnumerable<IInterval<T>> Merge<T>(this IEnumerable<IInterval<T>> source) where T : IComparable<T>
+            => MergedIntervalTree<T>.MergeInternal(source, false);
+
         /// <summary>
         /// Converts the given IEnumerable of Intervals into a <see cref="MergedIntervalTree"/>.
         /// </summary>
@@ -20,15 +23,15 @@ namespace Ilmn.Das.App.Wittyer.Utilities
         /// <param name="intervals">The intervals.</param>
         /// <param name="createCopy">if set to <c>false</c>, this will return the same object if the intervals is already a <see cref="MergedIntervalTree"/>.  Otherwise, it will create a copy no matter what.</param>
         /// <returns></returns>
-        [NotNull, Pure]
+        [Pure]
         public static MergedIntervalTree<T> ToMergedIntervalTree<T>(
-            [NotNull, ItemNotNull] this IEnumerable<IInterval<T>> intervals, bool createCopy = false)
+            this IEnumerable<IInterval<T>> intervals, bool createCopy = false)
             where T : IComparable<T>
             => createCopy
                 ? MergedIntervalTree.Create(intervals)
                 : intervals as MergedIntervalTree<T> ?? MergedIntervalTree.Create(intervals);
 
-        internal static uint GetTotalLength<T>([NotNull] this IEnumerable<KeyValuePair<IContigInfo, T>> intervals) 
+        internal static uint GetTotalLength<T>(this IEnumerable<KeyValuePair<IContigInfo, T>> intervals) 
             where T : IEnumerable<IInterval<uint>>
             => (uint) intervals.Select(kvp => kvp.Value.GetTotalMergedLength()).Sum();
 
@@ -37,7 +40,7 @@ namespace Ilmn.Das.App.Wittyer.Utilities
         /// </summary>
         /// <param name="intervals">The intervals.</param>
         /// <returns></returns>
-        public static long GetTotalMergedLength([NotNull] this IEnumerable<IInterval<uint>> intervals)
+        public static long GetTotalMergedLength(this IEnumerable<IInterval<uint>> intervals)
             => GetTotalLength(intervals.ToMergedIntervalTree());
 
         /// <summary>
@@ -45,7 +48,7 @@ namespace Ilmn.Das.App.Wittyer.Utilities
         /// </summary>
         /// <param name="tree">The tree.</param>
         /// <returns></returns>
-        public static long GetTotalLength([NotNull] this MergedIntervalTree<uint> tree)
+        public static long GetTotalLength(this MergedIntervalTree<uint> tree)
             => tree.Sum(i => i.GetLength());
 
         /// <summary>
@@ -54,9 +57,8 @@ namespace Ilmn.Das.App.Wittyer.Utilities
         /// <param name="source">The source.</param>
         /// <param name="others">The others.</param>
         /// <returns></returns>
-        [NotNull, ItemNotNull]
-        public static IEnumerable<IInterval<uint>> Subtract([NotNull] this IInterval<uint> source,
-            [NotNull, ItemNotNull] IEnumerable<IInterval<uint>> others)
+        public static IEnumerable<IInterval<uint>> Subtract(this IInterval<uint> source,
+            IEnumerable<IInterval<uint>> others)
         {
             // need to order the intervals so using an intervaltree for this
             others = (others as IIntervalTree<uint, IInterval<uint>> ?? others.ToIntervalTree<uint, IInterval<uint>>()).Search(source); 
@@ -100,10 +102,8 @@ namespace Ilmn.Das.App.Wittyer.Utilities
                 yield return source; // return last one or only one if no loops
         }
 
-        [NotNull]
-        [ItemNotNull]
-        internal static IEnumerable<IInterval<T>> SubtractOverlap<T>([NotNull] this IInterval<T> target,
-            [NotNull] IInterval<T> overlap) where T : IComparable<T>
+        internal static IEnumerable<IInterval<T>> SubtractOverlap<T>(this IInterval<T> target,
+            IInterval<T> overlap) where T : IComparable<T>
         {
             var startComparison = target.Start.CompareTo(overlap.Start);
 
