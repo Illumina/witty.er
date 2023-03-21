@@ -72,6 +72,8 @@ namespace Ilmn.Das.App.Wittyer.Utilities.Enums
         /// Not Assessed because the had an invalid sv length (0)
         /// </summary>
         InvalidSvLen,
+        
+        InvalidSvType,
 
         /// <summary>
         /// Not Assessed because the BND was a single breakend
