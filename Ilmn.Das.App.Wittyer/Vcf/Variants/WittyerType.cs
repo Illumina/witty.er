@@ -155,9 +155,8 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
             var hasSvTypeKey = variant.Info.TryGetValue(VcfConstants.SvTypeKey, out var svTypeStr);
             if (!hasSvTypeKey)
                 // todo: maybe we can allow small variants, which would not have SVTYPE
-                throw new InvalidDataException(
-                    $"Following variant does not have {VcfConstants.SvTypeKey} info key:\n{variant}");
-
+                return FailedReason.InvalidSvType;
+            
             svType = null;
             if (svTypeStr == SvTypeStrings.TranslocationBreakend)
             {
