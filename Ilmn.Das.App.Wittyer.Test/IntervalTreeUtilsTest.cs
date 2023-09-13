@@ -5,7 +5,6 @@ using Ilmn.Das.Std.AppUtils.Intervals;
 using Ilmn.Das.Std.AppUtils.Misc;
 using Ilmn.Das.Std.BioinformaticUtils.Bed;
 using Ilmn.Das.Std.XunitUtils;
-using JetBrains.Annotations;
 using Xunit;
 
 namespace Ilmn.Das.App.Wittyer.Test
@@ -38,7 +37,7 @@ namespace Ilmn.Das.App.Wittyer.Test
         }
 
         public static TheoryData<IInterval<uint>, IEnumerable<IInterval<uint>>> SubstractIntervalData 
-            = new TheoryData<IInterval<uint>, IEnumerable<IInterval<uint>>>
+            = new()
             {
                 {new InclusiveInterval<uint>(12, 13),
                     new IInterval<uint>[]{new ClosedOpenInterval<uint>(10, 12), new OpenClosedInterval<uint>(13, 15)} },
@@ -102,7 +101,6 @@ namespace Ilmn.Das.App.Wittyer.Test
         }
 
 
-        [NotNull]
         private static IntervalTree<uint, IInterval<uint>> GetOriginalTree()
         {
             var tree = new IntervalTree<uint, IInterval<uint>>

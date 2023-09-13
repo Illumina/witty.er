@@ -2,7 +2,6 @@
 using Ilmn.Das.App.Wittyer.Utilities;
 using Ilmn.Das.Std.AppUtils.Collections;
 using Ilmn.Das.Std.AppUtils.Misc;
-using JetBrains.Annotations;
 
 namespace Ilmn.Das.App.Wittyer.Vcf.Variants
 {
@@ -77,12 +76,10 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
         /// <param name="posBorderRight">The position border right.</param>
         /// <param name="endBorderLeft">The end border left.</param>
         /// <param name="endBorderRight">The end border right.</param>
-        [NotNull]
         public static BorderDistance Create(uint posBorderLeft, uint posBorderRight, uint endBorderLeft, uint endBorderRight)
-            => new BorderDistance(posBorderLeft, posBorderRight, endBorderLeft, endBorderRight);
+            => new(posBorderLeft, posBorderRight, endBorderLeft, endBorderRight);
 
         /// <inheritdoc />
-        [NotNull]
         public override string ToString()
             => PosBorderLeft.FollowedBy(PosBorderRight, EndBorderLeft, EndBorderRight)
                 .StringJoin(WittyerConstants.BorderDistanceDelimiter);
@@ -93,9 +90,8 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
         /// <param name="first">The first variant.</param>
         /// <param name="second">The second variant.</param>
         /// <returns></returns>
-        [NotNull]
-        public static BorderDistance CreateFromVariant([NotNull] IWittyerSimpleVariant first,
-            [NotNull] IWittyerSimpleVariant second)
+        public static BorderDistance CreateFromVariant(IWittyerSimpleVariant first,
+            IWittyerSimpleVariant second)
         {
             var lbl = GetDistance(first.CiPosInterval.Start, second.CiPosInterval.Start);
             var lbr = GetDistance(first.CiPosInterval.Stop, second.CiPosInterval.Stop);
@@ -108,5 +104,7 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
 
         internal static uint GetDistance(uint big, uint small) 
             => small > big ? small - big : big - small;
+
+        public uint Distance() => PosBorderRight - PosBorderLeft + (EndBorderRight - EndBorderRight);
     }
 }

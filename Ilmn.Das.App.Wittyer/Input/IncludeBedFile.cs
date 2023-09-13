@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -61,7 +61,7 @@ namespace Ilmn.Das.App.Wittyer.Input
 
                 Lazy<FileInfo> CreateBedFileLazy(
                     IEnumerable<IContigAndInterval> thisTree)
-                    => new Lazy<FileInfo>(() =>
+                    => new(() =>
                     {
                         if (pathToWriteBedFile.Directory?.ExistsNow() == false)
                             pathToWriteBedFile.Directory.Create();
@@ -126,18 +126,21 @@ namespace Ilmn.Das.App.Wittyer.Input
         /// <param name="bedFile">The source bed file</param>
         [Pure]
         public static IncludeBedFile CreateFromBedFile(FileInfo bedFile)
-            => bedFile.ExistsNow()
-                ? CreateFromBedReader(BedReader.Create(bedFile))
+        {
+            var unzippedFileInfo = bedFile.GetUnzippedFileInfo();
+            return bedFile.ExistsNow()
+                ? CreateFromBedReader(BedReader.Create(unzippedFileInfo), bedFile)
                 : TypeCache<string, IncludeBedFile>.GetOrAdd(bedFile.FullName,
-                    () => CreateFromBedReader(BedReader.Create(bedFile)));
+                    () => CreateFromBedReader(BedReader.Create(unzippedFileInfo), bedFile));
+        }
 
         /// <summary>
         /// Creates a new instance of <see cref="IncludeBedFile"/> from a <see cref="BedReader"/>.
         /// </summary>
         /// <param name="bedReader">The source bed reader</param>
         [Pure]
-        public static IncludeBedFile CreateFromBedReader(BedReader bedReader)
-            => TypeCache<string, IncludeBedFile>.GetOrAdd(bedReader.FileSource.GetCompleteRealPath().FullName, () =>
+        public static IncludeBedFile CreateFromBedReader(BedReader bedReader, FileInfo originalFile)
+            => TypeCache<string, IncludeBedFile>.GetOrAdd(originalFile.FullName, () =>
                 new IncludeBedFile(new Lazy<GenomeIntervalTree<IContigAndInterval>>(
                         () => CreateGenomeIntervalTree(bedReader)),
                     new Lazy<FileInfo>(() => bedReader.FileSource)));

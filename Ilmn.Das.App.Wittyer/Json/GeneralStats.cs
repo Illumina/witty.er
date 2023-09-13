@@ -6,8 +6,8 @@ using Ilmn.Das.App.Wittyer.Results;
 using Ilmn.Das.App.Wittyer.Stats;
 using Ilmn.Das.App.Wittyer.Stats.Counts;
 using Ilmn.Das.App.Wittyer.Utilities;
+using Ilmn.Das.App.Wittyer.Utilities.Enums;
 using Ilmn.Das.App.Wittyer.Vcf.Variants;
-using JetBrains.Annotations;
 using Newtonsoft.Json;
 
 namespace Ilmn.Das.App.Wittyer.Json
@@ -23,7 +23,6 @@ namespace Ilmn.Das.App.Wittyer.Json
         /// <value>
         /// The command.
         /// </value>
-        [NotNull]
         public string Command { get; }
 
         /// <summary>
@@ -56,11 +55,10 @@ namespace Ilmn.Das.App.Wittyer.Json
         /// <value>
         /// The per sample stats.
         /// </value>
-        [NotNull]
         public IReadOnlyList<SampleStats> PerSampleStats { get; }
 
         [JsonConstructor]
-        private GeneralStats([CanBeNull] string cmd, [NotNull] IReadOnlyList<SampleStats> perSampleStats, double precision, double recall, double fscore)
+        private GeneralStats(string? cmd, IReadOnlyList<SampleStats> perSampleStats, double precision, double recall, double fscore)
         {
             Command = cmd ?? string.Empty;
             PerSampleStats = perSampleStats;
@@ -73,23 +71,19 @@ namespace Ilmn.Das.App.Wittyer.Json
         /// Creates the <see cref="GeneralStats"/> given the required objects.
         /// </summary>
         /// <param name="items">The items.</param>
-        /// <param name="isGenotypeEvaluated">if set to <c>true</c> [is genotype evaluated].</param>
         /// <param name="inputSpecs">The input specs.</param>
+        /// <param name="isCrossType"></param>
         /// <param name="cmd">The command.</param>
+        /// <param name="isSimilarityUsed"></param>
         /// <returns></returns>
-        [NotNull]
-        public static GeneralStats Create(
-            [NotNull] IEnumerable<(ISamplePair samplePair, IWittyerResult query, IWittyerResult truth)> items,
-            bool isGenotypeEvaluated, [NotNull] IReadOnlyDictionary<WittyerType, InputSpec> inputSpecs,
-            [CanBeNull] string cmd)
-        {
-            var benchmarkStats = items.Select(tuple => MainLauncher.GenerateSampleMetrics(tuple.truth,
-                    tuple.query, isGenotypeEvaluated, inputSpecs));
-            return Create(benchmarkStats, cmd);
-        }
+        public static Dictionary<(MatchEnum what, bool isGenotypeEvaluated), GeneralStats> Create(
+            IEnumerable<(ISamplePair samplePair, IWittyerResult query, IWittyerResult truth)> items,
+            IReadOnlyDictionary<WittyerType, InputSpec> inputSpecs, bool isCrossType, string? cmd, bool isSimilarityUsed = false)
+            => items.SelectMany(tuple => MainLauncher.GenerateSampleMetricsPerMatchEnum(tuple.truth,
+                    tuple.query, inputSpecs, isCrossType, isSimilarityUsed)).GroupBy(it => it.Key)
+                .ToDictionary(g => g.Key, g => Create(g.Select(x => x.Value), cmd));
 
-        [NotNull]
-        internal static GeneralStats Create([NotNull] IEnumerable<SampleMetrics> benchmarkResults, [CanBeNull] string cmd)
+        internal static GeneralStats Create(IEnumerable<SampleMetrics> benchmarkResults, string? cmd)
         {
             var perSampleStats = benchmarkResults.Select(SampleStats.Create).ToList();
 

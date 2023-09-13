@@ -1,7 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using Ilmn.Das.App.Wittyer.Utilities;
 using Ilmn.Das.Std.AppUtils.Comparers;
 using Ilmn.Das.Std.AppUtils.Intervals;
 using Ilmn.Das.Std.BioinformaticUtils.Contigs;

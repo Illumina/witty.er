@@ -1,5 +1,4 @@
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Ilmn.Das.App.Wittyer.Utilities;
@@ -19,8 +18,7 @@ namespace Ilmn.Das.App.Wittyer.Input
         /// <value>
         /// The name of the query sample.
         /// </value>
-        [CanBeNull]
-        string QuerySampleName { get; }
+        string? QuerySampleName { get; }
 
         /// <summary>
         /// Gets the name of the truth sample.
@@ -28,8 +26,7 @@ namespace Ilmn.Das.App.Wittyer.Input
         /// <value>
         /// The name of the truth sample.
         /// </value>
-        [CanBeNull]
-        string TruthSampleName { get; }
+        string? TruthSampleName { get; }
     }
 
     /// <inheritdoc />
@@ -50,7 +47,7 @@ namespace Ilmn.Das.App.Wittyer.Input
         /// <inheritdoc />
         public string TruthSampleName { get; }
 
-        private SamplePair([CanBeNull] string truth, [CanBeNull] string query)
+        private SamplePair(string? truth, string? query)
         {
             QuerySampleName = query;
             TruthSampleName = truth;
@@ -61,11 +58,11 @@ namespace Ilmn.Das.App.Wittyer.Input
         /// </summary>
         /// <param name="truthName">The truth.</param>
         /// <param name="queryName">The query.</param>
-        [NotNull, Pure]
-        public static ISamplePair Create([NotNull] string truthName, [NotNull] string queryName)
+        [Pure]
+        public static ISamplePair Create(string truthName, string queryName)
             => CreatePrivate(truthName, queryName);
 
-        private static ISamplePair CreatePrivate([CanBeNull] string truthName, [CanBeNull] string queryName)
+        private static ISamplePair CreatePrivate(string? truthName, string? queryName)
         {
             var invalidNames = new Dictionary<string, string>();
             if (truthName?.Any(InvalidChars.Contains) ?? false)
@@ -85,22 +82,21 @@ namespace Ilmn.Das.App.Wittyer.Input
         /// Initializes a new instance of the <see cref="SamplePair"/> class.
         /// </summary>
         /// <param name="truthName">The truth.</param>
-        [NotNull, Pure]
-        public static ISamplePair CreateTruthOnly([NotNull] string truthName)
+        [Pure]
+        public static ISamplePair CreateTruthOnly(string truthName)
             => CreatePrivate(truthName, null);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SamplePair"/> class.
         /// </summary>
         /// <param name="queryName">The truth.</param>
-        [NotNull, Pure]
-        public static ISamplePair CreateQueryOnly([NotNull] string queryName)
+        [Pure]
+        public static ISamplePair CreateQueryOnly(string queryName)
             => CreatePrivate(null, queryName);
 
         /// <summary>
         /// The pair with both values as null.
         /// </summary>
-        [NotNull]
         public static readonly ISamplePair NullPair = CreatePrivate(null, null);
 
         internal static readonly ISamplePair Default

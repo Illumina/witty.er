@@ -5,8 +5,6 @@ using Ilmn.Das.App.Wittyer.Vcf.Samples;
 using Ilmn.Das.App.Wittyer.Vcf.Variants.Annotations;
 using Ilmn.Das.Std.AppUtils.Intervals;
 using Ilmn.Das.Std.BioinformaticUtils.GenomicFeatures;
-using Ilmn.Das.Std.VariantUtils.Vcf.Variants;
-using JetBrains.Annotations;
 
 namespace Ilmn.Das.App.Wittyer.Vcf.Variants
 {
@@ -16,32 +14,32 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
         /// <summary>
         /// The type of Variant.
         /// </summary>
-        [NotNull]
         WittyerType VariantType { get; }
 
         /// <summary>
         /// The Witty.er size bin.
         /// </summary>
-        [NotNull]
         Winner Win { get; }
 
         /// <summary>
         /// The Interval around Position that CIPOS creates
         /// </summary>
-        [NotNull]
         IInterval<uint> CiPosInterval { get; }
 
         /// <summary>
         /// The Interval around END that CIEND creates
         /// </summary>
-        [NotNull]
         IInterval<uint> CiEndInterval { get; }
 
         /// <summary>
         /// The End Interval.
         /// </summary>
-        [NotNull]
         IContigAndInterval EndInterval { get; }
+        
+        /// <summary>
+        /// Gets the original 1-based END position of the vcf variant.
+        /// </summary>
+        uint EndRefPos { get; }
 
         /// <summary>
         ///     WHO, WHAT, WOW, WHERE in INFO field
@@ -49,27 +47,32 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
         /// <value>
         ///     The overlap information.
         /// </value>
-        [NotNull]
         IReadOnlyList<OverlapAnnotation> OverlapInfo { get; }
 
         /// <summary>
         /// The Sample associated with this variant.
         /// </summary>
-        [NotNull]
         IWittyerSample Sample { get; }
 
         /// <summary>
         /// The original variant associated with this variant.
         /// </summary>
-        [NotNull]
         IVcfVariant OriginalVariant { get; }
+        
+        /// <summary>
+        /// Missing for insertions of unknown length and translocations.
+        /// Note: For CN:TRs, the start and stop are adjusted such that start might not be the original pos anymore!!
+        /// </summary>
+        IInterval<uint>? SvLenInterval { get; }
     }
 
     internal interface IMutableWittyerSimpleVariant : IWittyerSimpleVariant
     {
         void AddToOverlapInfo(OverlapAnnotation newAnnotation);
 
+        new List<OverlapAnnotation> OverlapInfo { get; }
+
         void Finalize(WitDecision falseDecision, EvaluationMode mode,
-            [CanBeNull] GenomeIntervalTree<IContigAndInterval> includedRegions);
+            GenomeIntervalTree<IContigAndInterval>? includedRegions, int? maxMatches);
     }
 }

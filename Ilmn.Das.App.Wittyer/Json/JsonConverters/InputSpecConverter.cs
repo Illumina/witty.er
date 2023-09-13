@@ -24,7 +24,6 @@ namespace Ilmn.Das.App.Wittyer.Json.JsonConverters
         /// Initializes a new instance of the <see cref="InputSpecConverter"/> class.
         ///  </summary>
         [Pure]
-        [NotNull]
         public static JsonConverter<InputSpec> Create() 
             // can never share instances of JsonConverters.
             => new InputSpecConverter();
@@ -32,18 +31,17 @@ namespace Ilmn.Das.App.Wittyer.Json.JsonConverters
         {
         }
 
-        private static readonly ImmutableHashSet<string> TraFieldNames
-            = ImmutableHashSet.Create(WittyerSettings.VariantTypeName, BpDistanceName, IncludedFiltersName,
+        private static readonly ImmutableHashSet<string> AllRequired
+            = ImmutableHashSet.Create(WittyerSettings.VariantTypeName, IncludedFiltersName,
                 ExcludedFiltersName, IncludeBedName);
 
-        private static readonly ImmutableHashSet<string> InsFieldNames 
-            = TraFieldNames.Add(WittyerSettings.BinSizesName);
-
-        private static readonly ImmutableHashSet<string> AllFieldNames 
-            = InsFieldNames.Add(WittyerSettings.PercentDistanceName);
+        private static readonly ImmutableHashSet<string> AllFieldNames
+            = AllRequired.Add(WittyerSettings.BinSizesName).Add(WittyerSettings.PercentDistanceName)
+                .Add(WittyerSettings.BpDistanceName).Add(WittyerSettings.PercentThresholdName)
+                .Add(WittyerSettings.AbsoluteThresholdName);
 
         private static readonly JsonLoadSettings JsonLoadSettings 
-            = new JsonLoadSettings {DuplicatePropertyNameHandling = DuplicatePropertyNameHandling.Error};
+            = new() {DuplicatePropertyNameHandling = DuplicatePropertyNameHandling.Error};
 
         /// <inheritdoc />
         public override InputSpec ReadJson(JsonReader reader, Type objectType, InputSpec existingValue, 
@@ -61,8 +59,13 @@ namespace Ilmn.Das.App.Wittyer.Json.JsonConverters
                 var fieldNames = Enumerable.ToHashSet(fieldNamesList, StringComparer.OrdinalIgnoreCase);
 
                 // Check all field names are unique.
-                if (fieldNames.Count < fieldNamesList.Count)
-                    throw new JsonSerializationException("Setting contains duplicate field names in config file.");
+                if (fieldNames.Count < fieldNamesList.Count
+                    || fieldNames.Contains(WittyerSettings.BpDistanceName)
+                    && fieldNames.Contains(WittyerSettings.AbsoluteThresholdName)
+                    || fieldNames.Contains(WittyerSettings.PercentDistanceName)
+                    && fieldNames.Contains(WittyerSettings.PercentThresholdName))
+                    throw new JsonSerializationException(
+                        $"Setting contains duplicate field names in config file: {fieldNamesList.StringJoin(", ")}");
 
                 // Check that 'VariantType' field exists.
                 if (!fieldNames.Contains(WittyerSettings.VariantTypeName))
@@ -82,17 +85,29 @@ namespace Ilmn.Das.App.Wittyer.Json.JsonConverters
                 // Make sure the variant type is unique.
                 if (!_typeSet.Add(variantTypeEnum))
                     throw new JsonSerializationException($"Duplicate variant type '{variantType}' in the config file.");
-                
-                var expectedFieldNames = variantTypeEnum.HasBins
-                    ? variantTypeEnum.HasLengths ? AllFieldNames : InsFieldNames
-                    : TraFieldNames;
+
+                var expectedFieldNames = AllRequired;
+
+                if (variantTypeEnum.HasBins)
+                    expectedFieldNames = expectedFieldNames.Add(WittyerSettings.BinSizesName);
 
                 var missingFields = expectedFieldNames.Except(fieldNames);
+                if (!fieldNames.Contains(WittyerSettings.BpDistanceName) &&
+                    !fieldNames.Contains(WittyerSettings.AbsoluteThresholdName))
+                    missingFields = missingFields.Add(WittyerSettings.AbsoluteThresholdName);
+                if (variantTypeEnum.HasLengths
+                    && !fieldNames.Contains(WittyerSettings.PercentDistanceName)
+                    && !fieldNames.Contains(WittyerSettings.PercentThresholdName))
+                    missingFields = missingFields.Add(WittyerSettings.PercentThresholdName);
                 if (missingFields.Count > 0)
                     throw new JsonSerializationException(
                         $"Setting for variant type '{variantType}' did not contain required fields: {string.Join(", ", missingFields)}.");
 
-                unexpectedFields = fieldNames.Except(expectedFieldNames, StringComparer.Ordinal).StringJoin(", ");
+                unexpectedFields = fieldNames.Except(new[]
+                {
+                    WittyerSettings.PercentThresholdName, WittyerSettings.PercentDistanceName,
+                    WittyerSettings.BpDistanceName, WittyerSettings.AbsoluteThresholdName
+                }).Except(expectedFieldNames, StringComparer.Ordinal).StringJoin(", ");
                 if (unexpectedFields.Length > 0)
                     // Print a warning if unexpectedFields
                     Console.WriteLine($"Warning: {variantTypeEnum} type shouldn't " +
@@ -102,7 +117,7 @@ namespace Ilmn.Das.App.Wittyer.Json.JsonConverters
         }
 
         /// <inheritdoc />
-        public override void WriteJson(JsonWriter writer, InputSpec value, JsonSerializer serializer) 
+        public override void WriteJson(JsonWriter writer, InputSpec? value, JsonSerializer serializer) 
             => throw new NotSupportedException();
     }
 }

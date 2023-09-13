@@ -26,15 +26,15 @@ namespace Ilmn.Das.App.Wittyer.Test
         public void Bed_Counts_Bases_Of_FP_Events()
         {
             var outputDirectory = Path.GetRandomFileName().ToDirectoryInfo();
-            var inputSpecs = InputSpec.GenerateDefaultInputSpecs(false).Select(i => InputSpec.Create(i.VariantType, i.BinSizes,
-                    10000, i.PercentDistance, i.ExcludedFilters, i.IncludedFilters, IncludeBedFile.CreateFromBedFile(Bed)))
+            var inputSpecs = InputSpec.GenerateDefaultInputSpecs(true).Select(i => InputSpec.Create(i.VariantType, i.BinSizes,
+                    10000, i.PercentThreshold, i.ExcludedFilters, i.IncludedFilters, IncludeBedFile.CreateFromBedFile(Bed)))
                 .ToDictionary(i => i.VariantType, i => i);
             var wittyerSettings = WittyerSettings.Create(outputDirectory, Truth, Query,
                 ImmutableList<ISamplePair>.Empty, EvaluationMode.CrossTypeAndSimpleCounting,
                 inputSpecs);
 
             var (_, query, truth) = MainLauncher.GenerateResults(wittyerSettings).EnumerateSuccesses().First();
-            var results = MainLauncher.GenerateSampleMetrics(truth, query, false, inputSpecs);
+            var results = MainLauncher.GenerateSampleMetrics(truth, query, false, inputSpecs, true);
             // should be end of bed - start of query + 1 = 149835000 - 145395620 + 1 = 4439381
             MultiAssert.Equal(4439381U, results.OverallStats[StatsType.Base].QueryStats.TrueCount);
             MultiAssert.Equal(4439381U, results.OverallStats[StatsType.Base].TruthStats.TrueCount);

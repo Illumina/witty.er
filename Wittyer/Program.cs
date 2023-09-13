@@ -6,18 +6,18 @@ using Ilmn.Das.App.Wittyer.Input;
 using Ilmn.Das.App.Wittyer.Results;
 using Ilmn.Das.App.Wittyer.Stats;
 using Ilmn.Das.App.Wittyer.Utilities;
+using Ilmn.Das.App.Wittyer.Utilities.Enums;
 using Ilmn.Das.Core.BgZip;
 using Ilmn.Das.Core.Tries.Extensions;
 using Ilmn.Das.Std.AppUtils.Misc;
 using Ilmn.Das.Std.BioinformaticUtils.Tabix;
-using JetBrains.Annotations;
 using Newtonsoft.Json;
 
 namespace Wittyer
 {
     public class Program
     {
-        public static void Main([NotNull] string[] args)
+        public static int Main(string[] args)
         {
             if (args.Length == 0)
                 LaunchWittyerMain(new[] {"-h"});
@@ -28,7 +28,18 @@ namespace Wittyer
                 Environment.Exit(0);
             }
 
-            LaunchWittyerMain(args);
+            try
+            {
+                LaunchWittyerMain(args);
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine("witty.er failed!");
+                Console.Error.WriteLine(e.ToString());
+                return -1;
+            }
+
+            return 0;
         }
 
         private static void LaunchWittyerMain(string[] args)
@@ -56,13 +67,26 @@ namespace Wittyer
                 var _ = file.TryEnsureTabixed().GetOrDefault();
                 return tuple;
             });
-            var result = MainLauncher.GenerateJson(settings, results, cmd).GetOrThrow();
+            var resultsPerMatchEnum = MainLauncher.GenerateJson(settings, results, cmd);
 
-            using (var sw = new StreamWriter(Path.Combine(settings.OutputDirectory.FullName, "Wittyer.Stats.json")))
-                sw.Write(JsonConvert.SerializeObject(result, Formatting.Indented));
+            var mainKey = (Length: MatchEnum.Allele, settings.Mode == EvaluationMode.GenotypeMatching);
+            foreach (var (whatT, r) in resultsPerMatchEnum)
+            {
+                var txt = "";
+                if (whatT != mainKey)
+                {
+                    txt = $".{whatT.what}";
+                    if (whatT.isGenotypeEvaluated)
+                        txt += $"+{MatchEnum.Genotype}";
+                }
+                using var sw = new StreamWriter(Path.Combine(settings.OutputDirectory.FullName, $"Wittyer{txt}.Stats.json"));
+                sw.Write(JsonConvert.SerializeObject(r, Formatting.Indented));
+            }
+
+            var result = resultsPerMatchEnum[mainKey]; 
 
             using (var sw =
-                new StreamWriter(Path.Combine(settings.OutputDirectory.FullName, "Wittyer.ConfigFileUsed.json")))
+                   new StreamWriter(Path.Combine(settings.OutputDirectory.FullName, "Wittyer.ConfigFileUsed.json")))
                 sw.Write(settings.InputSpecs.Values.SerializeToString());
 
             Console.WriteLine("--------------------------------");
@@ -70,6 +94,24 @@ namespace Wittyer
             Console.WriteLine($"Overall EventPrecision: {result.EventPrecision:P3}");
             Console.WriteLine($"Overall EventRecall: {result.EventRecall:P3}");
             Console.WriteLine($"Overall EventFscore: {result.EventFscore:P3}");
+            if (settings.SimilarityThreshold > 0.0)
+            {
+                var resultSeq =
+                    resultsPerMatchEnum[(MatchEnum.Sequence, settings.Mode == EvaluationMode.GenotypeMatching)];
+                if (Math.Abs(resultSeq.EventPrecision - result.EventPrecision) > 0.000005 ||
+                    Math.Abs(resultSeq.EventRecall - result.EventRecall) > 0.000005)
+                {
+                    Console.WriteLine("--------------------------------");
+                    Console.WriteLine("Overall Stats with similarityThreshold:");
+                    Console.WriteLine(
+                        $"Overall EventPrecision with similarityThreshold: {resultSeq.EventPrecision:P3}");
+                    Console.WriteLine($"Overall EventRecall with similarityThreshold: {resultSeq.EventRecall:P3}");
+                    Console.WriteLine($"Overall EventFscore with similarityThreshold: {resultSeq.EventFscore:P3}");
+                    Console.WriteLine(
+                        $"For more detailed stats with similarityThreshold, check the {MatchEnum.Sequence} and {MatchEnum.PartialSequence} and {MatchEnum.Length} Wittyer.Stats.jsons.");
+                }
+            }
+
             Console.WriteLine("--------------------------------");
             Console.WriteLine(
                 "QuerySample\tTruthSample\tQueryTotal\tQueryTp\tQueryFp\tPrecision\tTruthTotal\tTruthTp\tTruthFn\tRecall\tFscore\t" +
@@ -109,6 +151,8 @@ namespace Wittyer
                     Console.WriteLine();
                 }
             }
+
+            return;
 
             string GenerateOutputFile(IWittyerResult queryResult, IWittyerResult truthResult)
                 => "Wittyer." +

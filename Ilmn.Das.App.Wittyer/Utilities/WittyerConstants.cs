@@ -1,9 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Reflection;
+using Bio.Algorithms.Alignment;
+using Bio.SimilarityMatrices;
 using Ilmn.Das.App.Wittyer.Input;
+using Ilmn.Das.App.Wittyer.Utilities.Enums;
 using Ilmn.Das.App.Wittyer.Vcf.Variants;
+using Ilmn.Das.Std.AppUtils.Collections;
+using Ilmn.Das.Std.AppUtils.Enums;
 using Ilmn.Das.Std.VariantUtils.VariantTypes;
 using Ilmn.Das.Std.VariantUtils.Vcf;
 using Ilmn.Das.Std.VariantUtils.Vcf.Headers.MetaInfoLines;
@@ -15,6 +21,60 @@ namespace Ilmn.Das.App.Wittyer.Utilities
     /// </summary>
     public static class WittyerConstants
     {
+        public static readonly IReadOnlyCollection<WittyerType> SequenceComparable = new HashSet<WittyerType>
+            { WittyerType.Insertion, WittyerType.Duplication };
+        
+        /// <summary>
+        /// Allele Match
+        /// </summary>
+        public static readonly MatchSet Unmatched =
+            new(ImmutableHashSet.Create(MatchEnum.Unmatched));
+        
+        /// <summary>
+        /// The default aligner to use.
+        /// </summary>
+        public static readonly NeedlemanWunschAligner Aligner = new()
+            { GapExtensionCost = 0, GapOpenCost = -1, SimilarityMatrix = new DiagonalSimilarityMatrix(1, 0) };
+
+        /// <summary>
+        /// The default alignment score threshold
+        /// </summary>
+        public const string EventTypeInfoKey = "EVENTTYPE";
+
+        /// <summary>
+        /// The default alignment score threshold
+        /// </summary>
+        public const double DefaultSimilarityThreshold = 0.7;
+        
+        /// <summary>
+        /// The default number of max matches a query can participate in.
+        /// </summary>
+        public const byte DefaultMaxMatches = 10;
+        
+        /// <summary>
+        /// An Id that is added to a vcf entry whenever it is split.
+        /// </summary>
+        public const string SplitAlleleIdPrefix = "WITTYER_SPLIT_ALLELE_ID_";
+        
+        /// <summary>
+        /// The INFO Key for RUL (Repeat Unit Length).
+        /// </summary>
+        public const string RulInfoKey = "RUL";
+        
+        /// <summary>
+        /// The INFO Key for RUS (Repeat Unit Sequence).
+        /// </summary>
+        public const string RusInfoKey = "RUS";
+
+        /// <summary>
+        /// The INFO Key for RUC (Repeat Unit Count).
+        /// </summary>
+        public const string RucInfoKey = "RUC";
+        
+        /// <summary>
+        /// The INFO Key for REFRUC (Ref Repeat Unit Count).
+        /// </summary>
+        public const string RefRucInfoKey = "REFRUC";
         /// <summary>
         /// The cipos
         /// </summary>
@@ -68,20 +128,20 @@ namespace Ilmn.Das.App.Wittyer.Utilities
         #region  input default stuff
 
         /// <summary>
-        /// The default bp overlap
+        /// The default absolute threshold
         /// </summary>
-        public const uint DefaultBpOverlap = 500;
+        public const uint DefaultAbsThreshold = 500;
 
         /// <summary>
-        /// The default pd
+        /// The default percent threshold
         /// </summary>
-        public const double DefaultPd = 0.25;
-
-        /// <summary>
-        /// The default bins
-        /// </summary>
-        public static readonly IImmutableList<(uint size, bool skip)> DefaultBins = ImmutableList.Create((1000U, false), (10000U, false));
+        public const double DefaultPercentThreshold = 0.25;
         
+        /// <summary>
+        /// The default TR absolute threshold
+        /// </summary>
+        public const decimal DefaultTrThreshold = 1.0M;
+
         /// <summary>
         /// The default includedFilter set
         /// </summary>
@@ -98,8 +158,15 @@ namespace Ilmn.Das.App.Wittyer.Utilities
         /// The default insertion <see cref="InputSpec"/>
         /// </summary>
         public static readonly InputSpec DefaultInsertionSpec
-            = InputSpec.Create(WittyerType.Insertion, DefaultBins,
-                100U, null, DefaultExcludeFilters, DefaultIncludeFilters, null);
+            = InputSpec.Create(WittyerType.Insertion, WittyerType.Insertion.DefaultBins,
+                250U, null, DefaultExcludeFilters, DefaultIncludeFilters, null);
+
+        /// <summary>
+        /// The default insertion <see cref="InputSpec"/>
+        /// </summary>
+        public static readonly InputSpec DefaultTandemRepeatSpec
+            = InputSpec.Create(WittyerType.CopyNumberTandemRepeat, WittyerType.CopyNumberTandemRepeat.DefaultBins,
+                DefaultTrThreshold, 0.1, DefaultExcludeFilters, DefaultIncludeFilters, null);
 
         #endregion
 
@@ -120,16 +187,13 @@ namespace Ilmn.Das.App.Wittyer.Utilities
         public const uint StartingBin = 1;
 
         /// <summary>
-        /// The maximum number of annotations to keep.
-        /// </summary>
-        public const ushort MaxNumberOfAnnotations = 10;
-
-        /// <summary>
         /// The base level stats type strings
         /// </summary>
         public static readonly IImmutableSet<string> BaseLevelStatsTypeStrings =
             ImmutableHashSet.Create(SvTypeStrings.Cnv, SvTypeStrings.Deletion, SvTypeStrings.Duplication);
-
+        
+        internal static readonly IImmutableList<string> PassFilterList = ImmutableList.Create<string>("PASS");
+        
         /// <summary>
         /// Constants for Json
         /// </summary>
@@ -214,10 +278,11 @@ namespace Ilmn.Das.App.Wittyer.Utilities
             /// </summary>
             public static readonly ITypedMetaInfoLine WhatMatchedTypeHeader = TypedMetaInfoLine.CreateSampleFormatLine(
                 WittyerMetaInfoLineKeys.What, TypeField.String, NumberField.Any,
-                "A list of match type for the top ten matches. Could be no match (.) " +
-                "or a list consisting of local match but genotype not matching (lm), " +
-                "local match with genotype match (lgm); allele match but genotype not matching (am), " +
-                "or allele match and genotype match (agm). When a list, it will match the order of WHO and WHERE.");
+                "A list of Pipe-separated (|) match sets for the top ten matches. Could be no match (.) "
+                + "or a list of combinations of different types of matches.  Different match types include:  "
+                + EnumUtils.GetValues<MatchEnum>().Select(it => $"{it} ({it.ToStringDescription()})").StringJoin(", ")
+                + ".  Example is a match that is in the right coordinate position and a genotype match and"
+                + " the right length and sequence matches (c|g|l|s). The list order matches that of WHO and WHERE.");
 
             /// <summary>
             /// The why failed reason header

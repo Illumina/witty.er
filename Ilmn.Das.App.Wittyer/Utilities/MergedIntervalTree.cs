@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Ilmn.Das.Std.AppUtils.Intervals;
 using Ilmn.Das.Std.AppUtils.Misc;
-using JetBrains.Annotations;
 
 namespace Ilmn.Das.App.Wittyer.Utilities
 {
@@ -64,7 +63,7 @@ namespace Ilmn.Das.App.Wittyer.Utilities
         /// </summary>
         /// <param name="intervals">The intervals to initialize the tree with.</param>
         /// <returns></returns>
-        internal static MergedIntervalTree<T> Create([CanBeNull] IEnumerable<IInterval<T>> intervals)
+        internal static MergedIntervalTree<T> Create(IEnumerable<IInterval<T>>? intervals)
         {
             var ret = new MergedIntervalTree<T>();
             if (intervals == null)
@@ -107,7 +106,7 @@ namespace Ilmn.Das.App.Wittyer.Utilities
         
         internal static IEnumerable<IInterval<T>> MergeInternal(IEnumerable<IInterval<T>> source, bool checkedOverlapping)
         {
-            IInterval<T> previousInterval = null;
+            IInterval<T>? previousInterval = null;
             var orderedEnumerable = source.OrderBy(x => x.Start).ThenBy(x => x.Stop).ToList();
             foreach (var interval in orderedEnumerable)
             {
@@ -127,8 +126,8 @@ namespace Ilmn.Das.App.Wittyer.Utilities
                 var (start, isStartInclusive, stop, isStopInclusive) = previousInterval;
                 var starts = (start, isStartInclusive);
                 var stops = (stop, isStopInclusive);
-                starts = MergedIntervalTree<T>.Compare(in starts, (interval.Start, interval.IsStartInclusive), true);
-                stops = MergedIntervalTree<T>.Compare(in stops, (interval.Stop, interval.IsStopInclusive), false);
+                starts = Compare(in starts, (interval.Start, interval.IsStartInclusive), true);
+                stops = Compare(in stops, (interval.Stop, interval.IsStopInclusive), false);
 
                 var isSame = Equals(starts.start, interval.Start)
                              && Equals(stops.stop, interval.Stop)

@@ -5,8 +5,7 @@ using Ilmn.Das.App.Wittyer.Vcf.Variants;
 using Ilmn.Das.Std.BioinformaticUtils.Contigs;
 using Ilmn.Das.Std.BioinformaticUtils.GenomicFeatures;
 using Ilmn.Das.Std.VariantUtils.Vcf.Headers;
-using Ilmn.Das.Std.VariantUtils.Vcf.Variants;
-using JetBrains.Annotations;
+
 
 namespace Ilmn.Das.App.Wittyer.Results
 {
@@ -14,18 +13,15 @@ namespace Ilmn.Das.App.Wittyer.Results
     {
         private readonly IMutableWittyerResult _baseResult;
 
-        internal readonly ConcurrentDictionary<WittyerType, GenomeIntervalTree<IMutableWittyerVariant>> VariantTrees
-            = new ConcurrentDictionary<WittyerType, GenomeIntervalTree<IMutableWittyerVariant>>();
+        internal readonly ConcurrentDictionary<WittyerType, GenomeIntervalTree<IMutableWittyerSimpleVariant>> VariantTrees
+            = new();
 
-        internal readonly ConcurrentDictionary<WittyerType, GenomeIntervalTree<IMutableWittyerBnd>> BpInsTrees
-            = new ConcurrentDictionary<WittyerType, GenomeIntervalTree<IMutableWittyerBnd>>();
+        internal readonly ConcurrentDictionary<WittyerType, GenomeIntervalTree<IMutableWittyerSimpleVariant>> BpInsTrees = new();
 
-        private TruthForest([CanBeNull] string sampleName, [NotNull] IVcfHeader vcfHeader)
+        private TruthForest(string? sampleName, IVcfHeader vcfHeader)
             => _baseResult = new MutableWittyerResult(sampleName, true, vcfHeader);
 
-        [NotNull]
-        internal static TruthForest Create([CanBeNull] string sampleName, [NotNull] IVcfHeader vcfHeader)
-            => new TruthForest(sampleName, vcfHeader);
+        internal static TruthForest Create(string? sampleName, IVcfHeader vcfHeader) => new(sampleName, vcfHeader);
 
         #region Implementation of IWittyerResult
 
@@ -68,11 +64,11 @@ namespace Ilmn.Das.App.Wittyer.Results
             {
                 case IMutableWittyerBnd bnd:
                     BpInsTrees.GetOrAdd(variant.VariantType, 
-                            _ => GenomeIntervalTree<IMutableWittyerBnd>.Create()).Add(bnd);
+                            _ => GenomeIntervalTree<IMutableWittyerSimpleVariant>.Create()).Add(bnd);
                     break;
                 case IMutableWittyerVariant cast:
                     VariantTrees.GetOrAdd(variant.VariantType,
-                        _ => GenomeIntervalTree<IMutableWittyerVariant>.Create()).Add(cast);
+                        _ => GenomeIntervalTree<IMutableWittyerSimpleVariant>.Create()).Add(cast);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(
@@ -84,11 +80,11 @@ namespace Ilmn.Das.App.Wittyer.Results
         public void AddUnsupported(IVcfVariant variant) => _baseResult.AddUnsupported(variant);
 
         /// <inheritdoc />
-        public IEnumerable<IReadOnlyCollection<IMutableWittyerVariant>> VariantsInternal 
+        public IEnumerable<IReadOnlyCollection<IMutableWittyerSimpleVariant>> VariantsInternal 
             => _baseResult.VariantsInternal;
 
         /// <inheritdoc />
-        public IEnumerable<IReadOnlyCollection<IMutableWittyerBnd>> BreakendPairsInternal 
+        public IEnumerable<IReadOnlyCollection<IMutableWittyerSimpleVariant>> BreakendPairsInternal 
             => _baseResult.BreakendPairsInternal;
 
         #endregion

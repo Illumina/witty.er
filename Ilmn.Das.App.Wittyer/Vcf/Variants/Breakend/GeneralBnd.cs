@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using Ilmn.Das.App.Wittyer.Utilities;
+using Ilmn.Das.App.Wittyer.Vcf.Samples;
 using Ilmn.Das.Core.Tries;
 using Ilmn.Das.Std.AppUtils.Intervals;
 using Ilmn.Das.Std.BioinformaticUtils.Bed;
@@ -8,10 +9,7 @@ using Ilmn.Das.Std.BioinformaticUtils.Contigs;
 using Ilmn.Das.Std.BioinformaticUtils.GenomicFeatures;
 using Ilmn.Das.Std.BioinformaticUtils.Nucleotides;
 using Ilmn.Das.Std.VariantUtils.SimpleVariants;
-using Ilmn.Das.Std.VariantUtils.Vcf;
-using Ilmn.Das.Std.VariantUtils.Vcf.Variants;
 using Ilmn.Das.Std.VariantUtils.Vcf.Variants.Alleles.BreakEnds;
-using Ilmn.Das.Std.VariantUtils.Vcf.Variants.Samples;
 using JetBrains.Annotations;
 
 namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Breakend
@@ -40,7 +38,7 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Breakend
         public uint Position => _baseVariant.Position;
 
         /// <inheritdoc />
-        public bool Equals(ISimpleVariant other) 
+        public bool Equals(ISimpleVariant? other) 
             => SimpleVariantEqualityComparer.Instance.Equals(this, other);
 
         /// <inheritdoc />
@@ -50,7 +48,7 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Breakend
         public DnaString Ref => _baseVariant.Ref;
 
         /// <inheritdoc />
-        public bool Equals(IVcfVariant other) 
+        public bool Equals(IVcfVariant? other) 
             => VcfVariantEqualityComparer.Instance.Equals(this, other);
 
         /// <inheritdoc />
@@ -75,10 +73,10 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Breakend
         public ISimpleBreakEnd Mate { get; }
 
         /// <inheritdoc />
-        public int CompareTo(IInterval<uint> other) => _interval.CompareTo(other);
+        public int CompareTo(IInterval<uint>? other) => _interval.CompareTo(other);
         
         /// <inheritdoc />
-        public bool Equals(IInterval<uint> other) => _interval.Equals(other);
+        public bool Equals(IInterval<uint>? other) => _interval.Equals(other);
 
         /// <inheritdoc />
         public uint Start => _interval.Start;
@@ -93,11 +91,11 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Breakend
         public bool IsStopInclusive => _interval.IsStopInclusive;
 
         /// <inheritdoc />
-        public int CompareTo(IContigAndInterval other) 
+        public int CompareTo(IContigAndInterval? other) 
             => ContigAndIntervalComparer.Default.Compare(this, other);
         
         /// <inheritdoc />
-        public bool Equals(IContigAndInterval other) 
+        public bool Equals(IContigAndInterval? other) 
             => ContigAndIntervalComparer.Default.Equals(this, other);
 
         /// <summary>
@@ -106,9 +104,8 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Breakend
         /// <param name="variant">The variant.</param>
         /// <returns></returns>
         /// <exception cref="InvalidDataException">Invalid breakend because neither the alt didn't start or end with ref's first base: {variant}</exception>
-        [NotNull]
         [Pure]
-        public static IGeneralBnd CreateFromVariant([NotNull] IVcfVariant variant)
+        public static IGeneralBnd CreateFromVariant(IVcfVariant variant)
         {
             var altBnd = variant.GetSingleAlt();
 

@@ -1,5 +1,4 @@
-﻿using Ilmn.Das.Std.VariantUtils.Vcf.Variants;
-using Ilmn.Das.Std.VariantUtils.Vcf.Variants.Alleles.BreakEnds;
+﻿using Ilmn.Das.Std.VariantUtils.Vcf.Variants.Alleles.BreakEnds;
 
 namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Breakend
 {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 
 namespace Ilmn.Das.App.Wittyer.Input
 {
@@ -9,16 +10,19 @@ namespace Ilmn.Das.App.Wittyer.Input
     public enum EvaluationMode
     {
         /// <summary>
-        /// The default aka Genotype comparison and not-crosstype
-        /// </summary>
-        Default = 0,
-        /// <summary>
         /// Simple counting mode
         /// </summary>
-        SimpleCounting = 1,
+        [Description("sc")]
+        SimpleCounting = 0,
+        /// <summary>
+        /// The Genotype comparison mode when Genotype needs to be exactly the same before we count them as a match and not-crosstype
+        /// </summary>
+        [Description("gm")]
+        GenotypeMatching,
         /// <summary>
         /// cross type and simple counting mode
         /// </summary>
+        [Description("cts")]
         CrossTypeAndSimpleCounting
     }
 }

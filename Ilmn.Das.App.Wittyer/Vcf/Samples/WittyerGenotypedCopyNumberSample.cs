@@ -2,7 +2,6 @@
 using Ilmn.Das.App.Wittyer.Utilities.Enums;
 using Ilmn.Das.App.Wittyer.Vcf.Variants.Genotype;
 using Ilmn.Das.Std.VariantUtils.Vcf.Variants.Samples;
-using JetBrains.Annotations;
 
 namespace Ilmn.Das.App.Wittyer.Vcf.Samples
 {
@@ -15,16 +14,12 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Samples
     {
         internal readonly WittyerCopyNumberSample BaseSample;
 
-        public IVcfSample GetOriginalSample()
-        {
-            return BaseSample.GetOriginalSample();
-        }
-
+        public IVcfSample OriginalSample => BaseSample.OriginalSample;
         public WitDecision Wit => BaseSample.Wit;
-        public IImmutableList<MatchEnum> What => BaseSample.What;
+        public IImmutableList<MatchSet> What => BaseSample.What;
         public IImmutableList<FailedReason> Why => BaseSample.Why;
         public IGenotypeInfo Gt { get; }
-        public uint? Cn => BaseSample.Cn;
+        public decimal? Cn => BaseSample.Cn;
 
         private WittyerGenotypedCopyNumberSample(WittyerCopyNumberSample sample, IGenotypeInfo gt)
         {
@@ -32,9 +27,7 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Samples
             Gt = gt;
         }
 
-        [NotNull]
-        internal static WittyerGenotypedCopyNumberSample Create([NotNull] WittyerCopyNumberSample sample, 
-            [NotNull] IGenotypeInfo gt) 
-            => new WittyerGenotypedCopyNumberSample(sample, gt);
+        internal static WittyerGenotypedCopyNumberSample Create(WittyerCopyNumberSample sample, IGenotypeInfo gt) =>
+            new(sample, gt);
     }
 }

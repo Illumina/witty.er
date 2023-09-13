@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 
 namespace Ilmn.Das.App.Wittyer.Stats.Counts
 {
@@ -19,21 +18,19 @@ namespace Ilmn.Das.App.Wittyer.Stats.Counts
             QueryStats = query;
         }
 
-        [NotNull]
-        public static MutableEventStats Create(IMutableEventStatsCount query, IMutableEventStatsCount truth) 
-            => new MutableEventStats(query, truth);
+        public static MutableEventStats Create(IMutableEventStatsCount query, IMutableEventStatsCount truth) =>
+            new(query, truth);
 
-        [NotNull]
         public static MutableEventStats Create() 
             => Create(MutableEventStatsCount.Create(), MutableEventStatsCount.Create());
 
         public IMutableEventStatsCount TruthStats { get; }
         public IMutableEventStatsCount QueryStats { get; }
 
-        public bool Equals([NotNull] IMutableStats other) =>
+        public bool Equals(IMutableStats other) =>
             Equals(TruthStats, other.TruthStats) && Equals(QueryStats, other.QueryStats);
 
-        public override bool Equals([CanBeNull] object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is null) return false;
             if (ReferenceEquals(this, obj)) return true;
@@ -66,12 +63,10 @@ namespace Ilmn.Das.App.Wittyer.Stats.Counts
             _eventStatsCount = eventCount;
         }
 
-        [NotNull]
         internal static MutableEventAndBasesStats Create(IMutableBaseStatsCount truthBaseCount,
-            IMutableBaseStatsCount queryBaseCount, IMutableStats eventCount)
-            => new MutableEventAndBasesStats(truthBaseCount, queryBaseCount, eventCount);
+            IMutableBaseStatsCount queryBaseCount, IMutableStats eventCount) =>
+            new(truthBaseCount, queryBaseCount, eventCount);
 
-        [NotNull]
         internal static MutableEventAndBasesStats Create()
             => Create(MutableBaseStatsCount.Create(), MutableBaseStatsCount.Create(),
                 MutableEventStats.Create());
@@ -83,7 +78,7 @@ namespace Ilmn.Das.App.Wittyer.Stats.Counts
             => _eventStatsCount.Equals(other) 
                && TruthBaseStats.Equals(other.TruthBaseStats) && QueryBaseStats.Equals(other.QueryBaseStats);
 
-        public override bool Equals([CanBeNull] object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is null) return false;
             if (ReferenceEquals(this, obj)) return true;

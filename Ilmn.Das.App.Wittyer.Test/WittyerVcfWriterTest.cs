@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using Ilmn.Das.App.Wittyer.Results;
+using Ilmn.Das.App.Wittyer.Vcf.Readers;
 using Ilmn.Das.App.Wittyer.Vcf.Variants;
 using Ilmn.Das.Core.Tries.Extensions;
 using Ilmn.Das.Std.AppUtils.Collections;
@@ -11,8 +12,6 @@ using Ilmn.Das.Std.BioinformaticUtils.Contigs;
 using Ilmn.Das.Std.VariantUtils.SimpleVariants;
 using Ilmn.Das.Std.VariantUtils.Vcf;
 using Ilmn.Das.Std.VariantUtils.Vcf.Headers;
-using Ilmn.Das.Std.VariantUtils.Vcf.Parsers;
-using Ilmn.Das.Std.VariantUtils.Vcf.Variants;
 using Xunit;
 
 namespace Ilmn.Das.App.Wittyer.Test
@@ -73,8 +72,8 @@ namespace Ilmn.Das.App.Wittyer.Test
             var parser = VcfVariantParserSettings.Create(ImmutableList.Create(SampleName));
             var variants = VcfVariant.TryParse(Bnd1, parser).FollowedBy(VcfVariant.TryParse(Bnd2, parser)).EnumerateSuccesses().ToList();
             var wittyerVariant = WittyerBndInternal.Create(variants[0],
-                variants[0].ToTryOfGenotypedVcfVariant(VariantNormalizer.TrimCommonBases).GetOrThrow().Samples.Values.First(),
-                WittyerType.IntraChromosomeBreakend, new List<uint>(), uint.MinValue, null, variants[1]);
+                variants[0].Samples.Values[0],
+                WittyerType.IntraChromosomeBreakend, new List<(uint, bool)>(), uint.MinValue, null, variants[1]);
             var headerLines = WittyerVcfWriter.GenerateVcfStrings(
                     WittyerResult.Create(VcfHeader.CreateBuilder(VcfVersion.FourPointOne).Build(), SampleName,
                         variants.Select(v => v.Contig).Distinct().ToList(), false,

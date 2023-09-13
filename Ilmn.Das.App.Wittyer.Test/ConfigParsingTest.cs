@@ -24,7 +24,7 @@ namespace Ilmn.Das.App.Wittyer.Test
             "Path 'variantType', line 2, position 16.";
 
         [Theory]
-        [InlineData("Config-missing-field.json", "Setting for variant type 'Deletion' did not contain required fields: bpDistance.")]
+        [InlineData("Config-missing-field.json", "Setting for variant type 'Deletion' did not contain required fields: absoluteThreshold.")]
         [InlineData("Config-duplicate-sv-type.json", "Duplicate variant type 'Deletion' in the config file.")]
         [InlineData("Config-unrecognized-sv-type.json", "Unknown variant type 'Unrecognizable' in the config file.")]
         [InlineData("Config-unrecognized-field.json", "Unrecognized field names in config file: unrecognizedField.")]

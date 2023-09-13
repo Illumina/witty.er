@@ -1,9 +1,9 @@
 ﻿using System.Collections.Immutable;
+using Ilmn.Das.App.Wittyer.Vcf.Readers;
 using Ilmn.Das.App.Wittyer.Vcf.Variants;
 using Ilmn.Das.Core.Tries.Extensions;
 using Ilmn.Das.Std.AppUtils.Intervals;
-using Ilmn.Das.Std.VariantUtils.Vcf.Parsers;
-using Ilmn.Das.Std.VariantUtils.Vcf.Variants;
+
 using Ilmn.Das.Std.XunitUtils;
 using Xunit;
 

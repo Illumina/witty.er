@@ -1,10 +1,11 @@
 ﻿using System.Collections.Immutable;
 using System.IO;
 using Ilmn.Das.App.Wittyer.Utilities.Enums;
+using Ilmn.Das.App.Wittyer.Vcf.Variants;
 using Ilmn.Das.App.Wittyer.Vcf.Variants.Genotype;
 using Ilmn.Das.Std.VariantUtils.Vcf;
-using Ilmn.Das.Std.VariantUtils.Vcf.Variants;
 using Ilmn.Das.Std.VariantUtils.Vcf.Variants.Samples;
+
 using JetBrains.Annotations;
 
 namespace Ilmn.Das.App.Wittyer.Vcf.Samples
@@ -23,8 +24,7 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Samples
         /// <returns></returns>
         /// <exception cref="InvalidDataException"></exception>
         [Pure]
-        [NotNull]
-        public static IWittyerSample CreateFromVariant(IVcfVariant baseVariant, [CanBeNull] IVcfSample sample, bool isReference)
+        public static IWittyerSample CreateFromVariant(IVcfVariant baseVariant, IVcfSample? sample, bool isReference)
         {
             if (isReference)
                 return CreateReferenceSample(baseVariant, sample);
@@ -39,13 +39,12 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Samples
             if (!sample.SampleDictionary.TryGetValue(VcfConstants.CnSampleFieldKey, out var cnString))
                 return hasGt
                     ? WittyerGenotypedSample.Create(wittyerSample, GenotypeInfo.CreateFromSample(sample))
-                        as IWittyerSample
                     : wittyerSample;
 
-            uint? cnNumber;
+            decimal? cnNumber;
             if (cnString == VcfConstants.MissingValueString)
                 cnNumber = null;
-            else if (uint.TryParse(cnString, out var cnNumberLocal))
+            else if (decimal.TryParse(cnString, out var cnNumberLocal))
                 cnNumber = cnNumberLocal;
             else
                 throw new InvalidDataException($"{VcfConstants.CnSampleFieldKey} does not have a valid value in {baseVariant}");
@@ -66,13 +65,11 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Samples
         /// <param name="why">The why.</param>
         /// <returns></returns>
         [Pure]
-        [NotNull]
-        public static IWittyerSample Create([NotNull] IVcfSample baseSample, WitDecision wit,
-            [NotNull] IImmutableList<MatchEnum> what, [NotNull] IImmutableList<FailedReason> why)
+        public static IWittyerSample Create(IVcfSample baseSample, WitDecision wit,
+            IImmutableList<MatchSet> what, ImmutableList<FailedReason> why)
             => WittyerSampleInternal.Create(baseSample, wit, what, why);
 
-        [NotNull]
-        internal static IWittyerGenotypedCopyNumberSample CreateReferenceSample([NotNull] IVcfVariant baseVariant, [CanBeNull] IVcfSample sample)
+        internal static IWittyerGenotypedCopyNumberSample CreateReferenceSample(IVcfVariant baseVariant, IVcfSample? sample)
         {
             var ploidy = 2;
             if (sample == null)
@@ -95,30 +92,28 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Samples
 
     internal class WittyerSampleInternal : IWittyerSample
     {
-        private readonly IVcfSample _baseSample;
-        public IVcfSample GetOriginalSample() => _baseSample;
+        public IVcfSample? OriginalSample { get; }
+
         public WitDecision Wit { get; internal set; }
-        public IImmutableList<MatchEnum> What { get; internal set; }
+        public IImmutableList<MatchSet> What { get; internal set; }
         public IImmutableList<FailedReason> Why { get; internal set; }
 
-        private WittyerSampleInternal(IVcfSample baseSample, WitDecision wit,
-            [NotNull] IImmutableList<MatchEnum> what, [NotNull] IImmutableList<FailedReason> why)
+        private WittyerSampleInternal(IVcfSample? baseSample, WitDecision wit,
+            IImmutableList<MatchSet> what, IImmutableList<FailedReason> why)
         {
-            _baseSample = baseSample;
+            OriginalSample = baseSample;
             Wit = wit;
             What = what;
             Why = why;
         }
         
-        [NotNull]
-        internal static WittyerSampleInternal Create([CanBeNull] IVcfSample baseSample) 
-            => new WittyerSampleInternal(baseSample, WitDecision.NotAssessed,
-            ImmutableList<MatchEnum>.Empty,
+        internal static WittyerSampleInternal Create(IVcfSample? baseSample) 
+            => new(baseSample, WitDecision.NotAssessed,
+            ImmutableList<MatchSet>.Empty, 
             ImmutableList<FailedReason>.Empty);
 
-        [NotNull]
-        internal static WittyerSampleInternal Create([NotNull] IVcfSample baseSample, WitDecision wit,
-            [NotNull] IImmutableList<MatchEnum> what, [NotNull] IImmutableList<FailedReason> why)
-            => new WittyerSampleInternal(baseSample, wit, what, why);
+        internal static WittyerSampleInternal Create(IVcfSample baseSample, WitDecision wit,
+            IImmutableList<MatchSet> what, ImmutableList<FailedReason> why)
+            => new(baseSample, wit, what, why);
     }
 }

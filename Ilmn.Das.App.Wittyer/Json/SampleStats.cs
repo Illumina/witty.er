@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Ilmn.Das.App.Wittyer.Infrastructure;
 using Ilmn.Das.App.Wittyer.Input;
 using Ilmn.Das.App.Wittyer.Stats;
 using Ilmn.Das.Std.AppUtils.Collections;
-using JetBrains.Annotations;
 using Newtonsoft.Json;
 
 namespace Ilmn.Das.App.Wittyer.Json
@@ -39,7 +39,7 @@ namespace Ilmn.Das.App.Wittyer.Json
         public IReadOnlyList<SvTypeJsonStats> DetailedStats { get; }
 
         [JsonConstructor]
-        private SampleStats([NotNull] ISamplePair samplePair, IReadOnlyList<BasicJsonStats> overallStats,
+        private SampleStats(ISamplePair samplePair, IReadOnlyList<BasicJsonStats> overallStats,
             IReadOnlyList<SvTypeJsonStats> detailedStats)
         {
             _samplePair = samplePair;
@@ -50,14 +50,15 @@ namespace Ilmn.Das.App.Wittyer.Json
         /// <summary>
         /// Initializes a new instance of the <see cref="SampleStats"/> class from the given benchmarkResults.
         /// </summary>
-        [NotNull]
-        public static SampleStats Create([NotNull] SampleMetrics benchmarkResults)
+        public static SampleStats Create(SampleMetrics benchmarkResults)
         {
             var overallStats = benchmarkResults.OverallStats.Select(kvp => BasicJsonStats.Create(kvp.Key,
                 kvp.Value.TruthStats.TrueCount, kvp.Value.TruthStats.FalseCount, kvp.Value.QueryStats.TrueCount,
                 kvp.Value.QueryStats.FalseCount)).ToReadOnlyList();
 
-            var detailedStats = benchmarkResults.DetailedStats.Select(kvp => kvp.Value).OrderBy(b => b.Category.Name)
+            var detailedStats = benchmarkResults.DetailedStats.Select(kvp => kvp.Value)
+                .OrderBy(b => b.Category.MainType.ToString())
+                .ThenBy(b => b.Category is Category c ? c.SecondaryType.ToString() : "")
                 .Select(SvTypeJsonStats.Create).ToReadOnlyList();
 
             return new SampleStats(benchmarkResults.SamplePair, overallStats, detailedStats);

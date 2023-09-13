@@ -78,16 +78,14 @@ namespace Ilmn.Das.App.Wittyer.Stats
         /// <param name="category">The category.</param>
         /// <param name="overallStats">The overall stats.</param>
         /// <param name="binnedStats">The binned stats.</param>
-        [NotNull]
         [Pure]
         public static IBenchmarkMetrics<T> Create(T category, IImmutableDictionary<StatsType, IStatsUnit> overallStats,
             IReadOnlyList<IPerBinStats> binnedStats)
             => new BenchmarkMetrics<T>(category, overallStats, binnedStats);
 
-        [NotNull]
         internal static IBenchmarkMetrics<T> Create(T category,
-            [NotNull] IImmutableDictionary<StatsType, IStatsUnit> overallBaseStats,
-            [NotNull] BinnedDictionary binnedDictionary)
+            IImmutableDictionary<StatsType, IStatsUnit> overallBaseStats,
+            BinnedDictionary binnedDictionary)
         {
             var binnedStats = new List<IPerBinStats>();
             uint perTypeTruthTp = 0, perTypeTruthFp = 0, perTypeQueryTp = 0, perTypeQueryFp = 0;
@@ -95,7 +93,7 @@ namespace Ilmn.Das.App.Wittyer.Stats
             foreach (var (bin, stats) in binnedDictionary)
             {
                 // If the bin of this bin group was marked to be skipped, mark it as skipped don't calculate stats for it.
-                if (binnedDictionary.Bins.First(sizeSkipTuple => sizeSkipTuple.size == bin).skip)
+                if (bin != null && binnedDictionary.Bins.First(sizeSkipTuple => sizeSkipTuple.size == bin.Value).skip)
                 {
                     binnedStats.Add(PerBinStats.Create(bin, true, ImmutableDictionary<StatsType, IStatsUnit>.Empty));
                     continue;
@@ -125,7 +123,7 @@ namespace Ilmn.Das.App.Wittyer.Stats
                         break;
                     default:
                         throw new InvalidDataException(
-                            $"Found a type {bin.GetType().Name} which cannot be converted to {typeof(BenchmarkMetrics<T>)}");
+                            $"Found a type {category} which cannot be converted to {typeof(BenchmarkMetrics<T>)}!");
                 }
             }
 

@@ -12,6 +12,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Readmes", "Readmes", "{C30AA211-D9AE-474B-9340-66E7636F307D}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
+		Dockerfile = Dockerfile
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ReleaseNotes", "ReleaseNotes", "{F1D00B2C-E9A7-4AAA-ACDE-72572A9A0FA6}"
@@ -29,6 +30,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ReleaseNotes", "ReleaseNote
 		docs\release-notes\v0.3.4.md = docs\release-notes\v0.3.4.md
 		docs\release-notes\v0.3.5.md = docs\release-notes\v0.3.5.md
 		docs\release-notes\v0.3.5.1.md = docs\release-notes\v0.3.5.1.md
+		docs\release-notes\v0.4.0.md = docs\release-notes\v0.4.0.md
+		docs\release-notes\v0.4.1.md = docs\release-notes\v0.4.1.md
+		docs\release-notes\v0.5.0.md = docs\release-notes\v0.5.0.md
+		docs\release-notes\v0.5.1.md = docs\release-notes\v0.5.1.md
+		docs\release-notes\v0.5.2.md = docs\release-notes\v0.5.2.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{3CCBABA0-BF50-4691-86B3-B2AC662A4F30}"
@@ -55,7 +61,16 @@ ProjectSection(SolutionItems) = preProject
 	docs\examples\SV\output\Wittyer.ConfigFileUsed.json = docs\examples\SV\output\Wittyer.ConfigFileUsed.json
 	docs\examples\SV\output\Wittyer.HG002.Vs.HG2.vcf.gz = docs\examples\SV\output\Wittyer.HG002.Vs.HG2.vcf.gz
 	docs\examples\SV\output\Wittyer.HG002.Vs.HG2.vcf.gz.tbi = docs\examples\SV\output\Wittyer.HG002.Vs.HG2.vcf.gz.tbi
+	docs\examples\SV\output\Wittyer.Coordinate.Stats.json = docs\examples\SV\output\Wittyer.Coordinate.Stats.json
+	docs\examples\SV\output\Wittyer.Coordinate+Genotype.Stats.json = docs\examples\SV\output\Wittyer.Coordinate+Genotype.Stats.json
+	docs\examples\SV\output\Wittyer.Length+Genotype.Stats.json = docs\examples\SV\output\Wittyer.Length+Genotype.Stats.json
+	docs\examples\SV\output\Wittyer.PartialSequence.Stats.json = docs\examples\SV\output\Wittyer.PartialSequence.Stats.json
+	docs\examples\SV\output\Wittyer.PartialSequence+Genotype.Stats.json = docs\examples\SV\output\Wittyer.PartialSequence+Genotype.Stats.json
+	docs\examples\SV\output\Wittyer.Sequence.Stats.json = docs\examples\SV\output\Wittyer.Sequence.Stats.json
+	docs\examples\SV\output\Wittyer.Sequence+Genotype.Stats.json = docs\examples\SV\output\Wittyer.Sequence+Genotype.Stats.json
 	docs\examples\SV\output\Wittyer.Stats.json = docs\examples\SV\output\Wittyer.Stats.json
+	docs\examples\SV\output\Wittyer.Length.Stats.json = docs\examples\SV\output\Wittyer.Length.Stats.json
+	docs\examples\SV\output\Wittyer.Allele+Genotype.Stats.json = docs\examples\SV\output\Wittyer.Allele+Genotype.Stats.json
 EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "output", "output", "{CA36CA82-F8E1-445B-9B1F-D08DE432C923}"
@@ -64,7 +79,25 @@ ProjectSection(SolutionItems) = preProject
 	docs\examples\CNV\output\Wittyer.HG002.Vs.PrecisionFDA_HG002.vcf.gz = docs\examples\CNV\output\Wittyer.HG002.Vs.PrecisionFDA_HG002.vcf.gz
 	docs\examples\CNV\output\Wittyer.HG002.Vs.PrecisionFDA_HG002.vcf.gz.tbi = docs\examples\CNV\output\Wittyer.HG002.Vs.PrecisionFDA_HG002.vcf.gz.tbi
 	docs\examples\CNV\output\Wittyer.Stats.json = docs\examples\CNV\output\Wittyer.Stats.json
+	docs\examples\CNV\output\Wittyer.Coordinate.Stats.json = docs\examples\CNV\output\Wittyer.Coordinate.Stats.json
+	docs\examples\CNV\output\Wittyer.Coordinate+Genotype.Stats.json = docs\examples\CNV\output\Wittyer.Coordinate+Genotype.Stats.json
+	docs\examples\CNV\output\Wittyer.Length+Genotype.Stats.json = docs\examples\CNV\output\Wittyer.Length+Genotype.Stats.json
+	docs\examples\CNV\output\Wittyer.PartialSequence.Stats.json = docs\examples\CNV\output\Wittyer.PartialSequence.Stats.json
+	docs\examples\CNV\output\Wittyer.PartialSequence+Genotype.Stats.json = docs\examples\CNV\output\Wittyer.PartialSequence+Genotype.Stats.json
+	docs\examples\CNV\output\Wittyer.Sequence.Stats.json = docs\examples\CNV\output\Wittyer.Sequence.Stats.json
+	docs\examples\CNV\output\Wittyer.Sequence+Genotype.Stats.json = docs\examples\CNV\output\Wittyer.Sequence+Genotype.Stats.json
+	docs\examples\CNV\output\Wittyer.Allele+Genotype.Stats.json = docs\examples\CNV\output\Wittyer.Allele+Genotype.Stats.json
+	docs\examples\CNV\output\Wittyer.Length.Stats.json = docs\examples\CNV\output\Wittyer.Length.Stats.json
 EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pics", "pics", "{B5859DB7-0F36-46FE-A3F5-63087532FED2}"
+	ProjectSection(SolutionItems) = preProject
+		docs\Deletion_fp_example.png = docs\Deletion_fp_example.png
+		docs\Deletion_tp_example.png = docs\Deletion_tp_example.png
+		docs\pt_and_at_demo.png = docs\pt_and_at_demo.png
+		docs\pt_and_at_example1.png = docs\pt_and_at_example1.png
+		docs\pt_and_at_example2.png = docs\pt_and_at_example2.png
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

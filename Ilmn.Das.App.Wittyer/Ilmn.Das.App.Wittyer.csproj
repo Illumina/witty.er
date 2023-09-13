@@ -1,18 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
-    <Version>0.3.5.1</Version>
-    <AssemblyVersion>0.3.5.1</AssemblyVersion>
-    <FileVersion>0.3.5.1</FileVersion>
+    <TargetFramework>net6.0</TargetFramework>
+    <Version>0.4.0.0</Version>
+    <AssemblyVersion>0.5.2.0</AssemblyVersion>
+    <FileVersion>0.5.2.0</FileVersion>
+    <PackageVersion>0.5.2.0</PackageVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>default</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>default</LangVersion>
     <DocumentationFile>bin\Debug\netcoreapp2.0\Ilmn.Das.App.Wittyer.xml</DocumentationFile>
   </PropertyGroup>
 
@@ -28,6 +30,7 @@
 
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="11.1.0" />
+    <PackageReference Include="NetBio.Core" Version="3.0.0-alpha" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.1">
       <PrivateAssets>all</PrivateAssets>
@@ -69,9 +72,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="BlockCompression.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="lib\Ilmn.Das.Core.BgZip.dll">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
@@ -92,15 +92,6 @@
     </None>
     <None Update="lib\Ilmn.Das.Std.VariantUtils.dll">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
-    <None Update="BlockCompression.so">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="BlockCompression.dylib">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="BlockCompression.pdb">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 

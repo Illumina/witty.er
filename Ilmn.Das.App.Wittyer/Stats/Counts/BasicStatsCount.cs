@@ -49,15 +49,13 @@ namespace Ilmn.Das.App.Wittyer.Stats.Counts
         /// </summary>
         /// <param name="trueCount">The true count.</param>
         /// <param name="falseCount">The false count.</param>
-        [NotNull]
         [Pure]
         public static IBasicStatsCount Create(uint trueCount, uint falseCount) 
             => new BasicStatsCount(trueCount, falseCount);
 
-        [NotNull]
         internal static IBasicStatsCount Create(
-            [NotNull] IReadOnlyDictionary<IContigInfo, IIntervalTree<uint, IInterval<uint>>> trueTrees,
-            [NotNull] IReadOnlyDictionary<IContigInfo, IIntervalTree<uint, IInterval<uint>>> falseTrees)
+            IReadOnlyDictionary<IContigInfo, IIntervalTree<uint, IInterval<uint>>> trueTrees,
+            IReadOnlyDictionary<IContigInfo, IIntervalTree<uint, IInterval<uint>>> falseTrees)
             => Create(trueTrees.GetTotalLength(), falseTrees.GetTotalLength());
 
         /// <summary>
@@ -68,12 +66,12 @@ namespace Ilmn.Das.App.Wittyer.Stats.Counts
         /// <returns>
         /// The result of the operator.
         /// </returns>
-        [NotNull, Pure]
-        public static BasicStatsCount operator +([NotNull] BasicStatsCount a, [NotNull] BasicStatsCount b)
-            => new BasicStatsCount(a.TrueCount + b.TrueCount, a.FalseCount + b.FalseCount);
+        [Pure]
+        public static BasicStatsCount operator +(BasicStatsCount a, BasicStatsCount b)
+            => new(a.TrueCount + b.TrueCount, a.FalseCount + b.FalseCount);
 
         /// <inheritdoc />
-        public bool Equals([CanBeNull] IBasicStatsCount other)
+        public bool Equals(IBasicStatsCount? other)
         {
             if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -81,7 +79,7 @@ namespace Ilmn.Das.App.Wittyer.Stats.Counts
         }
 
         /// <inheritdoc />
-        public override bool Equals([CanBeNull] object obj) 
+        public override bool Equals(object? obj) 
             => ReferenceEquals(this, obj) || obj is IBasicStatsCount cast && Equals(cast);
 
         /// <inheritdoc />

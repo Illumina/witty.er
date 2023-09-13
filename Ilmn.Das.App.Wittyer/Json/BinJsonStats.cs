@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using Ilmn.Das.App.Wittyer.Infrastructure;
 using Ilmn.Das.App.Wittyer.Stats;
 using Ilmn.Das.App.Wittyer.Utilities;
 using Ilmn.Das.App.Wittyer.Vcf.Variants;
 using Ilmn.Das.Std.AppUtils.Collections;
 using Ilmn.Das.Std.AppUtils.Comparers;
-using JetBrains.Annotations;
 using Newtonsoft.Json;
 
 namespace Ilmn.Das.App.Wittyer.Json
@@ -23,7 +23,7 @@ namespace Ilmn.Das.App.Wittyer.Json
         /// <value>
         /// The bin.
         /// </value>
-        [NotNull] public string Bin { get; }
+        public string Bin { get; }
 
         /// <summary>
         /// Gets the stats.
@@ -31,10 +31,10 @@ namespace Ilmn.Das.App.Wittyer.Json
         /// <value>
         /// The stats.
         /// </value>
-        [NotNull, ItemNotNull] public IEnumerable<BasicJsonStats> Stats { get; }
+        public IEnumerable<BasicJsonStats> Stats { get; }
 
         [JsonConstructor]
-        private BinJsonStats([NotNull] string bin, [NotNull] IEnumerable<BasicJsonStats> stats)
+        private BinJsonStats(string bin, IEnumerable<BasicJsonStats> stats)
         {
             Bin = bin;
             Stats = stats;
@@ -43,8 +43,7 @@ namespace Ilmn.Das.App.Wittyer.Json
         /// <summary>
         /// Initializes a new instance of the <see cref="BinJsonStats"/> class using the given parameters.
         /// </summary>
-        [NotNull]
-        public static BinJsonStats Create([NotNull] IPerBinStats binnedStats, string nextBin, WittyerType variantType)
+        public static BinJsonStats Create(IPerBinStats binnedStats, string nextBin, PrimaryCategory variantType)
         {
             var result = new List<BasicJsonStats>();
             var eventStats = binnedStats.Stats[StatsType.Event];
@@ -65,18 +64,17 @@ namespace Ilmn.Das.App.Wittyer.Json
             return new BinJsonStats(GenerateBinString(binnedStats.Bin, nextBin, variantType), result);
         }
 
-        [NotNull]
-        private static string GenerateBinString(uint currentBin, string nextBin, WittyerType variantType)
-            => variantType == WittyerType.TranslocationBreakend
+        private static string GenerateBinString(uint? currentBin, string nextBin, PrimaryCategory variantType)
+            => currentBin == null || variantType.Is(WittyerType.TranslocationBreakend)
                 ? "NA"
-                : (nextBin.Equals(WittyerConstants.Json.InfiniteBin)
+                : nextBin.Equals(WittyerConstants.Json.InfiniteBin)
                     ? currentBin + nextBin
-                    : $"[{currentBin}, {nextBin})");
+                    : $"[{currentBin}, {nextBin})";
 
         #region Equality members
 
         /// <inheritdoc />
-        public bool Equals([CanBeNull] BinJsonStats other)
+        public bool Equals(BinJsonStats? other)
         {
             if (other is null) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -84,7 +82,7 @@ namespace Ilmn.Das.App.Wittyer.Json
         }
 
         /// <inheritdoc />
-        public override bool Equals([CanBeNull] object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is null) return false;
             if (ReferenceEquals(this, obj)) return true;
@@ -108,7 +106,7 @@ namespace Ilmn.Das.App.Wittyer.Json
         /// <returns>
         /// The result of the operator.
         /// </returns>
-        public static bool operator ==([CanBeNull] BinJsonStats left, [CanBeNull] BinJsonStats right) => Equals(left, right);
+        public static bool operator ==(BinJsonStats? left, BinJsonStats? right) => Equals(left, right);
 
         /// <summary>
         /// Implements the operator !=.
@@ -118,7 +116,7 @@ namespace Ilmn.Das.App.Wittyer.Json
         /// <returns>
         /// The result of the operator.
         /// </returns>
-        public static bool operator !=([CanBeNull] BinJsonStats left, [CanBeNull] BinJsonStats right) => !Equals(left, right);
+        public static bool operator !=(BinJsonStats? left, BinJsonStats? right) => !Equals(left, right);
 
         #endregion
     }

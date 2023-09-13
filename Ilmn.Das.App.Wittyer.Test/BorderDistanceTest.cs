@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using Ilmn.Das.App.Wittyer.Utilities.Enums;
+using Ilmn.Das.App.Wittyer.Vcf.Readers;
 using Ilmn.Das.App.Wittyer.Vcf.Variants;
 using Ilmn.Das.Core.Tries.Extensions;
 using Ilmn.Das.Std.BioinformaticUtils.Genomes;
-using Ilmn.Das.Std.VariantUtils.Vcf.Parsers;
-using Ilmn.Das.Std.VariantUtils.Vcf.Variants;
+
 using Ilmn.Das.Std.XunitUtils;
-using JetBrains.Annotations;
 using Xunit;
 
 namespace Ilmn.Das.App.Wittyer.Test
@@ -40,7 +40,7 @@ namespace Ilmn.Das.App.Wittyer.Test
 
         private const double PercentDistance = 0.05;
 
-        private static readonly IReadOnlyList<uint> Bins = ImmutableList.Create(1000U, 10000U);
+        private static readonly IReadOnlyList<(uint, bool)> Bins = ImmutableList.Create((1000U, false), (10000U, false));
 
         private const uint BasepairDistance = 500;
 
@@ -86,24 +86,24 @@ namespace Ilmn.Das.App.Wittyer.Test
             MultiAssert.AssertAll();
         }
 
-        [NotNull]
-        private static IWittyerSimpleVariant CreateWittyerVariant([NotNull] string vcfline)
+        private static IWittyerSimpleVariant CreateWittyerVariant(string vcfline)
         {
             var baseVariant = VcfVariant.TryParse(vcfline,
                     VcfVariantParserSettings.Create(ImmutableList.Create("normal"), GenomeAssembly.Grch37))
                 .GetOrThrowDebug();
-            WittyerType.ParseFromVariant(baseVariant, true, null, out var svType);
+            var failed = WittyerType.ParseFromVariant(baseVariant, null, out var wittyerType, out _);
 
-            if (svType == null)
-                throw new NotSupportedException("This method does not handle svType null");
+            if (failed != FailedReason.Unset)
+                throw new NotSupportedException($"This method failed: {failed}");
+
 
             return WittyerVariantInternal
-                .Create(baseVariant, baseVariant.Samples["normal"], svType, Bins, PercentDistance, BasepairDistance);
+                .Create(baseVariant, baseVariant.Samples["normal"], wittyerType, Bins, PercentDistance,
+                    BasepairDistance, 0);
         }
 
 
-        [NotNull]
-        private static IWittyerBnd CreateWittyerBnd([NotNull] string bndLine1, [NotNull] string bndLine2)
+        private static IWittyerBnd CreateWittyerBnd(string bndLine1, string bndLine2)
         {
             var variant = VcfVariant.TryParse(bndLine1,
                     VcfVariantParserSettings.Create(ImmutableList.Create("normal"), GenomeAssembly.Grch37))

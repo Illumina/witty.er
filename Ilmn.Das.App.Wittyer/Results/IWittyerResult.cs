@@ -2,7 +2,7 @@
 using Ilmn.Das.App.Wittyer.Vcf.Variants;
 using Ilmn.Das.Std.BioinformaticUtils.Contigs;
 using Ilmn.Das.Std.VariantUtils.Vcf.Headers;
-using Ilmn.Das.Std.VariantUtils.Vcf.Variants;
+
 using JetBrains.Annotations;
 
 namespace Ilmn.Das.App.Wittyer.Results
@@ -18,7 +18,6 @@ namespace Ilmn.Das.App.Wittyer.Results
         /// <value>
         /// The VCF header.
         /// </value>
-        [NotNull]
         IVcfHeader VcfHeader { get; }
 
         /// <summary>
@@ -27,7 +26,6 @@ namespace Ilmn.Das.App.Wittyer.Results
         /// <value>
         /// The name of the sample.
         /// </value>
-        [NotNull]
         string SampleName { get; }
 
         /// <summary>
@@ -36,7 +34,6 @@ namespace Ilmn.Das.App.Wittyer.Results
         /// <value>
         /// The contigs.
         /// </value>
-        [NotNull]
         IReadOnlyList<IContigInfo> Contigs { get; }
 
         /// <summary>
@@ -53,7 +50,6 @@ namespace Ilmn.Das.App.Wittyer.Results
         /// <value>
         /// The normal variants.
         /// </value>
-        [NotNull]
         IReadOnlyDictionary<WittyerType, IReadOnlyList<IWittyerVariant>> Variants { get; }
 
         /// <summary>
@@ -62,7 +58,6 @@ namespace Ilmn.Das.App.Wittyer.Results
         /// <value>
         /// The breakend pairs.
         /// </value>
-        [NotNull]
         IReadOnlyDictionary<WittyerType, IReadOnlyList<IWittyerBnd>> BreakendPairsAndInsertions { get; }
 
         /// <summary>
@@ -71,7 +66,6 @@ namespace Ilmn.Das.App.Wittyer.Results
         /// <value>
         /// The not assessed variants.
         /// </value>
-        [NotNull]
         IReadOnlyCollection<IVcfVariant> NotAssessedVariants { get; }
     }
 
@@ -92,21 +86,20 @@ namespace Ilmn.Das.App.Wittyer.Results
         /// <param name="variants">The variants.</param>
         /// <param name="breakendPairsAndInsertions">The breakend pairs and insertions.</param>
         /// <param name="notAssessedVariants">The not assessed variants.</param>
-        [NotNull]
         [Pure]
-        public static WittyerResult Create([NotNull] IVcfHeader vcfHeader, [NotNull] string sampleName, 
-            [NotNull] IReadOnlyList<IContigInfo> contigs, bool isTruth, 
-            [NotNull] IReadOnlyDictionary<WittyerType, IReadOnlyList<IWittyerVariant>> variants,
-            [NotNull] IReadOnlyDictionary<WittyerType, IReadOnlyList<IWittyerBnd>> breakendPairsAndInsertions,
-            [NotNull] IReadOnlyCollection<IVcfVariant> notAssessedVariants)
-            => new WittyerResult(vcfHeader, sampleName, contigs, isTruth, variants, breakendPairsAndInsertions,
+        public static WittyerResult Create(IVcfHeader vcfHeader, string sampleName, 
+            IReadOnlyList<IContigInfo> contigs, bool isTruth, 
+            IReadOnlyDictionary<WittyerType, IReadOnlyList<IWittyerVariant>> variants,
+            IReadOnlyDictionary<WittyerType, IReadOnlyList<IWittyerBnd>> breakendPairsAndInsertions,
+            IReadOnlyCollection<IVcfVariant> notAssessedVariants)
+            => new(vcfHeader, sampleName, contigs, isTruth, variants, breakendPairsAndInsertions,
                 notAssessedVariants);
 
-        private WittyerResult([NotNull] IVcfHeader vcfHeader, [NotNull] string sampleName, 
-            [NotNull] IReadOnlyList<IContigInfo> contigs, bool isTruth, 
-            [NotNull] IReadOnlyDictionary<WittyerType, IReadOnlyList<IWittyerVariant>> variants, 
-            [NotNull] IReadOnlyDictionary<WittyerType, IReadOnlyList<IWittyerBnd>> breakendPairsAndInsertions, 
-            [NotNull] IReadOnlyCollection<IVcfVariant> notAssessedVariants)
+        private WittyerResult(IVcfHeader vcfHeader, string sampleName, 
+            IReadOnlyList<IContigInfo> contigs, bool isTruth, 
+            IReadOnlyDictionary<WittyerType, IReadOnlyList<IWittyerVariant>> variants, 
+            IReadOnlyDictionary<WittyerType, IReadOnlyList<IWittyerBnd>> breakendPairsAndInsertions, 
+            IReadOnlyCollection<IVcfVariant> notAssessedVariants)
         {
             VcfHeader = vcfHeader;
             SampleName = sampleName;

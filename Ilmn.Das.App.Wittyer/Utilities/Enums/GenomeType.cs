@@ -1,7 +1,7 @@
 ﻿using System.IO;
+using Ilmn.Das.App.Wittyer.Vcf.Variants;
 using Ilmn.Das.Std.BioinformaticUtils.Contigs;
-using Ilmn.Das.Std.VariantUtils.Vcf.Variants;
-using JetBrains.Annotations;
+
 
 namespace Ilmn.Das.App.Wittyer.Utilities.Enums
 {
@@ -17,8 +17,7 @@ namespace Ilmn.Das.App.Wittyer.Utilities.Enums
 
     internal static class GenomeTypeUtils
     {
-        [NotNull]
-        internal static IVcfVariant ConvertGenomeType([NotNull] this IVcfVariant variant, GenomeType type)
+        internal static IVcfVariant ConvertGenomeType(this IVcfVariant variant, GenomeType type)
         {
             switch (type)
             {
@@ -34,7 +33,7 @@ namespace Ilmn.Das.App.Wittyer.Utilities.Enums
             }
         }
 
-        internal static GenomeType GetGenomeType([NotNull] this IContigInfo variantContig)
+        internal static GenomeType GetGenomeType(this IContigInfo variantContig)
         {
             var isUcsc = variantContig.ToUcscStyle().Name == variantContig.Name;
             var isGrch37 = variantContig.ToGrchStyle().Name == variantContig.Name;

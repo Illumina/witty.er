@@ -10,7 +10,7 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Annotations
     /// </summary>
     public class Winner
     {
-        private Winner([NotNull] WittyerType svType, uint start, uint? end)
+        private Winner(WittyerType svType, uint? start, uint? end)
         {
             SvType = svType;
             Start = start;
@@ -23,7 +23,6 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Annotations
         /// <value>
         ///     The type of the sv.
         /// </value>
-        [NotNull]
         public WittyerType SvType { get; }
 
         /// <summary>
@@ -32,7 +31,7 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Annotations
         /// <value>
         ///     The start.
         /// </value>
-        public uint Start { get; }
+        public uint? Start { get; }
 
         /// <summary>
         ///     Gets the end.
@@ -42,25 +41,21 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Annotations
         /// </value>
         public uint? End { get; }
 
-        [NotNull]
-        internal static Winner Create([NotNull] WittyerType svType, [CanBeNull] IInterval<uint> variantInterval, 
-            [CanBeNull] IReadOnlyList<uint> bins)
+        internal static Winner Create(WittyerType svType, IInterval<uint>? variantInterval, 
+            IReadOnlyList<(uint start, bool skip)>? bins)
         {
-            if (bins == null || bins.Count == 0)
-                return Create(svType);
+            if (bins == null || bins.Count == 0 || variantInterval == null)
+                return new Winner(svType, null, null); // means no bins.
 
-            if (variantInterval == null) return new Winner(svType, bins[bins.Count - 1], null); // means take the last bin.
-
-            var index = GetBinIndex(variantInterval, bins);
+            var index = GetBinIndex(bins, variantInterval);
 
             return index < 0
-                ? Create(svType, WittyerConstants.StartingBin, bins[0])
-                : Create(svType, bins[index], index < bins.Count - 1 ? bins[index + 1] : default(uint?));
+                ? Create(svType, WittyerConstants.StartingBin, bins[0].start)
+                : Create(svType, bins[index].start, index < bins.Count - 1 ? bins[index + 1].start : default(uint?));
         }
 
         [Pure]
-        [NotNull]
-        internal static Winner Create([NotNull] WittyerType svType) 
+        internal static Winner Create(WittyerType svType) 
             => Create(svType, WittyerConstants.StartingBin, null);
 
         /// <summary>
@@ -70,24 +65,26 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Annotations
         /// <param name="start">The start.</param>
         /// <param name="end">The end.</param>
         [Pure]
-        [NotNull]
-        public static Winner Create([NotNull] WittyerType svType, uint start, uint? end)
-            => new Winner(svType, start, end);
+        public static Winner Create(WittyerType svType, uint start, uint? end)
+            => new(svType, start, end);
 
-        private static int GetBinIndex([NotNull] IInterval<uint> interval, [NotNull] IReadOnlyList<uint> bins)
+        private static int GetBinIndex(IReadOnlyList<(uint start, bool skip)> bins, IInterval<uint> interval)
+            => GetBinIndex(bins, interval.GetLength());
+
+        public static int GetBinIndex(IReadOnlyList<(uint start, bool skip)> bins, uint length)
         {
-            var length = interval.GetLength();
             var i = bins.Count - 1;
             for (; i >= 0; i--)
-                if (bins[i] <= length)
+                if (bins[i].start <= length)
                     return i;
             return i;
         }
 
         /// <inheritdoc />
-        [NotNull]
         public override string ToString()
         {
+            if (Start == null)
+                return $"{SvType}|NA";
             var endString = End == null ? "+" : $"-{End}";
             return $"{SvType}|{Start}{endString}";
         }

@@ -1,8 +1,9 @@
 ﻿using System.Collections.Immutable;
+using System.IO;
 using Ilmn.Das.App.Wittyer.Utilities.Enums;
 using Ilmn.Das.App.Wittyer.Vcf.Variants.Genotype;
 using Ilmn.Das.Std.VariantUtils.Vcf.Variants.Samples;
-using JetBrains.Annotations;
+
 
 namespace Ilmn.Das.App.Wittyer.Vcf.Samples
 {
@@ -14,10 +15,13 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Samples
     internal class WittyerGenotypedSample : IWittyerGenotypedSample
     {
         internal readonly WittyerSampleInternal BaseSample;
-        public IVcfSample GetOriginalSample() => BaseSample.GetOriginalSample();
+
+        public IVcfSample OriginalSample => BaseSample.OriginalSample ??
+                                            throw new InvalidDataException(
+                                                $"Got a null sample for a {nameof(WittyerGenotypedSample)}!");
 
         public WitDecision Wit => BaseSample.Wit;
-        public IImmutableList<MatchEnum> What => BaseSample.What;
+        public IImmutableList<MatchSet> What => BaseSample.What;
         public IImmutableList<FailedReason> Why => BaseSample.Why;
         public IGenotypeInfo Gt { get; }
 
@@ -26,8 +30,7 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Samples
             BaseSample = baseSample;
             Gt = gt;
         }
-        [NotNull]
-        internal static IWittyerGenotypedSample Create([NotNull] WittyerSampleInternal sample, [NotNull] IGenotypeInfo gt) 
+        internal static IWittyerGenotypedSample Create(WittyerSampleInternal sample, IGenotypeInfo gt) 
             => new WittyerGenotypedSample(sample, gt);
     }
 }

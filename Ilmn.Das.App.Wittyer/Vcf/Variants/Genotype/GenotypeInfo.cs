@@ -39,7 +39,6 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Genotype
         /// <param name="isPhased">if set to <c>true</c> [is phased].</param>
         /// <param name="genotypeIndices">The genotype indices.</param>
         [Pure]
-        [NotNull]
         public static IGenotypeInfo Create(string originalGtString, bool isPhased,
             IImmutableList<string> genotypeIndices)
             => new GenotypeInfo(originalGtString, isPhased, genotypeIndices);
@@ -52,8 +51,7 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Genotype
         /// <exception cref="InvalidDataException">
         /// </exception>
         [Pure]
-        [NotNull]
-        public static IGenotypeInfo CreateFromSample([NotNull] IVcfSample sample)
+        public static IGenotypeInfo CreateFromSample(IVcfSample sample)
         {
             if (!sample.SampleDictionary.ContainsKey(VcfConstants.GenotypeKey))
                 throw new InvalidDataException($"{sample} has not GT field for this variant {sample}");
@@ -74,7 +72,6 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Genotype
             return Create(gtString, isPhased, gtIndices.ToImmutable());
         }
 
-        [NotNull]
         internal static IGenotypeInfo CreateRef(int ploidy, bool isPhased)
             => TypeCache<int, IGenotypeInfo>.GetOrAdd(isPhased ? -ploidy : ploidy, () =>
             {
@@ -85,12 +82,12 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Genotype
             });
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
             => ReferenceEquals(this, obj) || obj is IGenotypeInfo info && Equals(info);
 
         /// <inheritdoc />
-        public bool Equals([NotNull] IGenotypeInfo other)
-            => IsPhased.Equals(other.IsPhased)
+        public bool Equals(IGenotypeInfo? other)
+            => IsPhased.Equals(other?.IsPhased)
                && (IsPhased
                    ? GenotypeIndices.SequenceEqual(other.GenotypeIndices)
                    : GenotypeIndices.IsScrambledEquals(other.GenotypeIndices));

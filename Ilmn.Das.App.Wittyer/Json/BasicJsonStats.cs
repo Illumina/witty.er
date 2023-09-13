@@ -117,18 +117,17 @@ namespace Ilmn.Das.App.Wittyer.Json
         /// <summary>
         /// Creates an instance out of given parameters.
         /// </summary>
-        [NotNull, Pure]
+        [Pure]
         public static BasicJsonStats Create(StatsType statsType, uint truthTpCount, uint falseNegativeCount,
             uint queryTpCount, uint falsePositiveCount)
-            => new BasicJsonStats(statsType, truthTpCount, falseNegativeCount, null, null, queryTpCount,
+            => new(statsType, truthTpCount, falseNegativeCount, null, null, queryTpCount,
                 falsePositiveCount, null, null, null);
 
         /// <summary>
         /// The plus operator.
         /// </summary>
         /// <exception cref="InvalidOperationException"></exception>
-        [NotNull]
-        public static BasicJsonStats operator +([NotNull] BasicJsonStats left, [NotNull] BasicJsonStats right)
+        public static BasicJsonStats operator +(BasicJsonStats left, BasicJsonStats right)
         {
             if (left.StatsType != right.StatsType)
                 throw new InvalidOperationException(string.Join("\n", "Cannot add two different stats together: ",
@@ -148,7 +147,7 @@ namespace Ilmn.Das.App.Wittyer.Json
         #region Equality members
 
         /// <inheritdoc />
-        public bool Equals([CanBeNull] BasicJsonStats other)
+        public bool Equals(BasicJsonStats? other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
@@ -158,7 +157,7 @@ namespace Ilmn.Das.App.Wittyer.Json
         }
 
         /// <inheritdoc />
-        public override bool Equals([CanBeNull] object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
@@ -187,7 +186,7 @@ namespace Ilmn.Das.App.Wittyer.Json
         /// <returns>
         /// The result of the operator.
         /// </returns>
-        public static bool operator ==([CanBeNull] BasicJsonStats left, [CanBeNull] BasicJsonStats right) =>
+        public static bool operator ==(BasicJsonStats? left, BasicJsonStats? right) =>
             Equals(left, right);
 
         /// <summary>
@@ -198,7 +197,7 @@ namespace Ilmn.Das.App.Wittyer.Json
         /// <returns>
         /// The result of the operator.
         /// </returns>
-        public static bool operator !=([CanBeNull] BasicJsonStats left, [CanBeNull] BasicJsonStats right) =>
+        public static bool operator !=(BasicJsonStats? left, BasicJsonStats? right) =>
             !Equals(left, right);
 
         #endregion

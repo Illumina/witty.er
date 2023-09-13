@@ -1,5 +1,4 @@
 ﻿using System;
-using JetBrains.Annotations;
 using Newtonsoft.Json;
 
 namespace Ilmn.Das.App.Wittyer.Json.JsonConverters
@@ -14,7 +13,7 @@ namespace Ilmn.Das.App.Wittyer.Json.JsonConverters
         public override bool CanConvert(Type objectType) => true;
 
         /// <inheritdoc />
-        public override void WriteJson([NotNull] JsonWriter writer, [CanBeNull] object value, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
             => writer.WriteValue(value?.ToString() ?? string.Empty);
 
         /// <inheritdoc />

@@ -12,7 +12,7 @@ namespace Ilmn.Das.App.Wittyer.Stats
         /// <summary>
         /// The start of the bin the stats are for.
         /// </summary>
-        uint Bin { get; }
+        uint? Bin { get; }
 
         /// <summary>
         /// Whether this bin was marked to be skipped in the stats calculations.
@@ -22,7 +22,7 @@ namespace Ilmn.Das.App.Wittyer.Stats
         /// <summary>
         /// Event and base type stats by stats type.
         /// </summary>
-        [NotNull] IReadOnlyDictionary<StatsType, IStatsUnit> Stats { get; }
+        IReadOnlyDictionary<StatsType, IStatsUnit> Stats { get; }
     }
 
     /// <summary>
@@ -30,7 +30,7 @@ namespace Ilmn.Das.App.Wittyer.Stats
     /// </summary>
     public class PerBinStats : IPerBinStats
     {
-        private PerBinStats(uint bin, bool skipped, [NotNull] IReadOnlyDictionary<StatsType, IStatsUnit> stats)
+        private PerBinStats(uint? bin, bool skipped, IReadOnlyDictionary<StatsType, IStatsUnit> stats)
         {
             Bin = bin;
             IgnoreForStatsCalculations = skipped;
@@ -43,15 +43,14 @@ namespace Ilmn.Das.App.Wittyer.Stats
         /// <param name="bin">The bin.</param>
         /// /// <param name="skipped">Whether this bin was marked to be skipped in the stats calculations..</param>
         /// <param name="stats">The stats.</param>
-        [NotNull]
         [Pure]
-        public static IPerBinStats Create(uint bin, bool skipped, [NotNull] IReadOnlyDictionary<StatsType, IStatsUnit> stats)
+        public static IPerBinStats Create(uint? bin, bool skipped, IReadOnlyDictionary<StatsType, IStatsUnit> stats)
             => new PerBinStats(bin, skipped, stats);
 
         #region Implementation of IBinnedStats
 
         /// <inheritdoc />
-        public uint Bin { get; }
+        public uint? Bin { get; }
 
 
         /// <inheritdoc />

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Ilmn.Das.App.Wittyer.Utilities;
 using Ilmn.Das.Std.AppUtils.Intervals;

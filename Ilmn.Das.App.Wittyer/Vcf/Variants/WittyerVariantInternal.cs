@@ -12,7 +12,7 @@ using Ilmn.Das.Std.AppUtils.Intervals;
 using Ilmn.Das.Std.BioinformaticUtils.Bed;
 using Ilmn.Das.Std.BioinformaticUtils.Contigs;
 using Ilmn.Das.Std.BioinformaticUtils.GenomicFeatures;
-using Ilmn.Das.Std.VariantUtils.Vcf.Variants;
+using Ilmn.Das.Std.VariantUtils.Vcf;
 using Ilmn.Das.Std.VariantUtils.Vcf.Variants.Samples;
 using JetBrains.Annotations;
 
@@ -20,20 +20,19 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
 {
     internal class WittyerVariantInternal : IMutableWittyerVariant
     {
-        [NotNull] private readonly IInterval<uint> _baseInterval;
-        private static readonly ImmutableList<MatchEnum> EmptyWhat = ImmutableList.Create(MatchEnum.Unmatched);
+        private readonly IInterval<uint> _baseInterval;
         private static readonly ImmutableList<FailedReason> EmptyTrueWhy 
             = ImmutableList.Create(FailedReason.Unset);
         private static readonly ImmutableList<FailedReason> EmptyFalseWhy 
             = ImmutableList.Create(FailedReason.NoOverlap);
-        private static readonly ImmutableList<FailedReason> EmptyOutsideBedWhy 
+        private static readonly IImmutableList<FailedReason> EmptyOutsideBedWhy 
             = ImmutableList.Create(FailedReason.OutsideBedRegion);
 
-        private WittyerVariantInternal([NotNull] WittyerType svType, [NotNull] IVcfVariant baseVariant, 
-            [NotNull] IInterval<uint> baseInterval, [NotNull] Winner win, 
-            [NotNull] IContigAndInterval posInterval, [NotNull] IInterval<uint> ciPosInterval, 
-            [NotNull] IContigAndInterval endInterval, [NotNull] IInterval<uint> ciEndInterval, 
-            [NotNull] IWittyerSample sample)
+        private WittyerVariantInternal(WittyerType svType, IVcfVariant baseVariant, 
+            IInterval<uint> baseInterval, Winner win, 
+            IContigAndInterval posInterval, IInterval<uint> ciPosInterval, 
+            IContigAndInterval endInterval, IInterval<uint> ciEndInterval, 
+            IWittyerSample sample, uint endRefPos, IInterval<uint>? svLenInterval = null)
         {
             OriginalVariant = baseVariant;
             Contig = baseVariant.Contig;
@@ -45,16 +44,18 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
             EndInterval = endInterval;
             CiPosInterval = ciPosInterval;
             CiEndInterval = ciEndInterval;
+            EndRefPos = endRefPos;
+            SvLenInterval = svLenInterval ?? baseInterval;
         }
 
         /// <inheritdoc />
         public IContigInfo Contig { get; }
 
         /// <inheritdoc />
-        public int CompareTo(IInterval<uint> other) => _baseInterval.CompareTo(other);
+        public int CompareTo(IInterval<uint>? other) => _baseInterval.CompareTo(other);
 
         /// <inheritdoc />
-        public bool Equals(IInterval<uint> other) => _baseInterval.Equals(other);
+        public bool Equals(IInterval<uint>? other) => _baseInterval.Equals(other);
 
         /// <inheritdoc />
         public uint Start => _baseInterval.Start;
@@ -72,10 +73,10 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
         public IContigAndInterval PosInterval { get; }
 
         /// <inheritdoc />
-        public int CompareTo(IContigAndInterval other) => ContigAndIntervalComparer.Default.Compare(this, other);
+        public int CompareTo(IContigAndInterval? other) => ContigAndIntervalComparer.Default.Compare(this, other);
 
         /// <inheritdoc />
-        public bool Equals(IContigAndInterval other) => ContigAndIntervalComparer.Default.Equals(this, other);
+        public bool Equals(IContigAndInterval? other) => ContigAndIntervalComparer.Default.Equals(this, other);
 
         /// <inheritdoc />
         public WittyerType VariantType { get; }
@@ -92,10 +93,14 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
         /// <inheritdoc />
         public IContigAndInterval EndInterval { get; }
 
-        private readonly List<OverlapAnnotation> _overlapInfo = new List<OverlapAnnotation>();
+        /// <inheritdoc />
+        public uint EndRefPos { get; }
 
         /// <inheritdoc />
-        public IReadOnlyList<OverlapAnnotation> OverlapInfo => _overlapInfo.AsReadOnly();
+        public List<OverlapAnnotation> OverlapInfo { get; } = new();
+
+        /// <inheritdoc />
+        IReadOnlyList<OverlapAnnotation> IWittyerSimpleVariant.OverlapInfo => OverlapInfo.AsReadOnly();
 
         /// <inheritdoc />
         public IWittyerSample Sample { get; }
@@ -103,12 +108,14 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
         /// <inheritdoc />
         public IVcfVariant OriginalVariant { get; }
 
+        public IInterval<uint> SvLenInterval { get; }
+
         /// <inheritdoc />
-        public void AddToOverlapInfo(OverlapAnnotation newAnnotation) => _overlapInfo.Add(newAnnotation);
+        public void AddToOverlapInfo(OverlapAnnotation newAnnotation) => OverlapInfo.Add(newAnnotation);
 
         /// <inheritdoc />
         public void Finalize(WitDecision falseDecision, EvaluationMode mode,
-            GenomeIntervalTree<IContigAndInterval> includedRegions)
+            GenomeIntervalTree<IContigAndInterval>? includedRegions, int? maxMatches)
         {
             bool? isIncluded = null;
             if (includedRegions != null)
@@ -134,14 +141,21 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
                 }
             }
 
-            Finalize(this, _overlapInfo, falseDecision, mode, isIncluded);
+            Finalize(this, OverlapInfo, falseDecision, mode, isIncluded, maxMatches);
         }
 
-        internal static void Finalize([NotNull] IMutableWittyerSimpleVariant variant,
-            [NotNull] List<OverlapAnnotation> annotations, WitDecision falseDecision, EvaluationMode mode,
-            bool? isIncluded)
+        internal static void Finalize(IMutableWittyerSimpleVariant variant,
+            List<OverlapAnnotation> annotations, WitDecision falseDecision, EvaluationMode mode,
+            bool? isIncluded, int? maxMatches)
         {
-            annotations.Sort();
+            var isTruth = falseDecision == WitDecision.FalseNegative;
+            if (isTruth)
+            {
+                annotations.Sort();
+                var max = maxMatches ?? ((variant.Sample as IWittyerGenotypedSample)?.Gt.GenotypeIndices.Count ?? 2);
+                if (max < annotations.Count)
+                    annotations.RemoveRange(max, annotations.Count - max);
+            }
 
             WittyerSampleInternal unwrappedSample;
             switch (variant.Sample)
@@ -168,33 +182,32 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
             // isIncluded != null means bedRegion, so if false, override the results as such:
             // Wit = NotAssessed.
             // Why[0] if Unset = OutsideBedRegion 
-            unwrappedSample.What = ImmutableList<MatchEnum>.Empty;
+            unwrappedSample.What = ImmutableList<MatchSet>.Empty;
             unwrappedSample.Why = ImmutableList<FailedReason>.Empty;
             var isTp = false;
+            var isSymbolic = variant.OriginalVariant.Alts.FirstOrDefault()?.StartsWith("<") ?? false;
             for (var i = 0; i < variant.OverlapInfo.Count; i++)
             {
                 var what = variant.OverlapInfo[i].What;
                 unwrappedSample.What = unwrappedSample.What.Add(what);
                 isTp = isTp
-                       || what == MatchEnum.AlleleAndGenotypeMatch
-                       || (mode == EvaluationMode.SimpleCounting || mode == EvaluationMode.CrossTypeAndSimpleCounting)
-                       && what == MatchEnum.AlleleMatch;
+                       || what.Contains(MatchEnum.Allele)
+                       && (mode is EvaluationMode.SimpleCounting or EvaluationMode.CrossTypeAndSimpleCounting
+                           || what.Contains(MatchEnum.Genotype));
                 
                 var why = variant.OverlapInfo[i].Why;
-                if (why == FailedReason.Unset)
-                    why = i == 0 && isIncluded == false
-                        ? FailedReason.OutsideBedRegion
-                        : what == MatchEnum.Unmatched
-                            ? FailedReason.NoOverlap
-                            : FailedReason.Other;
+                if (isIncluded == false)
+                    why = FailedReason.OutsideBedRegion;
+                else if (why == FailedReason.Unset
+                         && (what.Count == 0 || what.Count == 1 && what.First() == MatchEnum.Unmatched))
+                    why = FailedReason.NoOverlap;
                 unwrappedSample.Why = unwrappedSample.Why.Add(why);
             }
 
-            if (unwrappedSample.What.Count == 0)
-                unwrappedSample.What = EmptyWhat;
-
             if (unwrappedSample.Why.Count == 0)
                 unwrappedSample.Why = isIncluded == false ? EmptyOutsideBedWhy : isTp ? EmptyTrueWhy : EmptyFalseWhy;
+            else if (isIncluded == false)
+                unwrappedSample.Why = unwrappedSample.Why.SetItem(0, FailedReason.OutsideBedRegion);
 
             unwrappedSample.Wit = isIncluded == null || isIncluded.Value
                 ? isTp
@@ -203,18 +216,59 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
                 : WitDecision.NotAssessed;
         }
 
-        [NotNull]
         [Pure]
-        internal static IWittyerVariant Create([NotNull] IVcfVariant baseVariant,
-            [CanBeNull] IVcfSample sample, [NotNull] WittyerType svType,
-            [NotNull] IReadOnlyList<uint> bins, [CanBeNull] double? percentageDistance,
-            uint basepairDistance)
+        internal static IWittyerVariant Create(IVcfVariant baseVariant,
+            IVcfSample? sample, WittyerType wittyerType,
+            IReadOnlyList<(uint start, bool skip)> bins, double? percentageDistance,
+            uint basepairDistance, int? altIndex)
         {
             // originalInterval is needed to adjust CIPOS and CIEND against for PD/BPD, but it won't be used for actual reflen and binning.
-            var baseInterval = baseVariant.ToBedInterval(true, out var originalEnd, out var sharedFirstBase);
+            var baseInterval = baseVariant.ToBedInterval(true, out var originalEnd, out var sharedFirstBase, altIndex);
             if (baseInterval == null)
                 throw new InvalidOperationException(
                     $"Expected failure of {nameof(WittyerUtils.ToBedInterval)} to throw, but didn't...");
+
+            if (wittyerType == WittyerType.CopyNumberTandemRepeat)
+            {
+                var posInt = ContigAndInterval.Create(baseVariant.Contig, baseInterval.Start, baseInterval.Start + 1U);
+                var endInt = ContigAndInterval.Create(baseVariant.Contig, baseInterval.Stop - 1U, baseInterval.Stop);
+
+                uint? cnTrStop = null;
+                if (baseVariant.Info.TryGetValue(VcfConstants.CnSampleFieldKey, out var cnStr)
+                    && decimal.TryParse(cnStr.Split(VcfConstants.InfoFieldValueDelimiter)[0], out var cnVal))
+                {
+                    var extraLength = Math.Round((cnVal - 1M) * baseInterval.GetLength());
+                    cnTrStop = (uint)(baseInterval.Start + (long)extraLength);
+                }
+                else if (baseVariant.Samples.Count > 0
+                         && baseVariant.Samples[0].SampleDictionary
+                             .TryGetValue(VcfConstants.CnSampleFieldKey, out cnStr)
+                         && decimal.TryParse(cnStr, out cnVal))
+                {
+                    var extraLength = Math.Round(cnVal -
+                                                 (baseVariant.Samples[0].SampleDictionary
+                                                     .TryGetValue(VcfConstants.GenotypeKey, out var gt)
+                                                     ? gt.Count(it =>
+                                                         it == VcfConstants.GtPhasedValueDelimiter[0]
+                                                         || it == VcfConstants.GtUnphasedValueDelimiter[0])
+                                                     : 2) * baseInterval.GetLength());
+                    cnTrStop = (uint)(baseInterval.Start + (long)extraLength);
+                }
+
+                if (cnTrStop == baseInterval.Start)
+                    cnTrStop = baseInterval.Start + 1;
+
+                return new WittyerVariantInternal(wittyerType, baseVariant, baseInterval,
+                    Winner.Create(wittyerType, baseInterval, bins),
+                    posInt,
+                    posInt, endInt, endInt,
+                    WittyerSample.CreateFromVariant(baseVariant, sample, false),
+                    originalEnd, cnTrStop == null
+                        ? null
+                        : baseInterval.Start > cnTrStop
+                            ? BedInterval.Create(cnTrStop.Value, baseInterval.Start)
+                            : BedInterval.Create(baseInterval.Start, cnTrStop.Value));
+            }
 
             // CI intervals are always based on the original POS/END
             var posStart = baseVariant.Position;
@@ -228,13 +282,18 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
                 : baseInterval.Start + 1; // not sharing first base (ref site or complex types,  etc) need adjustment
 
             // the pd/bpd intervals are based on the trimmed variant's coordinates.
+            var isTr = baseVariant.Info.TryGetValue(WittyerConstants.EventTypeInfoKey, out var eventType)
+                       && eventType == "TR";
             var (posInterval, endInterval) = WittyerUtils.GetPosAndEndInterval(baseVariant.Contig, percentageDistance,
-                basepairDistance, ciPosInterval, baseStart, ciEndInterval, baseInterval.Stop);
+                basepairDistance, ciPosInterval, baseStart, ciEndInterval, baseInterval.Stop, isTr);
 
-            return new WittyerVariantInternal(svType, baseVariant, baseInterval,
-                Winner.Create(svType, baseInterval, bins),
+            if (isTr)
+                baseInterval = BedInterval.Create(posInterval.Start, endInterval.Stop);
+            return new WittyerVariantInternal(wittyerType, baseVariant, baseInterval,
+                Winner.Create(wittyerType, baseInterval, bins),
                 posInterval, ciPosInterval, endInterval, ciEndInterval,
-                WittyerSample.CreateFromVariant(baseVariant, sample, svType == WittyerType.CopyNumberReference));
+                WittyerSample.CreateFromVariant(baseVariant, sample, wittyerType == WittyerType.CopyNumberReference),
+                originalEnd);
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using Ilmn.Das.App.Wittyer.Vcf.Variants;
-using JetBrains.Annotations;
 
 namespace Ilmn.Das.App.Wittyer.Input
 {
@@ -13,7 +12,6 @@ namespace Ilmn.Das.App.Wittyer.Input
         /// <value>
         /// The output directory.
         /// </value>
-        [NotNull]
         DirectoryInfo OutputDirectory { get; }
 
         /// <summary>
@@ -22,7 +20,6 @@ namespace Ilmn.Das.App.Wittyer.Input
         /// <value>
         /// The truth VCF.
         /// </value>
-        [NotNull]
         FileInfo TruthVcf { get; }
 
         /// <summary>
@@ -40,7 +37,6 @@ namespace Ilmn.Das.App.Wittyer.Input
         /// <value>
         /// The sample pairs.
         /// </value>
-        [NotNull]
         IReadOnlyCollection<ISamplePair> SamplePairs { get; }
 
         /// <summary>
@@ -57,7 +53,17 @@ namespace Ilmn.Das.App.Wittyer.Input
         /// <value>
         /// The input specs.
         /// </value>
-        [NotNull]
         IReadOnlyDictionary<WittyerType, InputSpec> InputSpecs { get; }
+
+        /// <summary>
+        /// The similarity threshold that INS need to pass before considered a match.
+        /// </summary>
+        double SimilarityThreshold { get; }
+        
+        /// <summary>
+        /// The max number of matches a query entry can participate in.  A zero means infinite.
+        /// Null is special in that it also affects genotype matching and the number depends on the ploidy. 
+        /// </summary>
+        byte? MaxMatches { get; }
     }
 }

@@ -8,6 +8,6 @@
         /// <value>
         /// The cn.
         /// </value>
-        uint? Cn { get; }
+        decimal? Cn { get; }
     }
 }

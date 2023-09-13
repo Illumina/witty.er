@@ -1,39 +1,77 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using Ilmn.Das.App.Wittyer.Stats.Counts;
-using Ilmn.Das.App.Wittyer.Vcf.Variants;
-using JetBrains.Annotations;
 
 namespace Ilmn.Das.App.Wittyer.Stats
 {
-    internal class BinnedDictionary : IReadOnlyDictionary<uint, IMutableStats>
+    internal class BinnedDictionary : IReadOnlyDictionary<uint?, IMutableStats>
     {
-        [NotNull] public readonly IReadOnlyList<(uint size, bool skip)> Bins;
+        public readonly IReadOnlyList<(uint size, bool skip)> Bins;
 
         private readonly IDictionary<uint, IMutableStats> _statsDictionary;
+
+        public readonly IMutableStats? UnbinnedStats;
         
-        public BinnedDictionary([NotNull] IReadOnlyList<(uint size, bool skip)> bins, [NotNull] WittyerType svType)
+        public BinnedDictionary(IReadOnlyList<(uint size, bool skip)> bins, bool hasBaseLevelStats, bool hasLengths)
         {
             Bins = bins;
+            UnbinnedStats = hasLengths
+                ? null // has Lengths means no unbinned stats.
+                : hasBaseLevelStats
+                    ? MutableEventAndBasesStats.Create()
+                    : MutableEventStats.Create();
             _statsDictionary = bins.ToImmutableDictionary(b => b.size,
-                b => svType.HasBaseLevelStats
+                b => hasBaseLevelStats
                     ? MutableEventAndBasesStats.Create()
                     : MutableEventStats.Create() as IMutableStats);
         }
 
-        public IEnumerator<KeyValuePair<uint, IMutableStats>> GetEnumerator() => _statsDictionary.GetEnumerator();
+        public IEnumerator<KeyValuePair<uint?, IMutableStats>> GetEnumerator()
+        {
+            if (UnbinnedStats != null)
+                yield return new KeyValuePair<uint?, IMutableStats>(null, UnbinnedStats);
+            foreach (var (key, value) in _statsDictionary)
+                yield return new KeyValuePair<uint?, IMutableStats>(key, value);
+        }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public int Count => _statsDictionary.Count;
-        public bool ContainsKey(uint key) => _statsDictionary.ContainsKey(key);
+        public bool ContainsKey(uint? key) => key == null ? UnbinnedStats != null : _statsDictionary.ContainsKey(key.Value);
 
-        public bool TryGetValue(uint key, [CanBeNull] out IMutableStats value) => _statsDictionary.TryGetValue(key, out value);
+        public bool TryGetValue(uint? key, out IMutableStats? value)
+        {
+            value = UnbinnedStats;
+            return key == null ? UnbinnedStats != null : _statsDictionary.TryGetValue(key.Value, out value);
+        }
 
-        public IMutableStats this[uint key] => _statsDictionary[key];
+        public IMutableStats this[uint? key] => key == null
+            ? UnbinnedStats ??
+              throw new NullReferenceException($"Tried to access {nameof(UnbinnedStats)} when all are binned by size!")
+            : _statsDictionary[key.Value];
 
-        public IEnumerable<uint> Keys => _statsDictionary.Keys;
-        public IEnumerable<IMutableStats> Values => _statsDictionary.Values;
+        public IEnumerable<uint?> Keys
+        {
+            get
+            {
+                if (UnbinnedStats != null)
+                    yield return null;
+                foreach (var key in _statsDictionary.Keys)
+                    yield return key;
+            }
+        }
+
+        public IEnumerable<IMutableStats> Values
+        {
+            get
+            {
+                if (UnbinnedStats != null)
+                    yield return UnbinnedStats;
+                foreach (var value in _statsDictionary.Values)
+                    yield return value;
+            }
+        }
     }
 }

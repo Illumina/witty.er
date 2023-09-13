@@ -5,7 +5,7 @@ using System.Linq;
 using Ilmn.Das.App.Wittyer.Input;
 using Ilmn.Das.App.Wittyer.Utilities;
 using Ilmn.Das.App.Wittyer.Utilities.Enums;
-using Ilmn.Das.App.Wittyer.Vcf;
+using Ilmn.Das.App.Wittyer.Vcf.Readers;
 using Ilmn.Das.App.Wittyer.Vcf.Samples;
 using Ilmn.Das.App.Wittyer.Vcf.Variants;
 using Ilmn.Das.App.Wittyer.Vcf.Variants.Breakend;
@@ -14,10 +14,8 @@ using Ilmn.Das.Std.BioinformaticUtils.Bed;
 using Ilmn.Das.Std.BioinformaticUtils.Contigs;
 using Ilmn.Das.Std.BioinformaticUtils.Genomes;
 using Ilmn.Das.Std.BioinformaticUtils.GenomicFeatures;
-using Ilmn.Das.Std.VariantUtils.Vcf.Parsers;
-using Ilmn.Das.Std.VariantUtils.Vcf.Variants;
+using Ilmn.Das.Std.VariantUtils.Vcf;
 using Ilmn.Das.Std.XunitUtils;
-using JetBrains.Annotations;
 using Xunit;
 
 namespace Ilmn.Das.App.Wittyer.Test
@@ -56,10 +54,10 @@ namespace Ilmn.Das.App.Wittyer.Test
 
         private const string FirstAndLastBaseShared =
             "chr1\t181183\tpacbio_samtools:chr1_181165_0_118\tG\tGGCAGGCGCAGAGAGGCGCGCCGCGCCGGCGCAGGCGCAGAGAGGCGCGCCGCGCCGGCGCAGGCGCAGAGAGGCGCGCCGCGCCGGCGCAGGCGCAGAGAAGGCGCGCCGCGCCGGCG\t.\tPASS\tHAMMING=0;MINOR_AF=0.0105;NUM_INCONSI=2;SVTYPE=INS;NON_REF_IN_KIDS=42;PASS_RATE=0.9979;SOURCE=pb_hg002;PEDIGREE=no_vector;HWE_FISHER=1;CALL_RATE=0.9979\tGT:FT\t0/1:PASS\t0/1:PASS";
-
+        
         private const double PercentDistance = 0.05;
 
-        private static readonly IReadOnlyList<uint> Bins = ImmutableList.Create(1000U, 10000U);
+        private static readonly IReadOnlyList<(uint, bool)> Bins = ImmutableList.Create((1000U, false), (10000U, false));
 
         private const uint BasepairDistance = 500;
 
@@ -67,14 +65,16 @@ namespace Ilmn.Das.App.Wittyer.Test
         [InlineData(ReferenceCnvVariant)]
         [InlineData(RefCall1)]
         [InlineData(RefCnvVariantNoSvType)]
-        public static void ParseReferenceVariantWorks([NotNull] string inputVariant)
+        public static void ParseReferenceVariantWorks(string inputVariant)
         {
             var vcfVariant = VcfVariant.TryParse(inputVariant,
                     VcfVariantParserSettings.Create(ImmutableList.Create("NA12878", "haha"), GenomeAssembly.Hg19))
                 .GetOrThrowDebug();
 
-            WittyerType.ParseFromVariant(vcfVariant, false, "NA12878", out var actualType);
-            Assert.Equal(WittyerType.CopyNumberReference, actualType);
+            var failedReason = WittyerType.ParseFromVariant(vcfVariant, "NA12878", out var actualType, out _);
+            MultiAssert.Equal(FailedReason.Unset, failedReason);
+            MultiAssert.Equal(WittyerType.CopyNumberReference, actualType);
+            MultiAssert.AssertAll();
         }
 
         [Theory]
@@ -98,18 +98,18 @@ namespace Ilmn.Das.App.Wittyer.Test
             nameof(WittyerType.CopyNumberReference) + "|1-1000")]
         [InlineData(RefCall, 2704532, 2706014, "normal", 4123598, 4124956,
             nameof(WittyerType.CopyNumberReference) + "|10000+")]
-        public static void WittyerVariantCreateCorrectly([NotNull] string variant, uint posStart, uint posEnd, string sampleName,
+        public static void WittyerVariantCreateCorrectly(string variant, uint posStart, uint posEnd, string sampleName,
             uint endStart, uint endEnd, string winner)
         {
             var vcfVariant = VcfVariant.TryParse(variant,
                     VcfVariantParserSettings.Create(ImmutableList.Create("normal", "tumor"), GenomeAssembly.Hg38))
                 .GetOrThrowDebug();
 
-            var _ = WittyerType.ParseFromVariant(vcfVariant, false, sampleName, out var type);
+            WittyerType.ParseFromVariant(vcfVariant, sampleName, out var type, out _);
             if (type == null)
                 throw new NotSupportedException("This test does not handle svType null");
             var wittyerVariant = WittyerVariantInternal
-                .Create(vcfVariant, vcfVariant.Samples[sampleName], type, Bins, PercentDistance, BasepairDistance);
+                .Create(vcfVariant, vcfVariant.Samples[sampleName], type, Bins, PercentDistance, BasepairDistance, 0);
 
             var expectedStart = ContigAndInterval.Create(vcfVariant.Contig, posStart, posEnd);
             var expectedEnd = ContigAndInterval.Create(vcfVariant.Contig, endStart, endEnd);
@@ -129,7 +129,7 @@ namespace Ilmn.Das.App.Wittyer.Test
         [InlineData(ReferenceCnvVariant, 988572, 988623, 988572, 988573, 988622, 988623)]
         [InlineData(RefCall, 2705514, 4124099, 2704532, 2705997, 4123641, 4124956)]
         [InlineData(Cnv, 348501, 402501, 348501, 348502, 402500, 402501)]
-        public static void WittyerVariantIntervalCorrect([NotNull] string variant, uint start, uint end, 
+        public static void WittyerVariantIntervalCorrect(string variant, uint start, uint end, 
             uint posStart, uint posEnd, uint endStart, uint endEnd)
         {
             const string sampleName = "tumor";
@@ -137,11 +137,11 @@ namespace Ilmn.Das.App.Wittyer.Test
                     VcfVariantParserSettings.Create(ImmutableList.Create("normal", sampleName), GenomeAssembly.Hg38))
                 .GetOrThrowDebug();
 
-            var _ = WittyerType.ParseFromVariant(vcfVariant, false, sampleName, out var type);
+            WittyerType.ParseFromVariant(vcfVariant, sampleName, out var type, out _);
             if (type == null)
                 throw new NotSupportedException("This test does not handle svType null");
             var wittyerVariant = WittyerVariantInternal
-                .Create(vcfVariant, vcfVariant.Samples[sampleName], type, Bins, PercentDistance, BasepairDistance);
+                .Create(vcfVariant, vcfVariant.Samples[sampleName], type, Bins, PercentDistance, BasepairDistance, 0);
 
             var expectedStart = ContigAndInterval.Create(vcfVariant.Contig, start, end);
             var expectedPos = BedInterval.Create(posStart, posEnd);
@@ -159,14 +159,14 @@ namespace Ilmn.Das.App.Wittyer.Test
             var vcfSettings =
                 VcfVariantParserSettings.Create(ImmutableList.Create("proband", "father"), GenomeAssembly.Grch37);
             var ref1 = VcfVariant.TryParse(RefSiteUndeterminedGt, vcfSettings).GetOrThrowDebug();
-            WittyerVcfReader.CreateVariant(ref1, ref1.Samples.First().Value, false, "proband",
+            WittyerVcfReader.CreateVariants(ref1, false, "proband",
                 new Dictionary<WittyerType, InputSpec>
                 {
                     {
                         WittyerType.CopyNumberReference,
-                        InputSpec.GenerateCustomInputSpecs(false, new[] {WittyerType.CopyNumberReference}, percentDistance: 0.05).First()
+                        InputSpec.GenerateCustomInputSpecs(true, new[] {WittyerType.CopyNumberReference}, percentThreshold: 0.05).First()
                     }
-                }, new Dictionary<IGeneralBnd, IVcfVariant>(), new List<string>(), true);
+                }, new Dictionary<IGeneralBnd, IVcfVariant>(), new List<string>()).ToList();
         }
 
         [Fact]
@@ -188,7 +188,7 @@ namespace Ilmn.Das.App.Wittyer.Test
             MultiAssert.Equal(expectedEndInterval, wittyerBnd.EndInterval);
             MultiAssert.Equal(230675U, wittyerBnd.Start);
             MultiAssert.Equal(231676U, wittyerBnd.Stop);
-            MultiAssert.Equal(WittyerConstants.StartingBin, wittyerBnd.Win.Start);
+            MultiAssert.Equal(null, wittyerBnd.Win.Start);
             MultiAssert.Equal(null, wittyerBnd.Win.End);
             MultiAssert.AssertAll();
         }
@@ -253,42 +253,91 @@ namespace Ilmn.Das.App.Wittyer.Test
         private const string RefSiteUndeterminedGt =
             "chr1\t86671021\t.\tN\t.\t100\tPASS\tEND=86673792\tGT:CN\t./.:2\t./.:2";
 
+        private const string StartAndStopEqual =
+            "chr6\t106982361\ttrf_348277_p50_r264_514_514\tG\t<CNV:TR>\t.\tPASS\tEND=106982625;RUS=CTCTGCCTCCCAGGCTGGAGTGCAATGGCACCATCTCAGCTCACTGCAAC;REFRUC=5.300000;CN=.;CNVTRLEN=.;SVLEN=264;RUC=.;RUL=50;RUCCHANGE=.;EVENTTYPE=VNTR;SVTYPE=CNV\tGT:PS:CN:SUMRUCCHANGE\t./.:106982361:264.150943:1389.400000\t./.:106982361:264.150943:1389.400000";
+        
         [Theory]
-        [InlineData(RefSite, false, nameof(WittyerType.CopyNumberReference))]
-        [InlineData(RefSite, true, nameof(WittyerType.CopyNumberReference))]
-        [InlineData(GtCnRef, false, nameof(WittyerType.CopyNumberReference))]
-        [InlineData(GtCnRef, true, nameof(WittyerType.CopyNumberReference))]
-        [InlineData(CnRef, false, nameof(WittyerType.CopyNumberReference))]
-        [InlineData(CnRef, true, nameof(WittyerType.CopyNumberReference))]
-        [InlineData(RefCall, false, nameof(WittyerType.CopyNumberReference))]
-        [InlineData(RefCall, true, nameof(WittyerType.CopyNumberReference))]
-        [InlineData(DupIsActuallyDel, false, nameof(WittyerType.CopyNumberLoss))]
-        [InlineData(DupIsActuallyDel, true, nameof(WittyerType.Deletion))]
-        [InlineData(Cnv, false, nameof(WittyerType.CopyNumberLoss))]
-        [InlineData(Cnv, true, nameof(WittyerType.Deletion))]
-        [InlineData(SvCnvDel, false, nameof(WittyerType.CopyNumberLoss))]
-        [InlineData(SvCnvDel, true, nameof(WittyerType.Deletion))]
-        [InlineData(SvCnvDup, false, nameof(WittyerType.CopyNumberGain))]
-        [InlineData(SvCnvDup, true, nameof(WittyerType.Duplication))]
-        [InlineData(SvDel, false, nameof(WittyerType.Deletion))]
-        [InlineData(SvDel, true, nameof(WittyerType.Deletion))]
-        [InlineData(SvDup, false, nameof(WittyerType.Duplication))]
-        [InlineData(SvDup, true, nameof(WittyerType.Duplication))]
-        [InlineData(DupIsActuallyUndetermined, false, null)]
-        [InlineData(DupIsActuallyUndetermined, true, null)]
-        [InlineData(RefSiteUndeterminedGt, true, nameof(WittyerType.CopyNumberReference))]
-        public static void ParseWittyerVariantType_AssignCorrectType([NotNull] string vcfString, bool isCrossTypeOn,
-            [CanBeNull] string expected)
+        [InlineData(RefSite, nameof(WittyerType.CopyNumberReference))]
+        [InlineData(GtCnRef, nameof(WittyerType.CopyNumberReference))]
+        [InlineData(CnRef, nameof(WittyerType.CopyNumberReference))]
+        [InlineData(RefCall, nameof(WittyerType.CopyNumberReference))]
+        [InlineData(DupIsActuallyDel, nameof(WittyerType.CopyNumberLoss))]
+        [InlineData(Cnv, nameof(WittyerType.CopyNumberLoss))]
+        [InlineData(SvCnvDel, nameof(WittyerType.CopyNumberLoss))]
+        [InlineData(SvCnvDup, nameof(WittyerType.CopyNumberGain))]
+        [InlineData(SvDel, nameof(WittyerType.Deletion))]
+        [InlineData(SvDup, nameof(WittyerType.Duplication))]
+        [InlineData(DupIsActuallyUndetermined, null)]
+        [InlineData(RefSiteUndeterminedGt, nameof(WittyerType.CopyNumberReference))]
+        [InlineData(StartAndStopEqual, nameof(WittyerType.CopyNumberTandemRepeat))]
+        public static void ParseWittyerVariantType_AssignCorrectType(string vcfString, string? expected)
         {
             const string sampleName = "s1";
             var variant = VcfVariant.TryParse(vcfString,
                     VcfVariantParserSettings.Create(ImmutableList.Create(sampleName, "s2"), GenomeAssembly.Hg38))
                 .GetOrThrowDebug();
-            var reason = WittyerType.ParseFromVariant(variant, isCrossTypeOn, sampleName, out var assignedType);
+            var reason = WittyerType.ParseFromVariant(variant, sampleName, out var assignedType, out _);
             if (expected == null)
                 Assert.Equal(FailedReason.UndeterminedCn, reason);
             else
                 Assert.Equal(WittyerType.Parse(expected), assignedType);
+        }
+        
+
+        private const string SvDupNoSample =
+            "chr10\t43610592\tbnd_E\tG\t<DUP:TANDEM>\t.\tPASS\tEND=51584250;SVTYPE=DUP;SVLEN=7973658;GENES=RET-NCOA4";
+        
+        [Theory]
+        [InlineData(SvDupNoSample, nameof(WittyerType.Duplication))]
+        public static void ParseWittyerVariantType_AssignCorrectType_No_Sample(string vcfString, string expected)
+        {
+            var variants = WittyerVcfReader.CreateVariantFromAltIndex(VcfVariant.TryParse(vcfString,
+                        VcfVariantParserSettings.Create(ImmutableList<string>.Empty, GenomeAssembly.Hg38))
+                    .GetOrThrowDebug(), true, null,
+                InputSpec.GenerateDefaultInputSpecs(false).ToDictionary(it => it.VariantType, it => it),
+                new Dictionary<IGeneralBnd, IVcfVariant>(), new List<string>(), null, null, out _).ToList();
+            MultiAssert.Equal(1, variants.Count);
+            var variant = variants[0];
+            if (variant is IWittyerVariant wit)
+            {
+                MultiAssert.Equal(0, wit.Sample.Why.Count);
+                MultiAssert.Equal(expected, wit.VariantType.Name);
+            }
+            else
+            {
+                var vcf = variant as IVcfVariant;
+                MultiAssert.Equal(VcfConstants.MissingValueString,
+                    vcf?.Samples.First().Value.SampleDictionary[WittyerConstants.WittyerMetaInfoLineKeys.Why]);
+            }
+            MultiAssert.AssertAll();
+        }
+        
+        private const string FailedParsingFromBedInterval =
+            "chr2\t2580139\ttrf000076139_p38_r1370_1372_1370\tG\t<CNV:TR>\t.\tPASS\tSVLEN=1370;SVTYPE=CNV;EVENTTYPE=VNTR;RUC=36.05;REFRUC=36.052632;RUL=38;RUS=GAGGGTGTATGTCGGGGGGTGCACTGTGCATGTCTGTC;END=2581509;CN=0.999927\tGT:PS:CN\t1|0:2580139:1.999927";
+
+        [Theory]
+        [InlineData(FailedParsingFromBedInterval, nameof(WittyerType.CopyNumberTandemRepeat))]
+        public static void ParseWittyerVariantType_AssignCorrectTypeWithSample(string vcfString, string expected)
+        {
+            var variants = WittyerVcfReader.CreateVariantFromAltIndex(VcfVariant.TryParse(vcfString,
+                        VcfVariantParserSettings.Create(ImmutableList.Create("s1"), GenomeAssembly.Hg38))
+                    .GetOrThrowDebug(), true, null,
+                InputSpec.GenerateDefaultInputSpecs(false).ToDictionary(it => it.VariantType, it => it),
+                new Dictionary<IGeneralBnd, IVcfVariant>(), new List<string>(), null, null, out _).ToList();
+            MultiAssert.Equal(1, variants.Count);
+            var variant = variants[0];
+            if (variant is IWittyerVariant wit)
+            {
+                MultiAssert.Equal(0, wit.Sample.Why.Count);
+                MultiAssert.Equal(expected, wit.VariantType.Name);
+            }
+            else
+            {
+                var vcf = variant as IVcfVariant;
+                MultiAssert.Equal(VcfConstants.MissingValueString,
+                    vcf?.Samples.First().Value.SampleDictionary[WittyerConstants.WittyerMetaInfoLineKeys.Why]);
+            }
+            MultiAssert.AssertAll();
         }
     }
 }

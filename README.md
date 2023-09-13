@@ -1,6 +1,6 @@
 # witty.er
 
-What is true, thank you, earnestly. A large variant evaluation tool upgraded from [wit.ty](https://git.illumina.com/DASTE/Ilmn.Das.App.Witty/blob/develop/Witty/README.md)
+What is true, thank you, earnestly. A large variant evaluation tool upgraded from wit.ty
 
 Developers: **[Yinan Wan](mailto:ywan@illumina.com)**, **[Kent Ho](mailto:kho@illumina.com)**
 
@@ -10,10 +10,11 @@ Release Notes: **[Witty.er release notes](docs/release-notes/README.md)**
 
 ## System Requirements
 
-- witty.er is built using C# dotnet core 2.0 framework.  
+- witty.er is built using C# dotnet 6.0 framework or docker. 
 - This repo can be cloned and compiled using MS Build or run directly with dotnet.  
 - To run in MS Windows or linux, just call dotnet Wittyer.dll.  
 - Alternatively, Docker can be used. See [Quick Start](#quick-start)
+- __IMPORTANT NOTE__: This doesn't work on Mac M1, for that case, please use unzipped files only and docker.
 
 ## Quick Start
 
@@ -34,8 +35,11 @@ dotnet bin/Release/netcoreapp2.0/Wittyer.dll -i input.vcf -t truth.vcf -o output
 # NOTE: Mac Docker has a default memory limit of 2GB, but the program needs more memory than that.
 # Please see https://docs.docker.com/docker-for-mac/#advanced to set the docker container memories to a minimum of 4GB.
 git clone https://github.com/Illumina/witty.er.git
+
+# Note: Mac M1 needs `--platform linux/x86_64` to be appended after `docker build`
 docker build witty.er -t wittyer
 
+# Note: Mac M1 needs `--platform linux/x86_64` to be appended after `docker run`
 docker run --rm \
   --workdir $(pwd) \
   -v $(pwd):$(pwd) \
@@ -53,12 +57,11 @@ docker run --rm \
   * sniffles
     * Filter out all SVTYPEs except ["DEL", "INS", "DUP", "INV", "CNV"]
   * HGSVC truth set
-    * CIEND and CIPOS that are `0,.` or `.,0` or what not crashes since the intention is unclear.  Please filter out entries with these values for these tags.
+    * CIEND and CIPOS that are 0,. or .,0 or what not crashes since the intention is unclear. Please filter out entries with these values for these tags.
   * dipcall
     * It has illegal characters (non-VCF spec legal) in DNA sequences.  Things like `R`, `K`, `W` etc.
     * contains multi-allelic alts, probably split and take largest one or first one
     * lacks SVLEN INFO tag (might not be fully needed, but it helps)
-
 
 ## Contents
 

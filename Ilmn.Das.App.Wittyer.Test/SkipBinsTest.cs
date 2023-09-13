@@ -4,8 +4,10 @@ using System.Linq;
 using Ilmn.Das.App.Wittyer.Infrastructure;
 using Ilmn.Das.App.Wittyer.Input;
 using Ilmn.Das.App.Wittyer.Stats;
+using Ilmn.Das.App.Wittyer.Utilities.Enums;
 using Ilmn.Das.App.Wittyer.Vcf.Variants;
 using Ilmn.Das.Core.Tries.Extensions;
+using Ilmn.Das.Std.AppUtils.Collections;
 using Ilmn.Das.Std.AppUtils.Misc;
 using Ilmn.Das.Std.XunitUtils;
 using Xunit;
@@ -24,13 +26,15 @@ namespace Ilmn.Das.App.Wittyer.Test
         public void SkippedBinsAreIgnoredInStats()
         {
             var outputDirectory = Path.GetRandomFileName().ToDirectoryInfo();
+            const uint firstKeptBin = 100000U;
+            const uint secondKeptBin = 300000U;
             var alternatingBins = ImmutableList<(uint size, bool skip)>.Empty
                 .Add((1, true))
-                .Add((100000, false))
+                .Add((firstKeptBin, false))
                 .Add((200000, true))
-                .Add((300000, false));
+                .Add((secondKeptBin, false));
 
-            var inputSpecs = InputSpec.GenerateDefaultInputSpecs(true)
+            var inputSpecs = InputSpec.GenerateDefaultInputSpecs(false)
                 .Select(i => InputSpec.Create(i.VariantType, alternatingBins,
                     1, 1, i.ExcludedFilters, i.IncludedFilters, i.IncludedRegions))
                 .ToDictionary(i => i.VariantType, i => i);
@@ -39,14 +43,17 @@ namespace Ilmn.Das.App.Wittyer.Test
                 inputSpecs);
 
             var (_, query, truth) = MainLauncher.GenerateResults(wittyerSettings).EnumerateSuccesses().First();
-            var results = MainLauncher.GenerateSampleMetrics(truth, query, false, inputSpecs);
+            var results = MainLauncher.GenerateSampleMetrics(truth, query, false, inputSpecs, false);
 
             MultiAssert.Equal(2U, results.OverallStats[StatsType.Event].QueryStats.TrueCount);
             MultiAssert.Equal(1U, results.OverallStats[StatsType.Event].QueryStats.FalseCount);
-            MultiAssert.Equal(0.6666666666666666, results.EventLevelRecallOverall.First(typeRecallTuple => typeRecallTuple.type == WittyerType.CopyNumberGain).recall);
+            MultiAssert.Equal(0.6666666666666666,
+                results.EventLevelRecallOverall.First(typeRecallTuple =>
+                    typeRecallTuple.type.Is(WittyerType.CopyNumberGain)).recall);
 
-            var numberOfBinsReportedOn = results.EventLevelRecallPerBin.First().perBinRecall.Count();
-            MultiAssert.Equal(2, numberOfBinsReportedOn);
+            var bins = results.EventLevelRecallPerBin.First().perBinRecall
+                .Select(it => it.binStart).Where(it => it != null).ToList();
+            MultiAssert.Equal(firstKeptBin.FollowedBy(secondKeptBin).StringJoin(","), bins.StringJoin(","));
             MultiAssert.AssertAll();
         }
     }

@@ -11,6 +11,7 @@ using Ilmn.Das.App.Wittyer.Results;
 using Ilmn.Das.App.Wittyer.Stats;
 using Ilmn.Das.App.Wittyer.Utilities;
 using Ilmn.Das.App.Wittyer.Utilities.Enums;
+using Ilmn.Das.App.Wittyer.Vcf.Readers;
 using Ilmn.Das.App.Wittyer.Vcf.Variants;
 using Ilmn.Das.Core.Tries.Extensions;
 using Ilmn.Das.Std.AppUtils.Collections;
@@ -19,11 +20,7 @@ using Ilmn.Das.Std.AppUtils.Misc;
 using Ilmn.Das.Std.BioinformaticUtils.Contigs;
 using Ilmn.Das.Std.BioinformaticUtils.GenomicFeatures;
 using Ilmn.Das.Std.VariantUtils.Vcf;
-using Ilmn.Das.Std.VariantUtils.Vcf.Parsers;
-using Ilmn.Das.Std.VariantUtils.Vcf.Readers;
-using Ilmn.Das.Std.VariantUtils.Vcf.Variants;
 using Ilmn.Das.Std.XunitUtils;
-using JetBrains.Annotations;
 using Monad.Parsec;
 using Newtonsoft.Json;
 using Xunit;
@@ -34,7 +31,7 @@ namespace Ilmn.Das.App.Wittyer.Test
     public class EndToEndTest
     {
         private static readonly IImmutableDictionary<WittyerType, InputSpec> InputSpecs =
-            InputSpec.GenerateCustomInputSpecs(true, WittyerType.AllTypes, percentDistance: 0.05)
+            InputSpec.GenerateCustomInputSpecs(true, WittyerType.AllTypes, percentThreshold: 0.05)
                 .ToImmutableDictionary(x => x.VariantType, x => x);
 
         //CNV files
@@ -80,11 +77,12 @@ namespace Ilmn.Das.App.Wittyer.Test
 
             var outputDirectory = Path.GetRandomFileName().ToDirectoryInfo();
             var wittyerSettings = WittyerSettings.Create(outputDirectory, GermlineTruth, GermlineQuery,
-                ImmutableList<ISamplePair>.Empty, EvaluationMode.Default, InputSpecs);
+                ImmutableList<ISamplePair>.Empty, EvaluationMode.GenotypeMatching, InputSpecs);
 
-            var json = MainLauncher.GenerateJson(wittyerSettings, MainLauncher.GenerateResults(wittyerSettings).EnumerateSuccesses(), EmptyCmd);
+            var json = MainLauncher.GenerateJson(wittyerSettings, 
+                MainLauncher.GenerateResults(wittyerSettings).EnumerateSuccesses(), EmptyCmd)[(MatchEnum.Unmatched, true)];
             //var str = JsonConvert.SerializeObject(json, Formatting.Indented);
-            var stats = json.GetOrThrow().PerSampleStats.First();
+            var stats = json.PerSampleStats.First();
             var expectedStats = JsonConvert.DeserializeObject<GeneralStats>(File.ReadAllText(SvJsonGt.FullName))
                 .PerSampleStats.First();
 
@@ -134,7 +132,7 @@ namespace Ilmn.Das.App.Wittyer.Test
 
             var stats = MainLauncher
                 .GenerateJson(wittyerSettings, results,
-                    EmptyCmd).GetOrThrow().PerSampleStats.First();
+                    EmptyCmd)[(MatchEnum.Unmatched, false)].PerSampleStats.First();
 
             // make sure to check for null
             MultiAssert.True(stats.QuerySampleName != null);
@@ -155,13 +153,13 @@ namespace Ilmn.Das.App.Wittyer.Test
             MultiAssert.AssertAll();
         }
 
-        private static bool ParseVariantGetTag([NotNull] string variant, WitDecision targetDecision)
+        private static bool ParseVariantGetTag(string variant, WitDecision targetDecision)
         {
             var parser = VcfVariantParserSettings.Create(new List<string> { "sample" });
             var vcfVariant = VcfVariant.TryParse(variant, parser).GetOrThrow();
             var sampleDictionary = vcfVariant.Samples.Single().Value.SampleDictionary;
             if (vcfVariant.Info.TryGetValue(WittyerConstants.WittyerMetaInfoLineKeys.Who, out var who))
-                if (who.Split(WittyerConstants.SampleValueDel).Length > WittyerConstants.MaxNumberOfAnnotations)
+                if (who.Split(WittyerConstants.SampleValueDel).Length > WittyerConstants.DefaultMaxMatches)
                     return false;
             return sampleDictionary
                 .TryGetValue(WittyerConstants.WittyerMetaInfoLineKeys.Wit).Any(it =>
@@ -182,7 +180,7 @@ namespace Ilmn.Das.App.Wittyer.Test
 
             var actualStats = MainLauncher
                 .GenerateJson(wittyerSettings, MainLauncher.GenerateResults(wittyerSettings).EnumerateSuccesses(),
-                    EmptyCmd).GetOrThrow().PerSampleStats.First();
+                    EmptyCmd)[(MatchEnum.Unmatched, false)].PerSampleStats.First();
             //var str = JsonConvert.SerializeObject(actualStats, Formatting.Indented);
             var jsonText = File.ReadAllText(CnvJsonSc.FullName);
             var expectedStats = JsonConvert.DeserializeObject<GeneralStats>(jsonText)
@@ -398,7 +396,7 @@ namespace Ilmn.Das.App.Wittyer.Test
                     if (!variant.Info.TryGetValue(VcfConstants.SvTypeKey, out var svType)
                         || !WittyerConstants.BaseLevelStatsTypeStrings.Contains(svType))
                         return false;
-                    if (!int.TryParse(cn, out var ploidy))
+                    if (!decimal.TryParse(cn, out var ploidy))
                         return false;
 
                     isRef = (hasGt
@@ -450,8 +448,8 @@ namespace Ilmn.Das.App.Wittyer.Test
 
             //var insertionSpec = InputSpecs[WittyerVariantType.Insertion];
             var insertionSpec = InputSpec.Create(WittyerType.Insertion,
-                WittyerConstants.DefaultBins.SetItem(0, (50, false)),
-                WittyerConstants.DefaultBpOverlap, 0.05, WittyerConstants.DefaultExcludeFilters,
+                WittyerType.Insertion.DefaultBins.SetItem(0, (50, false)),
+                WittyerConstants.DefaultAbsThreshold, 0.05, WittyerConstants.DefaultExcludeFilters,
                 WittyerConstants.DefaultIncludeFilters, null);
             var outputDirectory = Path.GetRandomFileName().ToDirectoryInfo();
             var wittyerSettings = WittyerSettings.Create(outputDirectory, SomaticTruth,
@@ -471,8 +469,8 @@ namespace Ilmn.Das.App.Wittyer.Test
             testStrings = WittyerVcfWriter.GenerateVcfStrings(null, truth, null).Where(line => !line.StartsWith(VcfConstants.Header.Prefix));
             MultiAssert.True(testStrings.All(s => ParseVariantGetTag(s, WitDecision.FalseNegative)));
 
-            var actualStats = GeneralStats.Create(results,
-                    wittyerSettings.Mode == EvaluationMode.Default, wittyerSettings.InputSpecs, EmptyCmd).PerSampleStats
+            var actualStats = GeneralStats.Create(results, wittyerSettings.InputSpecs, 
+                    wittyerSettings.Mode == EvaluationMode.CrossTypeAndSimpleCounting,EmptyCmd)[(MatchEnum.Unmatched, false)].PerSampleStats
                 .First();
             var expectedStats = JsonConvert.DeserializeObject<GeneralStats>(File.ReadAllText(SvJsonSc.FullName))
                 .PerSampleStats.First();

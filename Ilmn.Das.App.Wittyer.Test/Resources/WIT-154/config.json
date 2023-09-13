@@ -18,6 +18,24 @@
     "includeBed": ""
   },
   {
+    "variantType": "CopyNumberGain",
+    "binSizes": "1000,5000,10000,20000,50000",
+    "bpDistance": 10000,
+    "percentDistance": 0.25,
+    "includedFilters": "PASS",
+    "excludedFilters": "",
+    "includeBed": ""
+  },
+  {
+    "variantType": "CopyNumberLoss",
+    "binSizes": "1000,5000,10000,20000,50000",
+    "bpDistance": 10000,
+    "percentDistance": 0.25,
+    "includedFilters": "PASS",
+    "excludedFilters": "",
+    "includeBed": ""
+  },
+  {
     "variantType": "CopyNumberReference",
     "binSizes": "1000,5000,10000,20000,50000",
     "bpDistance": 10000,

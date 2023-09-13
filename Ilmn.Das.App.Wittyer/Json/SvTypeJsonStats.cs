@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Ilmn.Das.App.Wittyer.Infrastructure;
 using Ilmn.Das.App.Wittyer.Stats;
 using Ilmn.Das.App.Wittyer.Utilities;
 using Ilmn.Das.App.Wittyer.Vcf.Variants;
 using Ilmn.Das.Std.AppUtils.Collections;
-using JetBrains.Annotations;
 using Newtonsoft.Json;
 
 namespace Ilmn.Das.App.Wittyer.Json
@@ -56,14 +56,13 @@ namespace Ilmn.Das.App.Wittyer.Json
         /// <summary>
         /// Initializes a new instance of the <see cref="SvTypeJsonStats"/> class using the given benchmarkMetrics.
         /// </summary>
-        [NotNull]
-        public static SvTypeJsonStats Create([NotNull] IBenchmarkMetrics<WittyerType> benchmarkMetrics)
+        public static SvTypeJsonStats Create(IBenchmarkMetrics<PrimaryCategory> benchmarkMetrics)
         {
-            if (benchmarkMetrics.Category == WittyerType.TranslocationBreakend)
+            if (benchmarkMetrics.Category.Is(WittyerType.TranslocationBreakend))
             {
                 var stats = benchmarkMetrics.BinnedStats[0];
                 var eventStats = stats.Stats[StatsType.Event];
-                return new SvTypeJsonStats(benchmarkMetrics.Category.Name,
+                return new SvTypeJsonStats(benchmarkMetrics.Category.ToString(),
                     new[]
                     { // overall stats are same as bin stats since no bins
                         BasicJsonStats.Create(StatsType.Event,
@@ -97,7 +96,7 @@ namespace Ilmn.Das.App.Wittyer.Json
                 .Select(s => BasicJsonStats.Create(s.Key, s.Value.TruthStats.TrueCount,
                     s.Value.TruthStats.FalseCount, s.Value.QueryStats.TrueCount, s.Value.QueryStats.FalseCount))
                 .ToReadOnlyList();
-            return new SvTypeJsonStats(benchmarkMetrics.Category.Name, overallStats, binJsonStatsList);
+            return new SvTypeJsonStats(benchmarkMetrics.Category.ToString(), overallStats, binJsonStatsList);
         }
     }
 }

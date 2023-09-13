@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Linq;
-using JetBrains.Annotations;
 using Newtonsoft.Json;
 
 namespace Ilmn.Das.App.Wittyer.Json.JsonConverters
@@ -16,7 +15,7 @@ namespace Ilmn.Das.App.Wittyer.Json.JsonConverters
             bool hasExistingValue, JsonSerializer serializer) 
             => throw new NotSupportedException();
 
-        public override void WriteJson([NotNull] JsonWriter writer, [NotNull] IEnumerable value, JsonSerializer serializer) 
+        public override void WriteJson(JsonWriter writer, IEnumerable value, JsonSerializer serializer) 
             => writer.WriteValue(string.Join(",", value.Cast<object>()));
 
         public override bool CanRead => false;

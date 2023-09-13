@@ -6,6 +6,7 @@ using System.Linq;
 using Ilmn.Das.App.Wittyer.Input;
 using Ilmn.Das.App.Wittyer.Utilities;
 using Ilmn.Das.App.Wittyer.Utilities.Enums;
+using Ilmn.Das.App.Wittyer.Vcf.Samples;
 using Ilmn.Das.App.Wittyer.Vcf.Variants;
 using Ilmn.Das.Std.AppUtils.Collections;
 using Ilmn.Das.Std.AppUtils.Comparers;
@@ -14,8 +15,7 @@ using Ilmn.Das.Std.AppUtils.Intervals;
 using Ilmn.Das.Std.BioinformaticUtils.Contigs;
 using Ilmn.Das.Std.BioinformaticUtils.GenomicFeatures;
 using Ilmn.Das.Std.VariantUtils.Vcf.Headers;
-using Ilmn.Das.Std.VariantUtils.Vcf.Variants;
-using Ilmn.Das.Std.VariantUtils.Vcf.Variants.Samples;
+
 using JetBrains.Annotations;
 using static Ilmn.Das.App.Wittyer.Utilities.WittyerConstants.WittyerMetaInfoLineKeys;
 using static Ilmn.Das.Std.VariantUtils.Vcf.VcfConstants;
@@ -27,8 +27,8 @@ namespace Ilmn.Das.App.Wittyer.Results
         private static readonly string[] DefaultSampleNamesPair = new[] {DefaultTruthSampleName, DefaultQuerySampleName};
         private static readonly string NoOverlapString = FailedReason.NoOverlap.ToString();
 
-        internal static IEnumerable<string> GenerateVcfStrings([CanBeNull] IWittyerResult queryResult, [CanBeNull] IWittyerResult truthResult,
-            [CanBeNull] string cmdLine)
+        internal static IEnumerable<string> GenerateVcfStrings(IWittyerResult? queryResult, IWittyerResult? truthResult,
+            string? cmdLine)
         {
             if (truthResult == null && queryResult == null)
                 throw new InvalidOperationException(
@@ -103,8 +103,7 @@ namespace Ilmn.Das.App.Wittyer.Results
             }
         }
         
-        [NotNull]
-        internal static string ToString([NotNull] IVcfVariant variant, bool? isTruth)
+        internal static string ToString(IVcfVariant variant, bool? isTruth)
         {
             var ret = variant.ToStrings().Take(FormatIndex).ToList();
 
@@ -140,7 +139,7 @@ namespace Ilmn.Das.App.Wittyer.Results
             return ret.StringJoin(ColumnDelimiter);
         }
 
-        internal static IEnumerable<IVcfVariant> ProcessVariants([NotNull] IWittyerResult result, bool? isTruth)
+        internal static IEnumerable<IVcfVariant> ProcessVariants(IWittyerResult result, bool? isTruth)
         {
             var sampleIndex = isTruth == false ? 1 : 0;
 
@@ -170,16 +169,14 @@ namespace Ilmn.Das.App.Wittyer.Results
                 //Info tag
                 var win = originalVariant.Win.ToString();
                 var annotations = originalVariant.OverlapInfo;
-                if (annotations.Count > WittyerConstants.MaxNumberOfAnnotations)
-                    annotations = annotations.Take(WittyerConstants.MaxNumberOfAnnotations).ToList();
 
                 var where = annotations.Count == 0
                     ? MissingValueString
-                    : annotations.Select(x => x.Where.ToString())
+                    : annotations.Select(x => x.Where?.ToString() ?? MissingValueString)
                         .StringJoin(WittyerConstants.InfoValueDel);
                 var who = annotations.Count == 0
                     ? MissingValueString
-                    : annotations.Select(x => x.Who).StringJoin(WittyerConstants.InfoValueDel);
+                    : annotations.Select(x => x.Who?.ToString() ?? MissingValueString).StringJoin(WittyerConstants.InfoValueDel);
                 var wow = !originalVariant.VariantType.HasOverlappingWindows ||
                           annotations.Count == 0
                     ? MissingValueString
@@ -194,8 +191,8 @@ namespace Ilmn.Das.App.Wittyer.Results
                         {Wow, wow}
                     };
 
-                var samples = AddWitTags(originalVariant.Sample.GetOriginalSample()?.SampleDictionary, isTruth == null
-                    ? new[] {originalVariant.Sample.GetOriginalSample()?.SampleName ?? "SAMPLE"}
+                var samples = AddWitTags(originalVariant.Sample.OriginalSample?.SampleDictionary, isTruth == null
+                    ? new[] {originalVariant.Sample.OriginalSample?.SampleName ?? "SAMPLE"}
                     : DefaultSampleNamesPair);
 
                 var updatedInfo = originalVariant.OriginalVariant.Info.ToImmutableDictionary().SetItems(infoDict);
@@ -207,17 +204,19 @@ namespace Ilmn.Das.App.Wittyer.Results
                 // insertions are secretly two breakends repeated.
                 if (originalVariant is IWittyerBnd bnd && !ReferenceEquals(bnd.OriginalVariant, bnd.EndOriginalVariant))
                 {
-                    var sample = bnd.EndOriginalVariant.Samples.Values.FirstOrDefault();
+                    var sample = bnd.EndOriginalVariant.Samples.Count > 0
+                        ? bnd.EndOriginalVariant.Samples.Values[0]
+                        : null;
                     samples = AddWitTags(sample?.SampleDictionary, isTruth == null
                         ? new[] { sample?.SampleName ?? "SAMPLE" }
                         : DefaultSampleNamesPair);
                     yield return bnd.EndOriginalVariant.ToBuilder()
                         .SetInfo(bnd.EndOriginalVariant.Info.ToImmutableDictionary().SetItems(infoDict)).SetSamples(samples).Build();}
 
-                string ToWowString(IInterval<uint> interval)
+                string ToWowString(IInterval<uint>? interval)
                     => interval == null ? MissingValueString : $"{interval.Start}-{interval.Stop}";
 
-                SampleDictionaries AddWitTags(IReadOnlyDictionary<string, string> sampleDict, string[] sampleNames)
+                SampleDictionaries AddWitTags(IReadOnlyDictionary<string, string>? sampleDict, string[] sampleNames)
                     => GetClearedSampleBuilder(sampleDict,
                             sampleNames)
                         .SetSampleField(sampleIndex,
@@ -229,14 +228,10 @@ namespace Ilmn.Das.App.Wittyer.Results
                                     : originalVariant.Sample.Why.Select(x => x.ToStringDescription())
                                         .StringJoin(WittyerConstants.SampleValueDel)))
                         .SetSampleField(sampleIndex,
-                            (What,
-                                originalVariant.Sample.What.Count == 0
-                                    ? MissingValueString
-                                    : originalVariant.Sample.What.Select(x => x.ToStringDescription())
-                                        .StringJoin(WittyerConstants.SampleValueDel))).Build();
+                            (What, originalVariant.Sample.What.Count == 0 ? MissingValueString : originalVariant.Sample.What.StringJoin(WittyerConstants.SampleValueDel))).Build();
             }
 
-            SampleDictionaryBuilder GetClearedSampleBuilder(IReadOnlyDictionary<string, string> sampleDict, params string[] sampleNames)
+            SampleDictionaryBuilder GetClearedSampleBuilder(IReadOnlyDictionary<string, string>? sampleDict, params string[] sampleNames)
             {
                 var builder = SampleDictionaries.CreateBuilder();
                 foreach (var sampleName in sampleNames)
@@ -253,10 +248,9 @@ namespace Ilmn.Das.App.Wittyer.Results
             }
         }
 
-        [NotNull]
         [Pure]
-        internal static CustomClassComparer<IVcfVariant> CreateComparer([CanBeNull] IReadOnlyList<IContigInfo> queryContigs, 
-            [CanBeNull] IReadOnlyList<IContigInfo> truthContigs)
+        internal static CustomClassComparer<IVcfVariant> CreateComparer(IReadOnlyList<IContigInfo>? queryContigs, 
+            IReadOnlyList<IContigInfo>? truthContigs)
         {
             IReadOnlyCollection<IContigInfo> less = ImmutableList<IContigInfo>.Empty, more;
             if (queryContigs == null)
@@ -348,7 +342,7 @@ namespace Ilmn.Das.App.Wittyer.Results
                 if (i != 0 && contig[i - 1] == '.')
                     return int.MinValue; // decoy contigs
 
-                return i <= 1 ? int.Parse(contig) : int.Parse(contig.Substring(i));
+                return i <= 1 ? int.Parse(contig) : int.Parse(contig[i..]);
             }
         }
     }

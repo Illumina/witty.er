@@ -32,7 +32,7 @@ namespace Ilmn.Das.App.Wittyer.Test
         {
             var outputDirectory = Path.GetRandomFileName().ToDirectoryInfo();
             var inputSpecs = InputSpec.CreateSpecsFromString(
-                    File.ReadAllText(Config.FullName), IncludeBedFile.CreateFromBedFile(Bed))
+                    File.ReadAllText(Config.FullName), IncludeBedFile.CreateFromBedFile(Bed), true)
                 ?.ToDictionary(i => i.VariantType, i => i)
                              ?? new Dictionary<WittyerType, InputSpec>();
             var wittyerSettings = WittyerSettings.Create(outputDirectory, Truth, Query,
@@ -42,10 +42,13 @@ namespace Ilmn.Das.App.Wittyer.Test
             var (_, query, truth) = MainLauncher.GenerateResults(wittyerSettings)
                 .EnumerateSuccesses().First();
             var results = MainLauncher
-                .GenerateSampleMetrics(truth, query, false, inputSpecs);
-            var baseStats = results.DetailedStats[WittyerType.Deletion].OverallStats[StatsType.Base];
+                .GenerateSampleMetrics(truth, query, false, inputSpecs, true);
+            var baseStats = results.DetailedStats[Quantify.DelAndCnLossCategory].OverallStats[StatsType.Base];
             MultiAssert.Equal(206678U, baseStats.QueryStats.TrueCount);
             MultiAssert.Equal(206678U, baseStats.TruthStats.TrueCount);
+            baseStats = results.DetailedStats[Category.Create(WittyerType.CopyNumberReference)].OverallStats[StatsType.Base];
+            MultiAssert.Equal(608598U, baseStats.QueryStats.FalseCount);
+            MultiAssert.Equal(10608598U, baseStats.TruthStats.FalseCount);
             MultiAssert.AssertAll();
         }
     }

@@ -11,8 +11,8 @@ using Ilmn.Das.Std.BioinformaticUtils.Bed;
 using Ilmn.Das.Std.BioinformaticUtils.Contigs;
 using Ilmn.Das.Std.BioinformaticUtils.GenomicFeatures;
 using Ilmn.Das.Std.VariantUtils.SimpleVariants;
-using Ilmn.Das.Std.VariantUtils.Vcf.Variants;
 using Ilmn.Das.Std.VariantUtils.Vcf.Variants.Samples;
+
 using JetBrains.Annotations;
 
 namespace Ilmn.Das.App.Wittyer.Vcf.Variants
@@ -21,28 +21,30 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
     {
         private readonly IInterval<uint> _posInterval;
 
-        private WittyerBndInternal([NotNull] WittyerType svType, [NotNull] IVcfVariant baseVariant, 
-            [NotNull] IInterval<uint> posInterval, [NotNull] IInterval<uint> ciPosInterval, 
-            [NotNull] IVcfVariant endOriginalVariant, [NotNull] IContigAndInterval endInterval, 
-            [NotNull] IInterval<uint> ciEndInterval, [NotNull] Winner win, [NotNull] IWittyerSample sample)
+        private WittyerBndInternal(WittyerType svType, IVcfVariant baseVariant, 
+            IInterval<uint> posInterval, IInterval<uint> ciPosInterval, 
+            IVcfVariant endOriginalVariant, IContigAndInterval endInterval, 
+            IInterval<uint> ciEndInterval, Winner win, IWittyerSample sample, IInterval<uint>? svLenInterval)
         {
             Contig = baseVariant.Contig;
             _posInterval = posInterval;
             EndInterval = endInterval;
             Sample = sample;
+            SvLenInterval = svLenInterval;
             OriginalVariant = baseVariant;
             EndOriginalVariant = endOriginalVariant;
             Win = win;
             VariantType = svType;
             CiPosInterval = ciPosInterval;
             CiEndInterval = ciEndInterval;
+            EndRefPos = endOriginalVariant.Position + 1;
         }
 
         public IContigInfo Contig { get; }
 
-        public int CompareTo(IInterval<uint> other) => _posInterval.CompareTo(other);
+        public int CompareTo(IInterval<uint>? other) => _posInterval.CompareTo(other);
 
-        public bool Equals(IInterval<uint> other) => _posInterval.Equals(other);
+        public bool Equals(IInterval<uint>? other) => _posInterval.Equals(other);
 
         /// <inheritdoc />
         public uint Start => _posInterval.Start;
@@ -57,10 +59,10 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
         public bool IsStopInclusive => _posInterval.IsStopInclusive;
 
         /// <inheritdoc />
-        public int CompareTo(IContigAndInterval other) => ContigAndIntervalComparer.Default.Compare(this, other);
+        public int CompareTo(IContigAndInterval? other) => ContigAndIntervalComparer.Default.Compare(this, other);
 
         /// <inheritdoc />
-        public bool Equals(IContigAndInterval other) 
+        public bool Equals(IContigAndInterval? other) 
             => ContigAndIntervalComparer.Default.Equals(this, other);
 
         /// <inheritdoc />
@@ -78,10 +80,14 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
         /// <inheritdoc />
         public IContigAndInterval EndInterval { get; }
 
-        private readonly List<OverlapAnnotation> _overlapInfo = new List<OverlapAnnotation>();
+        /// <inheritdoc />
+        public uint EndRefPos { get; }
 
         /// <inheritdoc />
-        public IReadOnlyList<OverlapAnnotation> OverlapInfo => _overlapInfo.AsReadOnly();
+        public List<OverlapAnnotation> OverlapInfo { get; } = new();
+
+        /// <inheritdoc />
+        IReadOnlyList<OverlapAnnotation> IWittyerSimpleVariant.OverlapInfo => OverlapInfo.AsReadOnly();
 
         /// <inheritdoc />
         public IWittyerSample Sample { get; }
@@ -89,12 +95,14 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
         /// <inheritdoc />
         public IVcfVariant OriginalVariant { get; }
 
+        public IInterval<uint>? SvLenInterval { get; }
+
         /// <inheritdoc />
-        public void AddToOverlapInfo(OverlapAnnotation newAnnotation) => _overlapInfo.Add(newAnnotation);
+        public void AddToOverlapInfo(OverlapAnnotation newAnnotation) => OverlapInfo.Add(newAnnotation);
 
         /// <inheritdoc />
         public void Finalize(WitDecision falseDecision, EvaluationMode mode,
-            GenomeIntervalTree<IContigAndInterval> includedRegions)
+            GenomeIntervalTree<IContigAndInterval>? includedRegions, int? maxMatches)
         {
             bool? isIncluded = null;
             if (includedRegions != null)
@@ -105,24 +113,17 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
                                  || includedRegions.TryGetValue(EndOriginalVariant.Contig, out tree)
                                  && tree.Search(CiEndInterval).Any()); // or end overlaps.
 
-            WittyerVariantInternal.Finalize(this, _overlapInfo, falseDecision, mode, isIncluded);
+            WittyerVariantInternal.Finalize(this, OverlapInfo, falseDecision, mode, isIncluded, maxMatches);
         }
 
         public IVcfVariant EndOriginalVariant { get; }
 
-        [NotNull]
         [Pure]
-        internal static IWittyerBnd CreateInsertion([NotNull] IVcfVariant first, [CanBeNull] IVcfSample originalSample,
-            [NotNull] WittyerType svType, [NotNull] IReadOnlyList<uint> bins, uint bpd, double? pd)
-            => Create(first, originalSample, svType, bins, bpd, pd, first);
-
-        [NotNull]
-        [Pure]
-        internal static IWittyerBnd Create([NotNull] IVcfVariant first, [CanBeNull] IVcfSample originalSample,
-            [NotNull] WittyerType svType, [NotNull] IReadOnlyList<uint> bins, uint bpd, double? percentageDistance,
-            [NotNull] IVcfVariant second)
+        internal static IWittyerBnd Create(IVcfVariant first, IVcfSample? originalSample,
+            WittyerType wittyerType, IReadOnlyList<(uint start, bool skip)> bins, uint bpd, double? percentageDistance,
+            IVcfVariant second)
         {
-            if (!ReferenceEquals(first, second))
+            if (wittyerType != WittyerType.Insertion)
                 (first, second) = FindBndEntriesOrder(in first, in second);
 
             var ciPosInterval = first.Position.ConvertPositionToCiInterval(first, WittyerConstants.Cipos);
@@ -130,58 +131,53 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
                 ? ciPosInterval // same variant means same intervals.
                 : second.Position.ConvertPositionToCiInterval(second, WittyerConstants.Cipos);
 
+            IInterval<uint>? insertionInterval = null;
             IContigAndInterval posInterval, endInterval;
-            if (ReferenceEquals(first, second)) // insertions need trimming and stuff.
+            if (wittyerType == WittyerType.Insertion) // insertions need trimming and stuff.
             {
                 var trimmed = first.TryNormalizeVariant(VariantNormalizer.TrimCommonBases, 0).GetOrThrow();
                 var tuple = (bpd, bpd);
                 var (posStart, posStop) = trimmed.Position.ConvertPositionToCiInterval(tuple);
                 WittyerUtils.GetBetterInterval(ciPosInterval, ref posStart, ref posStop);
                 posInterval = endInterval = ContigAndInterval.Create(first.Contig, posStart, posStop);
+                insertionInterval = GetInsertionInterval(first);
             }
             else
+            {
+                var isIntra = wittyerType == WittyerType.IntraChromosomeBreakend;
+                
+                var isTr = (first.Info.TryGetValue(WittyerConstants.EventTypeInfoKey, out var eventType)
+                           || second.Info.TryGetValue(WittyerConstants.EventTypeInfoKey, out eventType))
+                           && eventType == "TR";
                 (posInterval, endInterval) = WittyerUtils.GetPosAndEndInterval(first.Contig,
-                    svType == WittyerType.IntraChromosomeBreakend ? percentageDistance : null, bpd,
-                    ciPosInterval, first.Position, ciEndInterval, second.Position, second.Contig);
+                    isIntra ? percentageDistance : null, bpd,
+                    ciPosInterval, first.Position, ciEndInterval, second.Position, isTr, second.Contig);
+                if (isIntra)
+                { 
+                    var start = first.Position;
+                    if (start > 0)
+                        start--;
+                    insertionInterval = BedInterval.Create(start, second.Position);
+                }
+            }
 
-            var winner = GetWinner();
+            var winner = Winner.Create(wittyerType, insertionInterval, bins);
 
             var sample = WittyerSample.CreateFromVariant(first, originalSample, false);
-            return new WittyerBndInternal(svType, first, posInterval, ciPosInterval,
-                second, endInterval, ciEndInterval, winner, sample);
+            return new WittyerBndInternal(wittyerType, first, posInterval, ciPosInterval,
+                second, endInterval, ciEndInterval, winner, sample, insertionInterval);
 
             (IVcfVariant first, IVcfVariant second) FindBndEntriesOrder(in IVcfVariant variantA,
                 in IVcfVariant variantB)
                 => ContigAndPositionComparer.Default.Compare(variantA, variantB) > 0
                     ? (variantB, variantA)
                     : (variantA, variantB);
-
-            Winner GetWinner()
-            {
-                if (svType == WittyerType.TranslocationBreakend)
-                    return Winner.Create(svType);
-
-
-                IInterval<uint> bedInterval;
-                if (svType == WittyerType.Insertion)
-                    bedInterval = GetInsertionInterval(first);
-                else
-                {
-                    var start = first.Position;
-                    if (start > 0)
-                        start--;
-                    bedInterval = BedInterval.Create(start, second.Position);
-                }
-
-                return Winner.Create(svType, bedInterval, bins);
-            }
         }
 
-        [CanBeNull]
-        internal static IInterval<uint> GetInsertionInterval([NotNull] IVcfVariant first)
+        internal static IInterval<uint>? GetInsertionInterval(IVcfVariant first, int altIndex = 0)
             => first.IsAltSimpleSequence(0)
-                ? first.ToBedInterval(false, out _, out _)
-                : first.TryGetSvLength(out var svLen) != null
+                ? first.ToBedInterval(false, out _, out _, altIndex)
+                : first.TryGetSvLength(out var svLen, altIndex) != null
                     ? null
                     : BedInterval.Create(first.Position, first.Position + svLen);
     }

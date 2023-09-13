@@ -1,9 +1,18 @@
 [
   {
+    "variantType": "CopyNumberReference",
+    "binSizes": "1000,5000,10000,20000,50000",
+    "absoluteThreshold": 10000.0,
+    "percentThreshold": 0.25,
+    "includedFilters": "PASS",
+    "excludedFilters": "",
+    "includeBed": "NIST_v0.6/HG002_SVs_Tier1_v0.6.bed"
+  },
+  {
     "variantType": "Duplication",
     "binSizes": "1000,5000,10000,20000,50000",
-    "bpDistance": 10000,
-    "percentDistance": 0.25,
+    "absoluteThreshold": 10000.0,
+    "percentThreshold": 0.25,
     "includedFilters": "PASS",
     "excludedFilters": "",
     "includeBed": "NIST_v0.6/HG002_SVs_Tier1_v0.6.bed"
@@ -11,17 +20,26 @@
   {
     "variantType": "Deletion",
     "binSizes": "1000,5000,10000,20000,50000",
-    "bpDistance": 10000,
-    "percentDistance": 0.25,
+    "absoluteThreshold": 10000.0,
+    "percentThreshold": 0.25,
     "includedFilters": "PASS",
     "excludedFilters": "",
     "includeBed": "NIST_v0.6/HG002_SVs_Tier1_v0.6.bed"
   },
   {
-    "variantType": "CopyNumberReference",
+    "variantType": "CopyNumberGain",
     "binSizes": "1000,5000,10000,20000,50000",
-    "bpDistance": 10000,
-    "percentDistance": 0.25,
+    "absoluteThreshold": 10000.0,
+    "percentThreshold": 0.25,
+    "includedFilters": "PASS",
+    "excludedFilters": "",
+    "includeBed": "NIST_v0.6/HG002_SVs_Tier1_v0.6.bed"
+  },
+  {
+    "variantType": "CopyNumberLoss",
+    "binSizes": "1000,5000,10000,20000,50000",
+    "absoluteThreshold": 10000.0,
+    "percentThreshold": 0.25,
     "includedFilters": "PASS",
     "excludedFilters": "",
     "includeBed": "NIST_v0.6/HG002_SVs_Tier1_v0.6.bed"

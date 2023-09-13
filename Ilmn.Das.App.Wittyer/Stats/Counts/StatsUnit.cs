@@ -1,6 +1,4 @@
-﻿using JetBrains.Annotations;
-
-namespace Ilmn.Das.App.Wittyer.Stats.Counts
+﻿namespace Ilmn.Das.App.Wittyer.Stats.Counts
 {
     /// <summary>
     /// A unit of stats, includes Truth and Query
@@ -35,7 +33,6 @@ namespace Ilmn.Das.App.Wittyer.Stats.Counts
             QueryStats = queryStats;
         }
 
-        [NotNull]
         public static IStatsUnit Create(IBasicStatsCount truthStats, IBasicStatsCount queryStats) 
             => new StatsUnit(truthStats, queryStats);
     }

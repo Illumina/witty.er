@@ -26,15 +26,15 @@ namespace Ilmn.Das.App.Wittyer.Test
         public void WholeChrIncluded()
         {
             var outputDirectory = Path.GetRandomFileName().ToDirectoryInfo();
-            var inputSpecs = InputSpec.GenerateDefaultInputSpecs(false).Select(i => InputSpec.Create(i.VariantType, i.BinSizes,
-                    10000, i.PercentDistance, i.ExcludedFilters, i.IncludedFilters, IncludeBedFile.CreateFromBedFile(Bed)))
+            var inputSpecs = InputSpec.GenerateDefaultInputSpecs(true).Select(i => InputSpec.Create(i.VariantType, i.BinSizes,
+                    10000, i.PercentThreshold, i.ExcludedFilters, i.IncludedFilters, IncludeBedFile.CreateFromBedFile(Bed)))
                 .ToDictionary(i => i.VariantType, i => i);
             var wittyerSettings = WittyerSettings.Create(outputDirectory, Truth, Query,
                 ImmutableList<ISamplePair>.Empty, EvaluationMode.CrossTypeAndSimpleCounting,
                 inputSpecs);
 
             var (_, query, truth) = MainLauncher.GenerateResults(wittyerSettings).EnumerateSuccesses().First();
-            var results = MainLauncher.GenerateSampleMetrics(truth, query, false, inputSpecs);
+            var results = MainLauncher.GenerateSampleMetrics(truth, query, false, inputSpecs, true);
             // should be end of bed - (start of query + 1 for padded base) = 135086622 - 1 = 135086621
             MultiAssert.Equal(135086621U, results.OverallStats[StatsType.Base].QueryStats.TrueCount);
             MultiAssert.Equal(135086621U, results.OverallStats[StatsType.Base].TruthStats.TrueCount);

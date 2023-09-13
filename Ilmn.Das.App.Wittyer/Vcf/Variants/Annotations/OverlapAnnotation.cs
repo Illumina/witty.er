@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using Ilmn.Das.App.Wittyer.Utilities.Enums;
+using Ilmn.Das.Std.AppUtils.Comparers;
 using Ilmn.Das.Std.AppUtils.Intervals;
 using JetBrains.Annotations;
 
@@ -12,7 +14,7 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Annotations
     /// </summary>
     public class OverlapAnnotation : IComparable<OverlapAnnotation>
     {
-        private OverlapAnnotation(uint who, MatchEnum what, [CanBeNull] IInterval<uint> wow, BorderDistance where,
+        private OverlapAnnotation(uint? who, MatchSet what, IInterval<uint>? wow, BorderDistance? where,
             FailedReason why)
         {
             Who = who;
@@ -28,9 +30,9 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Annotations
         /// <value>
         /// The who.
         /// </value>
-        public uint Who { get; }
+        public uint? Who { get; }
 
-        internal MatchEnum What { get; }
+        internal MatchSet What { get; }
 
         /// <summary>
         /// Gets the wow aka Overlap Window, which tracks the interval that overlapped with the target.
@@ -38,8 +40,7 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Annotations
         /// <value>
         /// The wow.
         /// </value>
-        [CanBeNull]
-        public IInterval<uint> Wow { get; }
+        public IInterval<uint>? Wow { get; }
 
         /// <summary>
         /// Gets the where aka where the entry is relative to the target, how far it is from the borders.
@@ -47,22 +48,24 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Annotations
         /// <value>
         /// The where.
         /// </value>
-        [NotNull] public BorderDistance Where { get; }
+        public BorderDistance? Where { get; }
 
         internal FailedReason Why { get; }
 
         /// <inheritdoc />
-        public int CompareTo(OverlapAnnotation other)
+        public int CompareTo(OverlapAnnotation? other)
         {
             if (ReferenceEquals(this, other)) return 0;
             if (other is null) return 1;
-            var whereComparison = Where.CompareTo(other.Where);
+            var whereComparison = ComparerUtils.HandleNullComparison(Where, other.Where) ??
+                                  Where!.CompareTo(other.Where!);
             if (whereComparison != 0) return whereComparison;
 
-            var whatComparison = What.CompareTo(other.What);
+            var whatComparison = What.Sum(x => (int)x).CompareTo(other.What.Sum(x => (int)x)); // we need better matches to be sorted first.
             if (whatComparison != 0) return whatComparison;
 
-            var whoComparison = Who.CompareTo(other.Who);
+            var whoComparison = ComparerUtils.HandleNullComparison(Who, other.Who) ??
+                                Who!.Value.CompareTo(other.Who!.Value);
             return whoComparison != 0 ? whoComparison : Why.CompareTo(other.Why);
         }
         /// <summary>
@@ -74,9 +77,13 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Annotations
         /// <param name="where">The where.</param>
         /// <param name="why">The why.</param>
         [Pure]
-        [NotNull]
-        public static OverlapAnnotation Create(uint who, MatchEnum what, [CanBeNull] IInterval<uint> wow,
-            [NotNull] BorderDistance where, FailedReason why) 
-            => new OverlapAnnotation(who, what, wow, where, why);
+        public static OverlapAnnotation Create(uint? who, MatchSet what, IInterval<uint>? wow,
+            BorderDistance? where, FailedReason why) 
+            => new(who, what, wow, where, why);
+        
+        [Pure]
+        public static OverlapAnnotation Create(uint? who, IInterval<uint>? wow,
+            BorderDistance? where, FailedReason why) 
+            => new(who, MatchSet.Empty, wow, where, why);
     }
 }

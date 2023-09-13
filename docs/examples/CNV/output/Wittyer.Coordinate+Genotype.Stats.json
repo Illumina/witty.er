@@ -1,0 +1,1475 @@
+{
+  "Command": "Wittyer.dll -t NIST_v0.6/HG002_SVs_Tier1_v0.6.vcf.gz -i HG002.cnv.vcf.gz -em CrossTypeAndSimpleCounting --configFile wittyer.cnv.config.filtered.json --includeBed NIST_v0.6/HG002_SVs_Tier1_v0.6.bed -o evalOutput_cnv/",
+  "EventPrecision": 0.6302250803858521,
+  "EventRecall": 0.046157506542945516,
+  "EventFscore": 0.0860152784344242,
+  "PerSampleStats": [
+    {
+      "QuerySampleName": "PrecisionFDA_HG002",
+      "TruthSampleName": "HG002",
+      "OverallStats": [
+        {
+          "StatsType": "Event",
+          "TruthTpCount": 194,
+          "TruthFnCount": 4009,
+          "TruthTotalCount": 4203,
+          "Recall": 0.046157506542945516,
+          "QueryTpCount": 196,
+          "QueryFpCount": 115,
+          "QueryTotalCount": 311,
+          "Precision": 0.6302250803858521,
+          "Fscore": 0.0860152784344242
+        },
+        {
+          "StatsType": "Base",
+          "TruthTpCount": 1366692,
+          "TruthFnCount": 1850776,
+          "TruthTotalCount": 3217468,
+          "Recall": 0.42477252299012763,
+          "QueryTpCount": 1366692,
+          "QueryFpCount": 2958635,
+          "QueryTotalCount": 4325327,
+          "Precision": 0.3159742604431989,
+          "Fscore": 0.3623834400908416
+        }
+      ],
+      "DetailedStats": [
+        {
+          "VariantType": "CopyNumberGain",
+          "OverallStats": [
+            {
+              "StatsType": "Event",
+              "TruthTpCount": 0,
+              "TruthFnCount": 0,
+              "TruthTotalCount": 0,
+              "Recall": "NaN",
+              "QueryTpCount": 0,
+              "QueryFpCount": 6,
+              "QueryTotalCount": 6,
+              "Precision": 0.0,
+              "Fscore": "NaN"
+            },
+            {
+              "StatsType": "Base",
+              "TruthTpCount": 0,
+              "TruthFnCount": 0,
+              "TruthTotalCount": 0,
+              "Recall": "NaN",
+              "QueryTpCount": 0,
+              "QueryFpCount": 49023,
+              "QueryTotalCount": 49023,
+              "Precision": 0.0,
+              "Fscore": "NaN"
+            }
+          ],
+          "PerBinStats": [
+            {
+              "Bin": "[1, 1000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[1000, 5000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 1,
+                  "QueryTotalCount": 1,
+                  "Precision": 0.0,
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 2292,
+                  "QueryTotalCount": 2292,
+                  "Precision": 0.0,
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[5000, 10000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 3,
+                  "QueryTotalCount": 3,
+                  "Precision": 0.0,
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 24521,
+                  "QueryTotalCount": 24521,
+                  "Precision": 0.0,
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[10000, 20000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 2,
+                  "QueryTotalCount": 2,
+                  "Precision": 0.0,
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 22210,
+                  "QueryTotalCount": 22210,
+                  "Precision": 0.0,
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[20000, 50000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "50000+",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "VariantType": "CopyNumberLoss",
+          "OverallStats": [
+            {
+              "StatsType": "Event",
+              "TruthTpCount": 0,
+              "TruthFnCount": 0,
+              "TruthTotalCount": 0,
+              "Recall": "NaN",
+              "QueryTpCount": 196,
+              "QueryFpCount": 79,
+              "QueryTotalCount": 275,
+              "Precision": 0.7127272727272728,
+              "Fscore": "NaN"
+            },
+            {
+              "StatsType": "Base",
+              "TruthTpCount": 0,
+              "TruthFnCount": 0,
+              "TruthTotalCount": 0,
+              "Recall": "NaN",
+              "QueryTpCount": 1366692,
+              "QueryFpCount": 362048,
+              "QueryTotalCount": 1728740,
+              "Precision": 0.7905711674398695,
+              "Fscore": "NaN"
+            }
+          ],
+          "PerBinStats": [
+            {
+              "Bin": "[1, 1000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[1000, 5000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 106,
+                  "QueryFpCount": 72,
+                  "QueryTotalCount": 178,
+                  "Precision": 0.5955056179775281,
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 242779,
+                  "QueryFpCount": 200985,
+                  "QueryTotalCount": 443764,
+                  "Precision": 0.547090345318683,
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[5000, 10000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 61,
+                  "QueryFpCount": 6,
+                  "QueryTotalCount": 67,
+                  "Precision": 0.9104477611940298,
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 380242,
+                  "QueryFpCount": 102371,
+                  "QueryTotalCount": 482613,
+                  "Precision": 0.7878818017749211,
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[10000, 20000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 20,
+                  "QueryFpCount": 1,
+                  "QueryTotalCount": 21,
+                  "Precision": 0.9523809523809523,
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 259967,
+                  "QueryFpCount": 26070,
+                  "QueryTotalCount": 286037,
+                  "Precision": 0.9088579449511777,
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[20000, 50000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 5,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 5,
+                  "Precision": 1.0,
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 180877,
+                  "QueryFpCount": 2861,
+                  "QueryTotalCount": 183738,
+                  "Precision": 0.984428915085611,
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "50000+",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 4,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 4,
+                  "Precision": 1.0,
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 302827,
+                  "QueryFpCount": 29761,
+                  "QueryTotalCount": 332588,
+                  "Precision": 0.910516915823782,
+                  "Fscore": "NaN"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "VariantType": "CopyNumberReference",
+          "OverallStats": [
+            {
+              "StatsType": "Event",
+              "TruthTpCount": 0,
+              "TruthFnCount": 0,
+              "TruthTotalCount": 0,
+              "Recall": "NaN",
+              "QueryTpCount": 0,
+              "QueryFpCount": 30,
+              "QueryTotalCount": 30,
+              "Precision": 0.0,
+              "Fscore": "NaN"
+            },
+            {
+              "StatsType": "Base",
+              "TruthTpCount": 0,
+              "TruthFnCount": 0,
+              "TruthTotalCount": 0,
+              "Recall": "NaN",
+              "QueryTpCount": 0,
+              "QueryFpCount": 2547564,
+              "QueryTotalCount": 2547564,
+              "Precision": 0.0,
+              "Fscore": "NaN"
+            }
+          ],
+          "PerBinStats": [
+            {
+              "Bin": "[1, 1000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[1000, 5000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 1,
+                  "QueryTotalCount": 1,
+                  "Precision": 0.0,
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 4295,
+                  "QueryTotalCount": 4295,
+                  "Precision": 0.0,
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[5000, 10000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 2,
+                  "QueryTotalCount": 2,
+                  "Precision": 0.0,
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 15116,
+                  "QueryTotalCount": 15116,
+                  "Precision": 0.0,
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[10000, 20000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 11,
+                  "QueryTotalCount": 11,
+                  "Precision": 0.0,
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 153775,
+                  "QueryTotalCount": 153775,
+                  "Precision": 0.0,
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[20000, 50000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 7,
+                  "QueryTotalCount": 7,
+                  "Precision": 0.0,
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 228905,
+                  "QueryTotalCount": 228905,
+                  "Precision": 0.0,
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "50000+",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 9,
+                  "QueryTotalCount": 9,
+                  "Precision": 0.0,
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 2145473,
+                  "QueryTotalCount": 2145473,
+                  "Precision": 0.0,
+                  "Fscore": "NaN"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "VariantType": "Deletion",
+          "OverallStats": [
+            {
+              "StatsType": "Event",
+              "TruthTpCount": 194,
+              "TruthFnCount": 4009,
+              "TruthTotalCount": 4203,
+              "Recall": 0.046157506542945516,
+              "QueryTpCount": 0,
+              "QueryFpCount": 0,
+              "QueryTotalCount": 0,
+              "Precision": "NaN",
+              "Fscore": "NaN"
+            },
+            {
+              "StatsType": "Base",
+              "TruthTpCount": 1366692,
+              "TruthFnCount": 1850776,
+              "TruthTotalCount": 3217468,
+              "Recall": 0.42477252299012763,
+              "QueryTpCount": 0,
+              "QueryFpCount": 0,
+              "QueryTotalCount": 0,
+              "Precision": "NaN",
+              "Fscore": "NaN"
+            }
+          ],
+          "PerBinStats": [
+            {
+              "Bin": "[1, 1000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 7,
+                  "TruthFnCount": 3663,
+                  "TruthTotalCount": 3670,
+                  "Recall": 0.0019073569482288828,
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 3760,
+                  "TruthFnCount": 758796,
+                  "TruthTotalCount": 762556,
+                  "Recall": 0.004930785411169802,
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[1000, 5000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 110,
+                  "TruthFnCount": 285,
+                  "TruthTotalCount": 395,
+                  "Recall": 0.27848101265822783,
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 283796,
+                  "TruthFnCount": 605902,
+                  "TruthTotalCount": 889698,
+                  "Recall": 0.3189801483199917,
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[5000, 10000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 46,
+                  "TruthFnCount": 59,
+                  "TruthTotalCount": 105,
+                  "Recall": 0.4380952380952381,
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 302756,
+                  "TruthFnCount": 392532,
+                  "TruthTotalCount": 695288,
+                  "Recall": 0.4354397026843553,
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[10000, 20000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 18,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 18,
+                  "Recall": 1.0,
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 223040,
+                  "TruthFnCount": 21214,
+                  "TruthTotalCount": 244254,
+                  "Recall": 0.9131477887772564,
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[20000, 50000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 9,
+                  "TruthFnCount": 2,
+                  "TruthTotalCount": 11,
+                  "Recall": 0.8181818181818182,
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 250640,
+                  "TruthFnCount": 71292,
+                  "TruthTotalCount": 321932,
+                  "Recall": 0.7785495073493781,
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "50000+",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 4,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 4,
+                  "Recall": 1.0,
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 302700,
+                  "TruthFnCount": 1040,
+                  "TruthTotalCount": 303740,
+                  "Recall": 0.9965760189635873,
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "VariantType": "Deletion+CopyNumberLoss",
+          "OverallStats": [
+            {
+              "StatsType": "Event",
+              "TruthTpCount": 194,
+              "TruthFnCount": 4009,
+              "TruthTotalCount": 4203,
+              "Recall": 0.046157506542945516,
+              "QueryTpCount": 196,
+              "QueryFpCount": 79,
+              "QueryTotalCount": 275,
+              "Precision": 0.7127272727272728,
+              "Fscore": 0.08670015436567564
+            },
+            {
+              "StatsType": "Base",
+              "TruthTpCount": 1366692,
+              "TruthFnCount": 1850776,
+              "TruthTotalCount": 3217468,
+              "Recall": 0.42477252299012763,
+              "QueryTpCount": 1366692,
+              "QueryFpCount": 362048,
+              "QueryTotalCount": 1728740,
+              "Precision": 0.7905711674398695,
+              "Fscore": 0.5526221299225588
+            }
+          ],
+          "PerBinStats": [
+            {
+              "Bin": "[1, 1000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 7,
+                  "TruthFnCount": 3663,
+                  "TruthTotalCount": 3670,
+                  "Recall": 0.0019073569482288828,
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 3760,
+                  "TruthFnCount": 758796,
+                  "TruthTotalCount": 762556,
+                  "Recall": 0.004930785411169802,
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[1000, 5000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 110,
+                  "TruthFnCount": 285,
+                  "TruthTotalCount": 395,
+                  "Recall": 0.27848101265822783,
+                  "QueryTpCount": 106,
+                  "QueryFpCount": 72,
+                  "QueryTotalCount": 178,
+                  "Precision": 0.5955056179775281,
+                  "Fscore": 0.3794955248169243
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 283796,
+                  "TruthFnCount": 605902,
+                  "TruthTotalCount": 889698,
+                  "Recall": 0.3189801483199917,
+                  "QueryTpCount": 242779,
+                  "QueryFpCount": 200985,
+                  "QueryTotalCount": 443764,
+                  "Precision": 0.547090345318683,
+                  "Fscore": 0.4029948157245386
+                }
+              ]
+            },
+            {
+              "Bin": "[5000, 10000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 46,
+                  "TruthFnCount": 59,
+                  "TruthTotalCount": 105,
+                  "Recall": 0.4380952380952381,
+                  "QueryTpCount": 61,
+                  "QueryFpCount": 6,
+                  "QueryTotalCount": 67,
+                  "Precision": 0.9104477611940298,
+                  "Fscore": 0.591546326552124
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 302756,
+                  "TruthFnCount": 392532,
+                  "TruthTotalCount": 695288,
+                  "Recall": 0.4354397026843553,
+                  "QueryTpCount": 380242,
+                  "QueryFpCount": 102371,
+                  "QueryTotalCount": 482613,
+                  "Precision": 0.7878818017749211,
+                  "Fscore": 0.5608910106864006
+                }
+              ]
+            },
+            {
+              "Bin": "[10000, 20000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 18,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 18,
+                  "Recall": 1.0,
+                  "QueryTpCount": 20,
+                  "QueryFpCount": 1,
+                  "QueryTotalCount": 21,
+                  "Precision": 0.9523809523809523,
+                  "Fscore": 0.975609756097561
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 223040,
+                  "TruthFnCount": 21214,
+                  "TruthTotalCount": 244254,
+                  "Recall": 0.9131477887772564,
+                  "QueryTpCount": 259967,
+                  "QueryFpCount": 26070,
+                  "QueryTotalCount": 286037,
+                  "Precision": 0.9088579449511777,
+                  "Fscore": 0.9109978167264179
+                }
+              ]
+            },
+            {
+              "Bin": "[20000, 50000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 9,
+                  "TruthFnCount": 2,
+                  "TruthTotalCount": 11,
+                  "Recall": 0.8181818181818182,
+                  "QueryTpCount": 5,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 5,
+                  "Precision": 1.0,
+                  "Fscore": 0.9
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 250640,
+                  "TruthFnCount": 71292,
+                  "TruthTotalCount": 321932,
+                  "Recall": 0.7785495073493781,
+                  "QueryTpCount": 180877,
+                  "QueryFpCount": 2861,
+                  "QueryTotalCount": 183738,
+                  "Precision": 0.984428915085611,
+                  "Fscore": 0.869467983393481
+                }
+              ]
+            },
+            {
+              "Bin": "50000+",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 4,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 4,
+                  "Recall": 1.0,
+                  "QueryTpCount": 4,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 4,
+                  "Precision": 1.0,
+                  "Fscore": 1.0
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 302700,
+                  "TruthFnCount": 1040,
+                  "TruthTotalCount": 303740,
+                  "Recall": 0.9965760189635873,
+                  "QueryTpCount": 302827,
+                  "QueryFpCount": 29761,
+                  "QueryTotalCount": 332588,
+                  "Precision": 0.910516915823782,
+                  "Fscore": 0.9516047242572776
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "VariantType": "Duplication",
+          "OverallStats": [
+            {
+              "StatsType": "Event",
+              "TruthTpCount": 0,
+              "TruthFnCount": 0,
+              "TruthTotalCount": 0,
+              "Recall": "NaN",
+              "QueryTpCount": 0,
+              "QueryFpCount": 0,
+              "QueryTotalCount": 0,
+              "Precision": "NaN",
+              "Fscore": "NaN"
+            },
+            {
+              "StatsType": "Base",
+              "TruthTpCount": 0,
+              "TruthFnCount": 0,
+              "TruthTotalCount": 0,
+              "Recall": "NaN",
+              "QueryTpCount": 0,
+              "QueryFpCount": 0,
+              "QueryTotalCount": 0,
+              "Precision": "NaN",
+              "Fscore": "NaN"
+            }
+          ],
+          "PerBinStats": [
+            {
+              "Bin": "[1, 1000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[1000, 5000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[5000, 10000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[10000, 20000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[20000, 50000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "50000+",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "VariantType": "Duplication+CopyNumberGain",
+          "OverallStats": [
+            {
+              "StatsType": "Event",
+              "TruthTpCount": 0,
+              "TruthFnCount": 0,
+              "TruthTotalCount": 0,
+              "Recall": "NaN",
+              "QueryTpCount": 0,
+              "QueryFpCount": 6,
+              "QueryTotalCount": 6,
+              "Precision": 0.0,
+              "Fscore": "NaN"
+            },
+            {
+              "StatsType": "Base",
+              "TruthTpCount": 0,
+              "TruthFnCount": 0,
+              "TruthTotalCount": 0,
+              "Recall": "NaN",
+              "QueryTpCount": 0,
+              "QueryFpCount": 49023,
+              "QueryTotalCount": 49023,
+              "Precision": 0.0,
+              "Fscore": "NaN"
+            }
+          ],
+          "PerBinStats": [
+            {
+              "Bin": "[1, 1000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[1000, 5000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 1,
+                  "QueryTotalCount": 1,
+                  "Precision": 0.0,
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 2292,
+                  "QueryTotalCount": 2292,
+                  "Precision": 0.0,
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[5000, 10000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 3,
+                  "QueryTotalCount": 3,
+                  "Precision": 0.0,
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 24521,
+                  "QueryTotalCount": 24521,
+                  "Precision": 0.0,
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[10000, 20000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 2,
+                  "QueryTotalCount": 2,
+                  "Precision": 0.0,
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 22210,
+                  "QueryTotalCount": 22210,
+                  "Precision": 0.0,
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "[20000, 50000)",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                }
+              ]
+            },
+            {
+              "Bin": "50000+",
+              "Stats": [
+                {
+                  "StatsType": "Event",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                },
+                {
+                  "StatsType": "Base",
+                  "TruthTpCount": 0,
+                  "TruthFnCount": 0,
+                  "TruthTotalCount": 0,
+                  "Recall": "NaN",
+                  "QueryTpCount": 0,
+                  "QueryFpCount": 0,
+                  "QueryTotalCount": 0,
+                  "Precision": "NaN",
+                  "Fscore": "NaN"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

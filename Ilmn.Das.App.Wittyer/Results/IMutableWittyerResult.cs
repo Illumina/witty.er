@@ -11,20 +11,17 @@ using Ilmn.Das.Std.AppUtils.Comparers;
 using Ilmn.Das.Std.BioinformaticUtils.Contigs;
 using Ilmn.Das.Std.BioinformaticUtils.GenomicFeatures;
 using Ilmn.Das.Std.VariantUtils.Vcf.Headers;
-using Ilmn.Das.Std.VariantUtils.Vcf.Variants;
-using JetBrains.Annotations;
+
 
 namespace Ilmn.Das.App.Wittyer.Results
 {
     internal interface IMutableWittyerResult : IWittyerResult
     {
         uint NumEntries { get; }
-        void AddTarget([NotNull] IMutableWittyerSimpleVariant variant);
-        void AddUnsupported([NotNull] IVcfVariant variant);
-        [NotNull, ItemNotNull]
-        IEnumerable<IReadOnlyCollection<IMutableWittyerVariant>> VariantsInternal { get; }
-        [NotNull, ItemNotNull]
-        IEnumerable<IReadOnlyCollection<IMutableWittyerBnd>> BreakendPairsInternal { get; }
+        void AddTarget(IMutableWittyerSimpleVariant variant);
+        void AddUnsupported(IVcfVariant variant);
+        IEnumerable<IReadOnlyCollection<IMutableWittyerSimpleVariant>> VariantsInternal { get; }
+        IEnumerable<IReadOnlyCollection<IMutableWittyerSimpleVariant>> BreakendPairsInternal { get; }
     }
 
     /// <summary>
@@ -34,7 +31,7 @@ namespace Ilmn.Das.App.Wittyer.Results
     /// </summary>
     internal class MutableWittyerResult : IMutableWittyerResult
     {
-        private readonly ConcurrentQueue<IVcfVariant> _unsupported = new ConcurrentQueue<IVcfVariant>();
+        private readonly ConcurrentQueue<IVcfVariant> _unsupported = new();
 
         /// <inheritdoc />
         public string SampleName { get; }
@@ -45,16 +42,15 @@ namespace Ilmn.Das.App.Wittyer.Results
         public IReadOnlyCollection<IVcfVariant> NotAssessedVariants => _unsupported;
 
         private static readonly CustomClassEqualityComparer<IContigInfo> ContigComparer
-            = new CustomClassEqualityComparer<IContigInfo>(
+            = new(
                 (c1, c2) => c1.Name.Equals(c2.Name),
                 c => HashCodeUtils.Generate(c?.Name));
 
-        private readonly ConcurrentDictionary<IContigInfo, bool> _contigSet
-            = new ConcurrentDictionary<IContigInfo, bool>(ContigComparer);
+        private readonly ConcurrentDictionary<IContigInfo, bool> _contigSet = new(ContigComparer);
 
-        private readonly ConcurrentQueue<IContigInfo> _contigList = new ConcurrentQueue<IContigInfo>();
+        private readonly ConcurrentQueue<IContigInfo> _contigList = new();
 
-        internal MutableWittyerResult([CanBeNull] string sampleName, bool isTruth, [NotNull] IVcfHeader vcfHeader)
+        internal MutableWittyerResult(string? sampleName, bool isTruth, IVcfHeader vcfHeader)
         {
             // ReSharper disable once AssignNullToNotNullAttribute
             SampleName = sampleName ?? (isTruth
@@ -97,7 +93,7 @@ namespace Ilmn.Das.App.Wittyer.Results
                     : 1);
         }
 
-        private void AddContig([NotNull] IContigProvider contig)
+        private void AddContig(IContigProvider contig)
         {
             if (_contigSet.TryAdd(contig.Contig, false))
                 _contigList.Enqueue(contig.Contig);
@@ -112,27 +108,24 @@ namespace Ilmn.Das.App.Wittyer.Results
 
         #region Implementation of IWittyerResult
 
-        private readonly ConcurrentDictionary<WittyerType, List<IMutableWittyerVariant>> _variants
-            = new ConcurrentDictionary<WittyerType, List<IMutableWittyerVariant>>();
+        private readonly ConcurrentDictionary<WittyerType, List<IMutableWittyerVariant>> _variants = new();
 
-        public IEnumerable<IReadOnlyCollection<IMutableWittyerVariant>> VariantsInternal
+        public IEnumerable<IReadOnlyCollection<IMutableWittyerSimpleVariant>> VariantsInternal
             => _variants.Values.AsReadOnly();
 
         /// <inheritdoc />
         public IReadOnlyDictionary<WittyerType, IReadOnlyList<IWittyerVariant>> Variants
             => ToReadOnly<IMutableWittyerVariant, IWittyerVariant>(_variants);
 
-        private readonly ConcurrentDictionary<WittyerType, List<IMutableWittyerBnd>> _bndPairs
-            = new ConcurrentDictionary<WittyerType, List<IMutableWittyerBnd>>();
+        private readonly ConcurrentDictionary<WittyerType, List<IMutableWittyerBnd>> _bndPairs = new();
 
-        public IEnumerable<IReadOnlyCollection<IMutableWittyerBnd>> BreakendPairsInternal
+        public IEnumerable<IReadOnlyCollection<IMutableWittyerSimpleVariant>> BreakendPairsInternal
             => _bndPairs.Values.AsReadOnly();
 
         /// <inheritdoc />
         public IReadOnlyDictionary<WittyerType, IReadOnlyList<IWittyerBnd>> BreakendPairsAndInsertions
             => ToReadOnly<IMutableWittyerBnd, IWittyerBnd>(_bndPairs);
 
-        [NotNull]
         private static IReadOnlyDictionary<WittyerType, IReadOnlyList<TResult>> ToReadOnly<TSource, TResult>(
             ConcurrentDictionary<WittyerType, List<TSource>> variants) where TSource : TResult
             => new ReadOnlyDictionary<WittyerType, IReadOnlyList<TResult>>(variants.AsEnumerable()

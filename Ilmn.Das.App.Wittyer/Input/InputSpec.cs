@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using Ilmn.Das.App.Wittyer.Infrastructure;
 using Ilmn.Das.App.Wittyer.Json.JsonConverters;
 using Ilmn.Das.App.Wittyer.Utilities;
 using Ilmn.Das.App.Wittyer.Vcf.Variants;
@@ -23,7 +24,6 @@ namespace Ilmn.Das.App.Wittyer.Input
         /// <summary>
         /// Gets the VariantType
         /// </summary>
-        [NotNull]
         [JsonConverter(typeof(ObjectConverter))]
         [JsonProperty(WittyerSettings.VariantTypeName)]
         public WittyerType VariantType { get; }
@@ -36,7 +36,6 @@ namespace Ilmn.Das.App.Wittyer.Input
         /// </value>
         [JsonConverter(typeof(BinsConverter))]
         [JsonProperty(WittyerSettings.BinSizesName)]
-        [NotNull]
         public IImmutableList<(uint size, bool skip)> BinSizes { get; }
 
         /// <summary>
@@ -45,8 +44,17 @@ namespace Ilmn.Das.App.Wittyer.Input
         /// <value>
         /// The basepair distance.
         /// </value>
-        [JsonProperty(BpDistanceName)]
-        public uint BasepairDistance { get; }
+        [JsonIgnore]
+        public uint BasepairDistance => (uint) Math.Round(AbsoluteThreshold);
+
+        /// <summary>
+        /// Gets the basepair distance.
+        /// </summary>
+        /// <value>
+        /// The basepair distance.
+        /// </value>
+        [JsonProperty(WittyerSettings.BpDistanceName)]
+        public decimal AbsoluteThreshold { get; }
 
         /// <summary>
         /// Gets the percentage distance.
@@ -54,9 +62,8 @@ namespace Ilmn.Das.App.Wittyer.Input
         /// <value>
         /// The percentage distance.
         /// </value>
-        [JsonProperty(WittyerSettings.PercentDistanceName)]
-        [CanBeNull]
-        public double? PercentDistance { get; }
+        [JsonProperty(WittyerSettings.PercentThresholdName)]
+        public double? PercentThreshold { get; }
 
         /// <summary>
         /// Gets the included filters.
@@ -66,7 +73,6 @@ namespace Ilmn.Das.App.Wittyer.Input
         /// </value>
         [JsonConverter(typeof(EnumerableConverter))]
         [JsonProperty(IncludedFiltersName)]
-        [NotNull]
         public IReadOnlyCollection<string> IncludedFilters { get; }
 
         /// <summary>
@@ -77,7 +83,6 @@ namespace Ilmn.Das.App.Wittyer.Input
         /// </value>
         [JsonConverter(typeof(EnumerableConverter))]
         [JsonProperty(ExcludedFiltersName)]
-        [NotNull]
         public IReadOnlyCollection<string> ExcludedFilters { get; }
 
         /// <summary>
@@ -88,32 +93,42 @@ namespace Ilmn.Das.App.Wittyer.Input
         /// </value>
         [JsonConverter(typeof(ObjectConverter))]
         [JsonProperty(IncludeBedName)]
-        [CanBeNull]
-        public IncludeBedFile IncludedRegions { get; }
+        public IncludeBedFile? IncludedRegions { get; }
         
-        private InputSpec([NotNull] WittyerType variantType, [NotNull] IImmutableList<(uint size, bool skip)> binSizes,
-            uint basepairDistance, [CanBeNull] double? percentDistance,
-            [NotNull] IReadOnlyCollection<string> excludedFilters, [NotNull] IReadOnlyCollection<string> includedFilters,
-            [CanBeNull] IncludeBedFile includeBed)
+        private InputSpec(WittyerType variantType, IImmutableList<(uint size, bool skip)> binSizes,
+            decimal absoluteThreshold, double? percentThreshold,
+            IReadOnlyCollection<string> excludedFilters, IReadOnlyCollection<string> includedFilters,
+            IncludeBedFile? includeBed)
         {
             BinSizes = binSizes;
-            BasepairDistance = basepairDistance;
-            PercentDistance = percentDistance;
+            AbsoluteThreshold = absoluteThreshold;
+            PercentThreshold = percentThreshold;
             IncludedFilters = includedFilters;
             ExcludedFilters = excludedFilters;
             VariantType = variantType;
             IncludedRegions = includeBed;
         }
 
-        [JsonConstructor]
-        private InputSpec(string variantType, [NotNull] string binSizes, [NotNull] string bpDistance,
-            [CanBeNull] string percentDistance, [NotNull] string excludedFilters, [NotNull] string includedFilters,
-            [CanBeNull] string includeBed)
-            : this(WittyerType.Parse(variantType), InputParseUtils.ParseBinSizes(binSizes),
-                InputParseUtils.ParseBasepairDistance(bpDistance),
-                InputParseUtils.ParsePercentDistance(percentDistance),
+        private InputSpec(WittyerType variantType, string binSizes, string? bpDistance,
+            string? percentDistance, string excludedFilters, string includedFilters,
+            string? includeBed, string? absoluteThreshold,
+            string? percentThreshold)
+            : this(variantType, InputParseUtils.ParseBinSizes(binSizes),
+                InputParseUtils.ParseAbsoluteThreshold(bpDistance ?? absoluteThreshold ?? throw new JsonSerializationException(
+                    $"{WittyerSettings.AbsoluteThresholdName} (preferred) or {WittyerSettings.BpDistanceName} is required!")),
+                variantType.HasLengths && percentDistance == null && percentThreshold == null ? throw new JsonSerializationException(
+                    $"{WittyerSettings.PercentThresholdName} is required!") : InputParseUtils.ParseDouble(percentDistance ?? percentThreshold, WittyerSettings.PercentThresholdName),
                 InputParseUtils.ParseFilters(excludedFilters), InputParseUtils.ParseFilters(includedFilters),
                 InputParseUtils.ParseBedFile(includeBed))
+        {
+        }
+
+        [JsonConstructor]
+        private InputSpec(string variantType, string binSizes, string? bpDistance,
+            string? percentDistance, string excludedFilters, string includedFilters,
+            string? includeBed, string? absoluteThreshold,
+            string? percentThreshold)
+            : this(WittyerType.Parse(variantType), binSizes, bpDistance, percentDistance, excludedFilters, includedFilters, includeBed, absoluteThreshold, percentThreshold)
         {
         }
 
@@ -122,90 +137,140 @@ namespace Ilmn.Das.App.Wittyer.Input
         /// </summary>
         /// <param name="variantType">Type of the variant.</param>
         /// <param name="binSizes">The bin sizes.</param>
-        /// <param name="basepairDistance">The basepair distance.</param>
+        /// <param name="absoluteThreshold">The basepair distance.</param>
         /// <param name="percentDistance">The percent distance.</param>
         /// <param name="excludedFilters">The excluded filters.</param>
         /// <param name="includedFilters">The included filters.</param>
         /// <param name="includeBed">The bed file that contains regions to analyze.</param>
-        [NotNull]
-        public static InputSpec Create([NotNull] WittyerType variantType,
-            [NotNull] IImmutableList<(uint size, bool skip)> binSizes, uint basepairDistance, [CanBeNull] double? percentDistance,
-            [NotNull] IReadOnlyCollection<string> excludedFilters, IReadOnlyCollection<string> includedFilters,
-            [CanBeNull] IncludeBedFile includeBed)
-            => new InputSpec(variantType, binSizes, basepairDistance, percentDistance, excludedFilters,
+        public static InputSpec Create(WittyerType variantType,
+            IImmutableList<(uint size, bool skip)> binSizes, decimal absoluteThreshold, double? percentDistance,
+            IReadOnlyCollection<string> excludedFilters, IReadOnlyCollection<string> includedFilters,
+            IncludeBedFile? includeBed)
+            => new(variantType, binSizes, absoluteThreshold, percentDistance, excludedFilters,
                 VerifyFiltersAndGetFinalIncluded(excludedFilters, includedFilters), includeBed);
 
         /// <summary>
         /// Generates Default input specs for the given types.
         /// <c>Note</c>: If CrossType is on, it will filter out CopyNumberVariant types, so it could return an empty Enumerable
         /// </summary>
-        /// <param name="isCrossTypeOff">if set to <c>true</c> if CrossType matching is off.</param>
+        /// <param name="isCrossTypeOn">if set to <c>true</c> [is cross type on].</param>
         /// <param name="types">The types.</param>
         /// <returns></returns>
-        [NotNull]
-        [ItemNotNull]
         [Pure]
-        public static IEnumerable<InputSpec> GenerateDefaultInputSpecs(bool isCrossTypeOff,
-            [CanBeNull, ItemNotNull] IEnumerable<WittyerType> types = null)
-            => GenerateCustomInputSpecs(isCrossTypeOff, types).Select(i =>
-                i.VariantType == WittyerType.Insertion ? WittyerConstants.DefaultInsertionSpec : i);
+        public static IEnumerable<InputSpec> GenerateDefaultInputSpecs(bool isCrossTypeOn, IEnumerable<WittyerType>? types = null)
+            => GenerateCustomInputSpecs(isCrossTypeOn, types).Select(i =>
+                i.VariantType == WittyerType.Insertion ? WittyerConstants.DefaultInsertionSpec :
+                i.VariantType == WittyerType.CopyNumberTandemRepeat ? WittyerConstants.DefaultTandemRepeatSpec : i);
 
         /// <summary>
         /// Generates custom <see cref="InputSpec"/>s
-        /// <c>Note</c>: If CrossType is on, it will filter out CopyNumberVariant types, so it could return an empty Enumerable
         /// </summary>
-        /// <param name="isCrossTypeOff">if set to <c>true</c> [is cross type off].</param>
+        /// <param name="isCrossTypeOn">if set to <c>true</c> [is cross type on].</param>
         /// <param name="types">The types.</param>
         /// <param name="binSizes">The bin sizes.</param>
-        /// <param name="basepairDistance">The basepair distance.</param>
-        /// <param name="percentDistance">The percent distance.</param>
+        /// <param name="absoluteThreshold">The basepair distance.</param>
+        /// <param name="percentThreshold">The percent distance.</param>
         /// <param name="excludedFilters">The excluded filters.</param>
         /// <param name="includedFilters">The included filters.</param>
         /// <param name="bedFile">The name of the bed file that contains regions to analyze.</param>
-        [NotNull]
-        [ItemNotNull]
         [Pure]
-        public static IEnumerable<InputSpec> GenerateCustomInputSpecs(bool isCrossTypeOff,
-            [CanBeNull, ItemNotNull] IEnumerable<WittyerType> types,
-            [CanBeNull] IImmutableList<(uint size, bool skip)> binSizes = null,
-            uint basepairDistance = WittyerConstants.DefaultBpOverlap,
-            double percentDistance = WittyerConstants.DefaultPd,
-            [CanBeNull] IReadOnlyCollection<string> excludedFilters = null,
-            [CanBeNull] IReadOnlyCollection<string> includedFilters = null,
-            [CanBeNull] IncludeBedFile bedFile = null)
-            => (types ?? WittyerType.AllTypes)
-                // if crosstype is on, then CopyNumberVariant should be filtered out.
-                .Where(s => isCrossTypeOff || !s.IsCopyNumberVariant)
-                .Select(s => Create(s, s.HasBins ? binSizes ?? WittyerConstants.DefaultBins : ImmutableList<(uint size, bool skip)>.Empty,
-                    basepairDistance, s.HasLengths ? percentDistance : default(double?),
+        public static IEnumerable<InputSpec> GenerateCustomInputSpecs(bool isCrossTypeOn,
+            IEnumerable<WittyerType>? types,
+            IImmutableList<(uint size, bool skip)>? binSizes = null,
+            decimal absoluteThreshold = WittyerConstants.DefaultAbsThreshold,
+            double percentThreshold = WittyerConstants.DefaultPercentThreshold,
+            IReadOnlyCollection<string>? excludedFilters = null,
+            IReadOnlyCollection<string>? includedFilters = null,
+            IncludeBedFile? bedFile = null)
+            => GenerateTypes(isCrossTypeOn, types)
+                .Select(s => Create(s,
+                    s.HasBins ? binSizes ?? s.DefaultBins : ImmutableList<(uint size, bool skip)>.Empty,
+                    absoluteThreshold, s.HasLengths ? percentThreshold : default(double?),
                     excludedFilters ?? WittyerConstants.DefaultExcludeFilters,
                     includedFilters ?? WittyerConstants.DefaultIncludeFilters,
                     bedFile));
+
+        private static IEnumerable<WittyerType> GenerateTypes(bool isCrossTypeOn, IEnumerable<WittyerType>? types)
+        {
+            if (types == null)
+                return WittyerType.AllTypes;
+            if (!isCrossTypeOn)
+                return types.Distinct();
+            
+            var types2 = new HashSet<WittyerType>(types);
+            var types3 = new HashSet<WittyerType>();
+            foreach (var categories in Quantify.CrossTypeCategories.Values)
+            foreach (var category in categories)
+            {
+                if ((category.MainType == WittyerType.CopyNumberTandemRepeat
+                     || category.SecondaryType == WittyerType.CopyNumberTandemRepeat)
+                    && !types2.Contains(WittyerType.CopyNumberTandemRepeat))
+                    continue;
+                if (types2.Contains(category.MainType))
+                {
+                    if (types2.Contains(category.SecondaryType))
+                        return types2;
+                }
+                else
+                    types3.Add(category.MainType);
+                if (!types2.Contains(category.SecondaryType))
+                    types3.Add(category.SecondaryType);
+            }
+
+            return types2.Concat(types3).Distinct();
+        }
 
         /// <summary>
         /// Creates a new instance of <see cref="InputSpec"/> with a new value for the <see cref="InputSpec.IncludedRegions"/>
         /// </summary>
         /// <param name="bedFile">The new <see cref="IncludeBedFile"/>, can be null.</param>
-        [NotNull]
         [Pure]
-        public InputSpec ReplaceBedFile([CanBeNull] IncludeBedFile bedFile) 
-            => Create(VariantType, BinSizes, BasepairDistance, PercentDistance, ExcludedFilters,
+        public InputSpec ReplaceBedFile(IncludeBedFile? bedFile) 
+            => Create(VariantType, BinSizes, AbsoluteThreshold, PercentThreshold, ExcludedFilters,
                 IncludedFilters, bedFile);
-        
+
         /// <summary>
         /// Creates an IEnumerable of <see cref="InputSpec"/>s with a possible override of the <see cref="InputSpec.IncludedRegions"/>
         /// </summary>
-        [CanBeNull]
         [Pure]
         public static IEnumerable<InputSpec> CreateSpecsFromString(
-            string configText, [CanBeNull] IncludeBedFile bedFileOverride)
-            => JsonConvert
-                .DeserializeObject<IEnumerable<InputSpec>>(configText, InputSpecConverter.Create())
-                ?.Select(x => bedFileOverride == null ? x : x.ReplaceBedFile(bedFileOverride));
+            string configText, IncludeBedFile? bedFileOverride, bool isCrossTypeOn)
+        {
+            var parsed = JsonConvert
+                             .DeserializeObject<IEnumerable<InputSpec>>(configText, InputSpecConverter.Create())
+                             ?.Select(x => bedFileOverride == null ? x : x.ReplaceBedFile(bedFileOverride)) ??
+                         Enumerable.Empty<InputSpec>();
+            if (!isCrossTypeOn)
+                return parsed;
 
-        [NotNull]
+            var dict = parsed.ToDictionary(p => p.VariantType, p => p);
+            var dict2 = new Dictionary<WittyerType, InputSpec>();
+            foreach (var categories in Quantify.CrossTypeCategories.Values)
+            foreach (var category in categories)
+            {
+                if ((category.MainType == WittyerType.CopyNumberTandemRepeat
+                     || category.SecondaryType == WittyerType.CopyNumberTandemRepeat)
+                    && !dict.ContainsKey(WittyerType.CopyNumberTandemRepeat))
+                    continue;
+                if (dict.TryGetValue(category.MainType, out var spec))
+                {
+                    if (dict.ContainsKey(category.SecondaryType))
+                        return dict.Values;
+                    dict2[category.SecondaryType] = new InputSpec(category.SecondaryType, spec.BinSizes,
+                        spec.AbsoluteThreshold, spec.PercentThreshold, spec.ExcludedFilters,
+                        spec.IncludedFilters, spec.IncludedRegions);
+                }
+                else if (dict.TryGetValue(category.SecondaryType, out spec))
+                    dict2[category.MainType] = new InputSpec(category.MainType, spec.BinSizes,
+                        spec.AbsoluteThreshold, spec.PercentThreshold, spec.ExcludedFilters,
+                        spec.IncludedFilters, spec.IncludedRegions);
+            }
+
+            return dict.Values.Concat(dict2.Values);
+        }
+
         private static IReadOnlyCollection<string> VerifyFiltersAndGetFinalIncluded(
-            [NotNull] IReadOnlyCollection<string> excludedFilters, [CanBeNull] IReadOnlyCollection<string> includedFilters)
+            IReadOnlyCollection<string> excludedFilters, IReadOnlyCollection<string>? includedFilters)
         {
             if (includedFilters == null)
             {
@@ -227,13 +292,13 @@ namespace Ilmn.Das.App.Wittyer.Input
         }
 
         /// <inheritdoc />
-        public override bool Equals([CanBeNull] object obj)
+        public override bool Equals(object? obj)
             => obj is InputSpec spec &&
                VariantType == spec.VariantType &&
-               BasepairDistance == spec.BasepairDistance &&
-               (spec.PercentDistance == null && PercentDistance == null ||
-                spec.PercentDistance != null && PercentDistance != null &&
-                Math.Abs(PercentDistance.Value - spec.PercentDistance.Value) < .000000000001) &&
+               AbsoluteThreshold == spec.AbsoluteThreshold &&
+               (spec.PercentThreshold == null && PercentThreshold == null ||
+                spec.PercentThreshold != null && PercentThreshold != null &&
+                Math.Abs(PercentThreshold.Value - spec.PercentThreshold.Value) < .000000000001) &&
                BinSizes.SequenceEqual(spec.BinSizes) &&
                IncludedFilters.IsScrambledEquals(spec.IncludedFilters) &&
                ExcludedFilters.IsScrambledEquals(spec.ExcludedFilters) && 
@@ -244,8 +309,8 @@ namespace Ilmn.Das.App.Wittyer.Input
         {
             var hashCode = 1621349179;
             hashCode = hashCode * -1521134295 + VariantType.GetHashCode();
-            hashCode = hashCode * -1521134295 + BasepairDistance.GetHashCode();
-            hashCode = hashCode * -1521134295 + PercentDistance?.GetHashCode() ?? 0;
+            hashCode = hashCode * -1521134295 + AbsoluteThreshold.GetHashCode();
+            hashCode = hashCode * -1521134295 + PercentThreshold?.GetHashCode() ?? 0;
             hashCode = hashCode * -1521134295 + HashCodeUtils.GenerateForEnumerablesStruct(BinSizes, true);
             hashCode = hashCode * -1521134295 + HashCodeUtils.GenerateForEnumerables(IncludedFilters, false);
             hashCode = hashCode * -1521134295 + HashCodeUtils.GenerateForEnumerables(ExcludedFilters, false);
