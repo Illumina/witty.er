@@ -4,7 +4,6 @@ using System.Linq;
 using Ilmn.Das.App.Wittyer.Infrastructure;
 using Ilmn.Das.App.Wittyer.Input;
 using Ilmn.Das.App.Wittyer.Stats;
-using Ilmn.Das.App.Wittyer.Utilities.Enums;
 using Ilmn.Das.Core.Tries.Extensions;
 using Ilmn.Das.Std.AppUtils.Misc;
 using Ilmn.Das.Std.XunitUtils;

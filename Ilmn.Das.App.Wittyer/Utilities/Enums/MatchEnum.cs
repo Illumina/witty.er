@@ -25,11 +25,7 @@ namespace Ilmn.Das.App.Wittyer.Utilities.Enums
         /// Allele Match
         /// </summary>
         public static readonly MatchSet AlleleMatch = LocalMatch.Add(MatchEnum.Allele);
-
-        /// <summary>
-        /// Allele and Genotype Match
-        /// </summary>
-        public static readonly MatchSet AlleleAndGenotypeMatch = AlleleMatch.Add(MatchEnum.Genotype);
+        public static readonly MatchSet AlleleAndLengthMatch = AlleleMatch.Add(MatchEnum.Length);
 
         public MatchSet(IImmutableSet<MatchEnum> baseSet) => _baseSet = baseSet;
 

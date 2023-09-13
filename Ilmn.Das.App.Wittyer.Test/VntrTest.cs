@@ -4,7 +4,6 @@ using System.Linq;
 using Ilmn.Das.App.Wittyer.Infrastructure;
 using Ilmn.Das.App.Wittyer.Input;
 using Ilmn.Das.App.Wittyer.Stats;
-using Ilmn.Das.App.Wittyer.Utilities.Enums;
 using Ilmn.Das.App.Wittyer.Vcf.Variants;
 using Ilmn.Das.Core.Tries.Extensions;
 using Ilmn.Das.Std.AppUtils.Misc;
@@ -28,7 +27,9 @@ namespace Ilmn.Das.App.Wittyer.Test
         public void VntrVsTruth_CrossType_Works()
         {
             var outputDirectory = Path.GetRandomFileName().ToDirectoryInfo();
-            var inputSpecs = InputSpec.GenerateDefaultInputSpecs(true).Select(i => InputSpec.Create(i.VariantType, i.BinSizes,
+            var inputSpecs = InputSpec.GenerateDefaultInputSpecs(true)
+                // .Where(it => it.VariantType != WittyerType.CopyNumberTandemReference)
+                .Select(i => InputSpec.Create(i.VariantType, i.BinSizes,
                     i.BasepairDistance, i.PercentThreshold, i.ExcludedFilters, i.IncludedFilters, IncludeBedFile.CreateFromBedFile(Bed)))
                 .ToDictionary(i => i.VariantType, i => i);
             var wittyerSettings = WittyerSettings.Create(outputDirectory,
@@ -43,36 +44,42 @@ namespace Ilmn.Das.App.Wittyer.Test
                 .GenerateSampleMetrics(truth, query, false, inputSpecs, true);
             var cnTrStats = results.DetailedStats[Category.Create(WittyerType.CopyNumberTandemRepeat)].OverallStats[StatsType.Event];
             // entries have been spot checked so these stats are assumed to be correct
-            MultiAssert.Equal(145U, cnTrStats.QueryStats.FalseCount);
-            MultiAssert.Equal(272U, cnTrStats.QueryStats.TrueCount);
+            MultiAssert.Equal(66U, cnTrStats.QueryStats.FalseCount);
+            MultiAssert.Equal(238U, cnTrStats.QueryStats.TrueCount);
             MultiAssert.Equal(0U, cnTrStats.TruthStats.TrueCount);
             MultiAssert.Equal(0U, cnTrStats.TruthStats.FalseCount);
+            var cnTrefStats = results.DetailedStats[Category.Create(WittyerType.CopyNumberTandemReference)].OverallStats[StatsType.Event];
+            // entries have been spot checked so these stats are assumed to be correct
+            MultiAssert.Equal(0U, cnTrefStats.QueryStats.FalseCount);
+            MultiAssert.Equal(113U, cnTrefStats.QueryStats.TrueCount);
+            MultiAssert.Equal(0U, cnTrefStats.TruthStats.TrueCount);
+            MultiAssert.Equal(0U, cnTrefStats.TruthStats.FalseCount);
             var insertionStats = results.DetailedStats[Category.Create(WittyerType.Insertion)].OverallStats[StatsType.Event];
-            MultiAssert.Equal(206U, insertionStats.TruthStats.TrueCount);
-            MultiAssert.Equal(197U, insertionStats.TruthStats.FalseCount);
+            MultiAssert.Equal(244U, insertionStats.TruthStats.TrueCount);
+            MultiAssert.Equal(159U, insertionStats.TruthStats.FalseCount);
             var deletionStats = results.DetailedStats[Category.Create(WittyerType.Deletion)].OverallStats[StatsType.Event];
-            MultiAssert.Equal(142U, deletionStats.TruthStats.TrueCount);
-            MultiAssert.Equal(195U, deletionStats.TruthStats.FalseCount);
+            MultiAssert.Equal(180U, deletionStats.TruthStats.TrueCount);
+            MultiAssert.Equal(157U, deletionStats.TruthStats.FalseCount);
             var dupStats = results.DetailedStats[Category.Create(WittyerType.Duplication)].OverallStats[StatsType.Event];
             MultiAssert.Equal(0U, dupStats.TruthStats.TrueCount);
             MultiAssert.Equal(0U, dupStats.TruthStats.FalseCount);
             MultiAssert.Equal(
-                new[] { Quantify.DelAndCnTrLossCategory, Quantify.InsAndCnTrGainCategory, Quantify.RefAndCnTrCategory }.Sum(it =>
+                new[] { Quantify.DelAndCnTrLossCategory, Quantify.InsAndCnTrGainCategory, Quantify.RefAndCnTrefCategory }.Sum(it =>
                     results.DetailedStats[it].OverallStats[StatsType.Event].TruthStats.TrueCount),
                 new[] { WittyerType.Deletion, WittyerType.Insertion, WittyerType.CopyNumberTandemRepeat }.Sum(it =>
                     results.DetailedStats[Category.Create(it)].OverallStats[StatsType.Event].TruthStats.TrueCount));
             MultiAssert.Equal(
-                new[] { Quantify.DelAndCnTrLossCategory, Quantify.InsAndCnTrGainCategory, Quantify.RefAndCnTrCategory }.Sum(it =>
+                new[] { Quantify.DelAndCnTrLossCategory, Quantify.InsAndCnTrGainCategory, Quantify.RefAndCnTrefCategory }.Sum(it =>
                     results.DetailedStats[it].OverallStats[StatsType.Event].TruthStats.FalseCount),
                 new[] { WittyerType.Deletion, WittyerType.Insertion, WittyerType.CopyNumberTandemRepeat }.Sum(it =>
                     results.DetailedStats[Category.Create(it)].OverallStats[StatsType.Event].TruthStats.FalseCount));
             MultiAssert.Equal(
-                new[] { Quantify.DelAndCnTrLossCategory, Quantify.InsAndCnTrGainCategory, Quantify.RefAndCnTrCategory }.Sum(it =>
+                new[] { Quantify.DelAndCnTrLossCategory, Quantify.InsAndCnTrGainCategory, Quantify.RefAndCnTrefCategory }.Sum(it =>
                     results.DetailedStats[it].OverallStats[StatsType.Event].QueryStats.TrueCount),
                 new[] { WittyerType.Deletion, WittyerType.Insertion, WittyerType.CopyNumberTandemRepeat }.Sum(it =>
                     results.DetailedStats[Category.Create(it)].OverallStats[StatsType.Event].QueryStats.TrueCount));
             MultiAssert.Equal(
-                new[] { Quantify.DelAndCnTrLossCategory, Quantify.InsAndCnTrGainCategory, Quantify.RefAndCnTrCategory }.Sum(it =>
+                new[] { Quantify.DelAndCnTrLossCategory, Quantify.InsAndCnTrGainCategory, Quantify.RefAndCnTrefCategory }.Sum(it =>
                     results.DetailedStats[it].OverallStats[StatsType.Event].QueryStats.FalseCount),
                 new[] { WittyerType.Deletion, WittyerType.Insertion, WittyerType.CopyNumberTandemRepeat }.Sum(it =>
                     results.DetailedStats[Category.Create(it)].OverallStats[StatsType.Event].QueryStats.FalseCount));
@@ -83,7 +90,9 @@ namespace Ilmn.Das.App.Wittyer.Test
         public void VntrVsTruth_CrossType_Off_Works()
         {
             var outputDirectory = Path.GetRandomFileName().ToDirectoryInfo();
-            var inputSpecs = InputSpec.GenerateDefaultInputSpecs(false).Select(i => InputSpec.Create(i.VariantType, i.BinSizes,
+            var inputSpecs = InputSpec.GenerateDefaultInputSpecs(false)
+                .Where(it => it.VariantType != WittyerType.CopyNumberTandemReference)
+                .Select(i => InputSpec.Create(i.VariantType, i.BinSizes,
                     i.BasepairDistance, i.PercentThreshold, i.ExcludedFilters, i.IncludedFilters, IncludeBedFile.CreateFromBedFile(Bed)))
                 .ToDictionary(i => i.VariantType, i => i);
             var wittyerSettings = WittyerSettings.Create(outputDirectory,
@@ -119,6 +128,7 @@ namespace Ilmn.Das.App.Wittyer.Test
         {
             var outputDirectory = Path.GetRandomFileName().ToDirectoryInfo();
             var inputSpecs = InputSpec.GenerateDefaultInputSpecs(true)
+                .Where(it => it.VariantType != WittyerType.CopyNumberTandemReference)
                 .ToDictionary(i => i.VariantType, i => i);
             var wittyerSettings = WittyerSettings.Create(outputDirectory, Truth, Query,
                 ImmutableList<ISamplePair>.Empty, EvaluationMode.CrossTypeAndSimpleCounting,

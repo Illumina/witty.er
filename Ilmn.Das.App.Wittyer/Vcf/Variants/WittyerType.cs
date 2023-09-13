@@ -147,13 +147,26 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
                 false,
                 null,
                 100, 1000);
+
+        /// <summary>
+        /// VNTRs
+        /// </summary>
+        public static readonly WittyerType CopyNumberTandemReference
+            = new(
+                nameof(CopyNumberTandemReference),
+                true,
+                true,
+                true,
+                false,
+                null,
+                100, 1000);
         
         /// <summary>
         /// All types
         /// </summary>
         public static readonly IImmutableSet<WittyerType> AllTypes = ImmutableHashSet.Create(Deletion, Duplication,
             CopyNumberGain, CopyNumberLoss, CopyNumberReference, Inversion, IntraChromosomeBreakend, Insertion,
-            TranslocationBreakend, CopyNumberTandemRepeat);
+            TranslocationBreakend, CopyNumberTandemRepeat, CopyNumberTandemReference);
 
         private static readonly IImmutableDictionary<string, WittyerType> AllTypesStrings
             = AllTypes.ToImmutableDictionary(type => type.Name, type => type, StringComparer.OrdinalIgnoreCase);
@@ -166,9 +179,6 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
 
         private static readonly IImmutableDictionary<string, WittyerType> AllSvTypesStrings
             = AllUniqueSvTypes.ToImmutableDictionary(type => type._svTypeName, type => type);
-
-        private static readonly IImmutableSet<WittyerType> CopyNumerVariants
-            = ImmutableHashSet.Create(CopyNumberGain, CopyNumberLoss);
 
         /// <summary>
         /// Tries to parse the given name into a <see cref="Type"/> (useful for config files).
@@ -220,7 +230,11 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
             noSplit = false; // no split means do not split because it's a CN call and should be a single unit.
             if (variant.IsRefSite())
             {
-                wittyerType = CopyNumberReference;
+                wittyerType =
+                    variant.Info.TryGetValue(WittyerConstants.RefRucInfoKey, out var refRucStr) &&
+                    double.TryParse(refRucStr, out _)
+                        ? CopyNumberTandemRepeat
+                        : CopyNumberReference;
                 return FailedReason.Unset;
             }
 
@@ -452,10 +466,5 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
         /// <inheritdoc />
         [Pure]
         public override string ToString() => Name;
-
-        /// <summary>
-        /// Whether or not this instance is a CopyNumber Variant.
-        /// </summary>
-        public bool IsCopyNumberVariant => CopyNumerVariants.Contains(this);
     }
 }

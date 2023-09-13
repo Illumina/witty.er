@@ -13,13 +13,12 @@ using Ilmn.Das.App.Wittyer.Vcf.Variants.Genotype;
 using Ilmn.Das.Core.Tries.Extensions;
 using Ilmn.Das.Std.AppUtils.Collections;
 using Ilmn.Das.Std.AppUtils.Comparers;
-using Ilmn.Das.Std.AppUtils.Enums;
 using Ilmn.Das.Std.AppUtils.Intervals;
 using Ilmn.Das.Std.AppUtils.Misc;
 using Ilmn.Das.Std.BioinformaticUtils.Bed;
 using Ilmn.Das.Std.BioinformaticUtils.GenomicFeatures;
 using Ilmn.Das.Std.BioinformaticUtils.Nucleotides;
-using Ilmn.Das.Std.VariantUtils.VariantTypes;
+using Ilmn.Das.Std.VariantUtils.SimpleVariants;
 using Ilmn.Das.Std.VariantUtils.Vcf;
 
 namespace Ilmn.Das.App.Wittyer.Utilities
@@ -62,7 +61,7 @@ namespace Ilmn.Das.App.Wittyer.Utilities
             IReadOnlyDictionary<WittyerType, GenomeIntervalTree<T>> truthTrees,
             T queryVariant, MatchFunc<T> alleleMatchFunc, bool isCrossType, bool isSimpleCounting,
             InputSpec? trInputSpec = null, double similarityThreshold = WittyerConstants.DefaultSimilarityThreshold,
-            int? maxMatches = WittyerConstants.DefaultMaxMatches)
+            int? maxMatches = WittyerConstants.DefaultMaxMatches, InputSpec? cntRefSpec = null)
             where T : class, IMutableWittyerSimpleVariant
         {
             var overlaps = Enumerable.Empty<T>();
@@ -159,7 +158,8 @@ namespace Ilmn.Das.App.Wittyer.Utilities
                 )
                     failedReasons.Add(FailedReason.RucAlleleTruthError);
                 else if (!queryVariant.OriginalVariant.Info.TryGetValue(WittyerConstants.RucInfoKey, out var rucStr)
-                         || rucStr.Contains('-'))
+                         && !queryVariant.OriginalVariant.IsRefSite()
+                         || rucStr != null && rucStr.Contains('-'))
                     // todo: this might not be needed if we just ignore this and grab CN?
                     failedReasons.Add(FailedReason.RucNotFoundOrInvalid);
                 else if (queryRul == null)
@@ -167,9 +167,11 @@ namespace Ilmn.Das.App.Wittyer.Utilities
                 else
                 {
                     uint? who = null;
-                    var matched = MatchTrs(truthTrees, queryVariant,
+                    rucStr ??= refRucStr;
+
+                    var (matched, newType) = MatchTrs(truthTrees, queryVariant,
                         trSpec, rucStr,
-                        failedReasons, queryRul.Value, queryVariant.EndRefPos, refRuc);
+                        failedReasons, queryRul.Value, queryVariant.EndRefPos, refRuc, cntRefSpec);
 
                     if (matched.Count == 0)
                         failedReasons.Add(FailedReason.NoOverlap);
@@ -181,7 +183,9 @@ namespace Ilmn.Das.App.Wittyer.Utilities
                             var wow = overlap.VariantType.HasOverlappingWindows
                                 ? overlap.TryGetOverlap(queryVariant).GetOrDefault()
                                 : null;
-                            UpdateVariantWithMatchInfo(queryVariant, CrossTypeMatchCntr, true, isSimpleCounting,
+                            UpdateVariantWithMatchInfo(queryVariant,
+                                (a, b, c, d, e) => CrossTypeMatchCntr(a, b, c, d, e, newType),
+                                true, isSimpleCounting,
                                 failedReasons, overlap, who.Value, trSpec, similarityThreshold, wow);
                         }
                 }
@@ -258,19 +262,19 @@ namespace Ilmn.Das.App.Wittyer.Utilities
                     continue;
                 var match = alleleMatches[who.Value];
                 queryVariant.OverlapInfo[i] = OverlapAnnotation.Create(who,
-                    MatchSet.AlleleAndGenotypeMatch,
+                    overlap.What.Add(MatchEnum.Genotype),
                     overlap.Wow, overlap.Where,
-                    overlap.Why == FailedReason.GtMismatch ? FailedReason.Unset : overlap.Why);
+                    overlap.Why == FailedReason.GtMismatch ? FailedReason.Unset : overlap.Why,
+                    overlap.MatchWittyerType);
                 for (var j = 0; j < match.OverlapInfo.Count; j++)
                 {
                     var matchOverlap = match.OverlapInfo[j];
                     if (matchOverlap.Who != who)
                         continue;
                     match.OverlapInfo[j] = OverlapAnnotation.Create(who,
-                        MatchSet.AlleleAndGenotypeMatch, matchOverlap.Wow, matchOverlap.Where,
-                        matchOverlap.Why == FailedReason.GtMismatch
-                            ? FailedReason.Unset
-                            : matchOverlap.Why);
+                        matchOverlap.What.Add(MatchEnum.Genotype), matchOverlap.Wow, matchOverlap.Where,
+                        matchOverlap.Why == FailedReason.GtMismatch ? FailedReason.Unset : matchOverlap.Why,
+                        matchOverlap.MatchWittyerType);
                 }
             }
         }
@@ -284,9 +288,9 @@ namespace Ilmn.Das.App.Wittyer.Utilities
                     ? (uint)rus.Count(n => DnaNucleotide.AllNucleotides.Contains((DnaNucleotide)n))
                     : null;
 
-        private static List<IMutableWittyerSimpleVariant> MatchTrs<T>(
+        private static (List<IMutableWittyerSimpleVariant> matched, WittyerType? newType) MatchTrs<T>(
             IReadOnlyDictionary<WittyerType, GenomeIntervalTree<T>> truthTrees, T queryVariant, InputSpec inputSpec,
-            string rucStr, ISet<FailedReason> failedReasons, uint rul, uint end, decimal refRuc)
+            string rucStr, ISet<FailedReason> failedReasons, uint rul, uint end, decimal refRuc, InputSpec? cntRefSpec)
             where T : class, IMutableWittyerSimpleVariant
         {
             var matched = new List<IMutableWittyerSimpleVariant>();
@@ -323,9 +327,11 @@ namespace Ilmn.Das.App.Wittyer.Utilities
             var groupByPhaseSetsInOrder =
                 GroupByPhaseSetsInOrder(overlaps.OfType<IMutableWittyerSimpleVariant>(), isDiploidLocus).ToList();
             if (groupByPhaseSetsInOrder.Count == 0)
-                return matched;
+                return (matched, null);
 
             var refLength = refRuc * rul;
+            var isAlleleMatch = false;
+            decimal rucValue;
             if (groupByPhaseSetsInOrder.Count == 1) // one phased set yay!
             {
                 decimal? tmpRefRuc = refRuc;
@@ -334,7 +340,7 @@ namespace Ilmn.Das.App.Wittyer.Utilities
                 if (tup == null)
                 {
                     failedReasons.Add(FailedReason.RucAlleleTruthError);
-                    return matched;
+                    return (matched, null);
                 }
 
                 var phased = groupByPhaseSetsInOrder[0];
@@ -352,7 +358,8 @@ namespace Ilmn.Das.App.Wittyer.Utilities
                     rightUnknown = rightUnknownLocal;
                 }
 
-                var (_, rucValue, rucValue2) = tup.Value;
+                var (_, rucVal, rucValue2) = tup.Value;
+                rucValue = rucVal;
                 var expectedSvLen = rucValue * rul;
                 if (rucValue2 == null) // this means we have the total RUC for the whole locus
                 {
@@ -368,12 +375,18 @@ namespace Ilmn.Das.App.Wittyer.Utilities
                         expectedStop);
 
                 if (IsLengthInRange(leftLength, leftUnknown, expectedLengthInterval)
-                    || rightUnknown != null && IsLengthInRange(rightLength, rightUnknown.Value, expectedLengthInterval))
-                    return phasedOverlaps;
+                    || rightUnknown != null &&
+                    IsLengthInRange(rightLength, rightUnknown.Value, expectedLengthInterval))
+                {
+                    isAlleleMatch = true;
+                    matched = phasedOverlaps;
+                }
+
+                isDiploidLocus = rucValue2 == null;
             }
-            else // we are dealing with unphased truth, in this case, we have way too much combinatorial complexity, so we compare total CN.
+            else
             {
-                decimal rucValue;
+                // we are dealing with unphased truth, in this case, we have way too much combinatorial complexity, so we compare total CN.
                 if (TryGetCnValue(queryVariant, out var cn) && cn != null)
                     rucValue = CalculateRucValueFromCnAndRefRuc(refRuc, cn.Value);
                 else
@@ -385,7 +398,7 @@ namespace Ilmn.Das.App.Wittyer.Utilities
                     if (tup == null)
                     {
                         failedReasons.Add(FailedReason.RucAlleleTruthError);
-                        return matched;
+                        return (matched, null);
                     }
 
                     var (_, rucValueTmp, ruc2) = tup.Value;
@@ -416,22 +429,47 @@ namespace Ilmn.Das.App.Wittyer.Utilities
                 }
 
                 var calculatedRuc = finalLength / rul;
-                var thresholdLength = inputSpec.GetTrThreshold(calculatedRuc);
-                var thresholdStop = rucValue + thresholdLength;
-                var thresholdStart = rucValue - thresholdLength;
+                var thresholdLen = inputSpec.GetTrThreshold(calculatedRuc);
+                var thresholdStop = rucValue + thresholdLen;
+                var thresholdStart = rucValue - thresholdLen;
                 if (thresholdStart < 0m)
                     thresholdStart = 0m;
-                return calculatedRuc < thresholdStop
-                       && (hasUnknownIns
-                           || (thresholdStop == thresholdStart
-                               ? calculatedRuc == thresholdStart
-                               : new ExclusiveInterval<decimal>(thresholdStart, thresholdStop)
-                                   .Contains(calculatedRuc)))
-                    ? matched
-                    : new List<IMutableWittyerSimpleVariant>();
+                if (calculatedRuc < thresholdStop
+                    && (hasUnknownIns
+                        || (thresholdStop == thresholdStart
+                            ? calculatedRuc == thresholdStart
+                            : new ExclusiveInterval<decimal>(thresholdStart, thresholdStop)
+                                .Contains(calculatedRuc))))
+                    isAlleleMatch = true;
+                else
+                    matched = new List<IMutableWittyerSimpleVariant>();
             }
 
-            return matched;
+            return isAlleleMatch
+                ? (matched,
+                    ShouldConvertToReference(cntRefSpec,
+                        isDiploidLocus
+                            ? 2 * refRuc
+                            : refRuc, rucValue)
+                        ? WittyerType.CopyNumberTandemReference
+                        : null)
+                : (matched, null);
+        }
+        
+        internal static bool ShouldConvertToReference(InputSpec? cntRefSpec, decimal refRuc, decimal ruc)
+        {
+            if (cntRefSpec == null)
+                return false;
+            if (refRuc == ruc) return true;
+
+            var abs = cntRefSpec.PercentThreshold == null
+                ? cntRefSpec.AbsoluteThreshold
+                : refRuc * (decimal)cntRefSpec.PercentThreshold.Value;
+            if (abs < cntRefSpec.AbsoluteThreshold)
+                abs = cntRefSpec.AbsoluteThreshold;
+            if (abs < 0)
+                abs = -abs;
+            return new ExclusiveInterval<decimal>(refRuc - abs, refRuc + abs).Contains(ruc);
         }
 
         private static bool IsDiploidLocus<T>(T queryVariant) where T : class, IWittyerSimpleVariant
@@ -674,18 +712,17 @@ namespace Ilmn.Das.App.Wittyer.Utilities
             InputSpec trInputSpec, double similarityThreshold, IInterval<uint>? wow)
             where T : class, IMutableWittyerSimpleVariant
         {
-            var (matchEnum, failedReason) =
+            var (matchEnum, failedReason, qType, tType) =
                 GenerateWhatAndWhy(queryVariant, failedReasons, overlap, alleleMatchFunc, isCrossType, isSimpleCounting,
                     trInputSpec, similarityThreshold);
 
             var borderDistance = BorderDistance.CreateFromVariant(overlap, queryVariant);
 
-            var overlapInfo =
-                OverlapAnnotation.Create(who, matchEnum, wow, borderDistance, failedReason);
-
             failedReasons.Clear();
-            queryVariant.AddToOverlapInfo(overlapInfo);
-            overlap.AddToOverlapInfo(overlapInfo);
+            queryVariant.AddToOverlapInfo(
+                OverlapAnnotation.Create(who, matchEnum, wow, borderDistance, failedReason, qType));
+            overlap.AddToOverlapInfo(
+                OverlapAnnotation.Create(who, matchEnum, wow, borderDistance, failedReason, tType));
         }
 
         private static uint NextWhoTag<T>(T overlap) where T : class, IWittyerSimpleVariant
@@ -697,13 +734,15 @@ namespace Ilmn.Das.App.Wittyer.Utilities
             return ret;
         }
 
-        internal static (MatchSet what, FailedReason reason) GenerateWhatAndWhy<T>(
-            T query, ICollection<FailedReason> failedReasons, T overlap, MatchFunc<T> alleleMatchFunc,
-            bool isCrossType, bool isSimpleCounting, InputSpec trInputSpec,
-            double similarityThreshold = WittyerConstants.DefaultSimilarityThreshold)
+        internal static (MatchSet what, FailedReason reason, WittyerType? qType, WittyerType? tType)
+            GenerateWhatAndWhy<T>(
+                T query, ICollection<FailedReason> failedReasons, T overlap, MatchFunc<T> alleleMatchFunc,
+                bool isCrossType, bool isSimpleCounting, InputSpec trInputSpec,
+                double similarityThreshold = WittyerConstants.DefaultSimilarityThreshold)
             where T : class, IWittyerSimpleVariant
         {
-            var matchSet = alleleMatchFunc(query, failedReasons, overlap, trInputSpec, similarityThreshold);
+            var (matchSet, qType, tType) =
+                alleleMatchFunc(query, failedReasons, overlap, trInputSpec, similarityThreshold);
             var isAlleleMatch = matchSet.Contains(MatchEnum.Allele);
             if (query.VariantType.HasBaseLevelStats
                 && overlap.VariantType.HasBaseLevelStats
@@ -724,7 +763,7 @@ namespace Ilmn.Das.App.Wittyer.Utilities
             var (isGt, reason) = GenerateWhatAndWhy(query, failedReasons, overlap, isSimpleCounting);
             if (isGt)
                 matchSet = matchSet.Add(MatchEnum.Genotype);
-            return (matchSet, reason);
+            return (matchSet, reason, qType, tType);
         }
 
         private static (bool isGt, FailedReason reason) GenerateWhatAndWhy<T>(T query,
@@ -775,26 +814,28 @@ namespace Ilmn.Das.App.Wittyer.Utilities
             return ret;
         }
 
-        internal delegate MatchSet MatchFunc<in T>(T query, ICollection<FailedReason> failedReason, T truth,
+        internal delegate (MatchSet what, WittyerType? queryType, WittyerType? truthType) MatchFunc<in T>(T query,
+            ICollection<FailedReason> failedReason, T truth,
             InputSpec trInputSpec, double similarityThreshold);
 
 
-        internal static MatchSet CrossTypeMatchCntr<T>(
-            T query, ICollection<FailedReason> failedReasons, T truth, InputSpec _, double similarityThreshold)
+        internal static (MatchSet what, WittyerType? qType, WittyerType? tType) CrossTypeMatchCntr<T>(
+            T _, ICollection<FailedReason> failedReasons, T truth, InputSpec __, double similarityThreshold,
+            WittyerType? newType)
             where T : IWittyerSimpleVariant
         {
-            var ret = MatchSet.AlleleMatch;
+            var ret = MatchSet.AlleleAndLengthMatch;
             if (similarityThreshold > 0.0 && WittyerConstants.SequenceComparable.Contains(truth.VariantType))
                 failedReasons.Add(FailedReason.SequenceUnassessed);
-            return ret;
+            return (ret, newType, null);
         }
 
-        internal static MatchSet MatchBnd<T>(
+        internal static (MatchSet matched, WittyerType? qType, WittyerType? tType) MatchBnd<T>(
             T query, ICollection<FailedReason> failedReason, T truth, InputSpec _, double similarityThreshold)
             where T : IWittyerSimpleVariant
             => MatchBnd(query, failedReason, truth, similarityThreshold);
 
-        private static MatchSet MatchBnd<T>(
+        private static (MatchSet matched, WittyerType? qType, WittyerType? tType) MatchBnd<T>(
             T query, ICollection<FailedReason> failedReason, T truth, double similarityThreshold)
             where T : IWittyerSimpleVariant
         {
@@ -806,7 +847,7 @@ namespace Ilmn.Das.App.Wittyer.Utilities
                 || !castQuery.EndInterval.TryGetOverlap(castTruth.EndInterval).Any())
             {
                 failedReason.Add(FailedReason.BndPartialMatch);
-                return matchSet;
+                return (matchSet, null, null);
             }
 
             matchSet = matchSet.Add(MatchEnum.Allele);
@@ -828,7 +869,7 @@ namespace Ilmn.Das.App.Wittyer.Utilities
             else
                 failedReason.Add(FailedReason.LengthMismatch);
 
-            return CheckForSequence(query, failedReason, truth, similarityThreshold, matchSet);
+            return (CheckForSequence(query, failedReason, truth, similarityThreshold, matchSet), null, null);
         }
 
         private static MatchSet CheckForSequence<T>(
@@ -910,22 +951,30 @@ namespace Ilmn.Das.App.Wittyer.Utilities
         {
             if (seq1 == seq2)
                 return 1.0;
-            
+
             if ((long)seq1.Length * seq2.Length >= 2_000_000_000L) // 2147483647 is the max from the third party library
                 return null; // we do not assess sequence when this happens.
-            
+
             var alignments = WittyerConstants.Aligner.Align(
-                new Sequence(Alphabets.AmbiguousDNA, seq1),
-                new Sequence(Alphabets.AmbiguousDNA, seq2));
+                new Sequence(AreAllDna(seq1) ? Alphabets.DNA : Alphabets.AmbiguousDNA, seq1),
+                new Sequence(AreAllDna(seq2) ? Alphabets.DNA : Alphabets.AmbiguousDNA, seq2));
             var alignmentFirst = alignments.First();
 
             var alignment = alignmentFirst.First();
             return alignment.Score / (double)length;
         }
 
-        internal static MatchSet VariantMatch<T>(
+        private static bool AreAllDna(string seq)
+            => seq.All(c => c is 'A' or 'a' or 'C' or 'c' or 'G' or 'g' or 'T' or 't');
+
+        internal static (MatchSet matched, WittyerType? qType, WittyerType? tType) VariantMatch<T>(
             T query, ICollection<FailedReason> failedReason, T truth, InputSpec trInputSpec,
             double similarityThreshold) where T : class, IWittyerSimpleVariant
+            => VariantMatch(query, failedReason, truth, trInputSpec, similarityThreshold, null);
+
+        internal static (MatchSet matched, WittyerType? qType, WittyerType? tType) VariantMatch<T>(
+            T query, ICollection<FailedReason> failedReason, T truth, InputSpec trInputSpec,
+            double similarityThreshold, InputSpec? cntRefSpec) where T : class, IWittyerSimpleVariant
         {
             var ret = MatchSet.LocalMatch;
 
@@ -934,35 +983,46 @@ namespace Ilmn.Das.App.Wittyer.Utilities
             if (castQuery.SvLenInterval == null || castTruth.SvLenInterval == null)
                 failedReason.Add(FailedReason.LengthUnassessed); // should never happen, but just in case
             else if (similarityThreshold == 0.0
-                || GetLengthRatio(castQuery.SvLenInterval, castTruth.SvLenInterval) >= similarityThreshold)
+                     || GetLengthRatio(castQuery.SvLenInterval, castTruth.SvLenInterval) >= similarityThreshold)
                 ret = ret.Add(MatchEnum.Length);
 
+            var isAlleleMatch = true;
             if (!castQuery.PosInterval.TryGetOverlap(castTruth.PosInterval).Any()
                 || !castQuery.EndInterval.TryGetOverlap(castTruth.EndInterval).Any())
             {
                 failedReason.Add(FailedReason.BordersTooFarOff);
-                return ret;
+                isAlleleMatch = false;
             }
 
             if (castQuery.VariantType == WittyerType.CopyNumberTandemRepeat
                 && castTruth.VariantType == WittyerType.CopyNumberTandemRepeat)
             {
-                if (castTruth.OriginalVariant.Info.TryGetValue(WittyerConstants.RucInfoKey, out var trueRuc)
-                    && castQuery.OriginalVariant.Info.TryGetValue(WittyerConstants.RucInfoKey, out var ruc))
+                if ((castTruth.OriginalVariant.Info.TryGetValue(WittyerConstants.RucInfoKey, out var trueRuc)
+                     || castTruth.OriginalVariant.IsRefSite() &&
+                     castTruth.OriginalVariant.Info.TryGetValue(WittyerConstants.RefRucInfoKey, out trueRuc))
+                    && (castQuery.OriginalVariant.Info.TryGetValue(WittyerConstants.RucInfoKey, out var ruc)
+                        || castQuery.OriginalVariant.IsRefSite() &&
+                        castQuery.OriginalVariant.Info.TryGetValue(WittyerConstants.RefRucInfoKey, out ruc)))
                 {
-                    var isRucsSame = IsRucsSame(castQuery, failedReason, castTruth, trInputSpec, trueRuc, ruc);
-                    if (isRucsSame)
-                        ret = ret.Add(MatchEnum.Allele);
-                    return ret;
+                    var (isRucsSame, changeQuery, changeTruth) = IsRucsSame(castQuery, failedReason, castTruth,
+                        trInputSpec, trueRuc, ruc, cntRefSpec, isAlleleMatch);
+                    var qType = changeQuery ? WittyerType.CopyNumberTandemReference : null;
+                    var tType = changeTruth ? WittyerType.CopyNumberTandemReference : null;
+                    return (isRucsSame
+                        ? ret.Add(MatchEnum.Allele)
+                        : ret, qType, tType);
                 }
 
                 failedReason.Add(FailedReason.RucNotFoundOrInvalid);
-                return ret;
+                isAlleleMatch = false;
             }
+
+            if (!isAlleleMatch)
+                return (ret, null, null);
 
             ret = ret.Add(MatchEnum.Allele);
 
-            return CheckForSequence(query, failedReason, truth, similarityThreshold, ret);
+            return (CheckForSequence(query, failedReason, truth, similarityThreshold, ret), null, null);
         }
 
         private static double GetLengthRatio(IInterval<uint> queryInterval, IInterval<uint> truthInterval)
@@ -975,11 +1035,11 @@ namespace Ilmn.Das.App.Wittyer.Utilities
             return ratio;
         }
 
-        private static bool IsRucsSame<T>(
-            T query, ICollection<FailedReason> failedReason, T truth,
+        private static (bool isRucsSame, bool changeQuery, bool changeTruth) IsRucsSame<T>(T query,
+            ICollection<FailedReason> failedReason, T truth,
             InputSpec trInputSpec,
             string trueRuc,
-            string ruc) where T : class, IWittyerVariant
+            string ruc, InputSpec? cntRefSpec, bool isAlleleMatch) where T : class, IWittyerVariant
         {
             decimal? refRucValue = null;
             var trueCount = 2;
@@ -987,6 +1047,7 @@ namespace Ilmn.Das.App.Wittyer.Utilities
             decimal? trueRucValue2 = null;
             var truthMissingRuc = false;
             decimal trueRucValue;
+            var isErrored = false;
             if (trueRucValueTmp == null)
             {
                 truthMissingRuc = true;
@@ -994,10 +1055,11 @@ namespace Ilmn.Das.App.Wittyer.Utilities
                 if (tup == null)
                 {
                     failedReason.Add(FailedReason.RucAlleleTruthError);
-                    return false;
+                    isErrored = true;
+                    trueRucValue = -1;
                 }
-
-                (trueCount, trueRucValue, trueRucValue2) = tup.Value;
+                else
+                    (trueCount, trueRucValue, trueRucValue2) = tup.Value;
             }
             else
                 trueRucValue = trueRucValueTmp.Value;
@@ -1012,54 +1074,85 @@ namespace Ilmn.Das.App.Wittyer.Utilities
                 if (tup == null)
                 {
                     failedReason.Add(FailedReason.RucNotFoundOrInvalid);
-                    return false;
+                    rucValue = -1;
+                    isErrored = true;
                 }
-
-                (ploidy, rucValue, rucValue2) = tup.Value;
-
-                if (!truthMissingRuc)
+                else
                 {
-                    tup = ExtractRucValueWithBackup(truth, trueRuc, ref refRucValue, ref trueRucSplit);
-                    if (tup == null)
+                    (ploidy, rucValue, rucValue2) = tup.Value;
+
+                    if (!truthMissingRuc)
                     {
-                        failedReason.Add(FailedReason.RucAlleleTruthError);
-                        return false;
+                        tup = ExtractRucValueWithBackup(truth, trueRuc, ref refRucValue, ref trueRucSplit);
+                        if (tup == null)
+                        {
+                            isErrored = true;
+                            failedReason.Add(FailedReason.RucAlleleTruthError);
+                        }
+                        else
+                            (trueCount, trueRucValue, trueRucValue2) = tup.Value;
                     }
 
-                    (trueCount, trueRucValue, trueRucValue2) = tup.Value;
-                }
-
-                if (ploidy != trueCount)
-                {
-                    failedReason.Add(FailedReason.RucAlleleCountDiff);
-                    return false;
+                    if (ploidy != trueCount)
+                    {
+                        isErrored = true;
+                        failedReason.Add(FailedReason.RucAlleleCountDiff);
+                    }
                 }
             }
             else
                 rucValue = rucValueTmp.Value;
 
+            var isLocusRuc = false;
             if (trueRucValue2 == null && rucValue2 != null)
-                rucValue += rucValue2.Value;
-            else if (rucValue2 == null && trueRucValue2 != null)
-                trueRucValue += trueRucValue2.Value;
-
-            var trThreshold = trInputSpec.GetTrThreshold(trueRucValue);
-            var start = trueRucValue - trThreshold;
-            if (start < 0.0m)
             {
-                if (rucValue == 0.0m)
-                    return true;
-                start = 0.0m;
+                rucValue += rucValue2.Value;
+                isLocusRuc = true;
+            }
+            else if (rucValue2 == null && trueRucValue2 != null)
+            {
+                trueRucValue += trueRucValue2.Value;
+                isLocusRuc = true;
             }
 
-            if (new ExclusiveInterval<decimal>(start, trueRucValue + trThreshold).Contains(rucValue))
-                return true;
+            var convertQuery = false;
+            var convertTruth = false;
+            refRucValue ??= ExtractRefRuc(query, out var refRucTemp) ? refRucTemp : null;
+            if (refRucValue != null)
+            {
+                var refRuc = (isLocusRuc? ploidy : 1) * refRucValue.Value;
+                convertQuery = rucValue >= 0
+                               && ShouldConvertToReference(cntRefSpec, refRuc, rucValue);
+                convertTruth = trueRucValue >= 0
+                               && ShouldConvertToReference(cntRefSpec, refRuc, trueRucValue);
+            }
+
+            if (isErrored || !isAlleleMatch)
+                return (false, convertQuery, convertTruth);
+
+            var trThreshold = trInputSpec.GetTrThreshold(trueRucValue);
+            decimal start, stop;
+            if (trueRucValue < 0)
+            {
+                start = -2;
+                stop = -1;
+            }
+            else
+            {
+                start = trueRucValue - trThreshold;
+                if (start < 0.0m)
+                    start = 0.0m;
+                stop = trueRucValue + trThreshold;
+            }
+
+            if (new ExclusiveInterval<decimal>(start, stop).Contains(rucValue))
+                return (true, convertQuery && convertTruth, convertQuery && convertTruth);
 
             failedReason.Add(FailedReason.RucMismatch);
-            return false;
+            return (false, convertQuery, convertTruth);
         }
 
-        internal static decimal? ExtractRucValue(string ruc, out string[] rucSplit)
+        private static decimal? ExtractRucValue(string ruc, out string[] rucSplit)
         {
             rucSplit = ruc.Split(VcfConstants.InfoFieldValueDelimiter);
             return decimal.TryParse(rucSplit[0], out var rucValue) && rucValue >= 0 ? rucValue : null;
@@ -1081,8 +1174,8 @@ namespace Ilmn.Das.App.Wittyer.Utilities
         {
             if (rucSplit.Length == 0)
                 rucSplit = ruc.Split(VcfConstants.InfoFieldValueDelimiter);
+            
             // we assume the first ruc is the current one we want to analyze.
-
             var ploidy = 2;
             var nonMissingIndices = new List<int>();
             var hasRef = false;
@@ -1094,7 +1187,6 @@ namespace Ilmn.Das.App.Wittyer.Utilities
                 hasRef = nonMissingIndices.Contains(0);
             }
 
-            var rucValue = 0.0M;
             var ruc2 = 0.0M;
             if (hasRef && refRuc == null)
             {
@@ -1102,42 +1194,29 @@ namespace Ilmn.Das.App.Wittyer.Utilities
                 refRuc = refRucTemp;
             }
 
-            var successFor1 = false;
-            var successFor2 = true;
+            var foundFirstAllele = false;
             foreach (var ind in nonMissingIndices)
             {
                 if (ind == 0)
+                {
                     ruc2 += refRuc ?? 0.0M;
-                else if (decimal.TryParse(rucSplit[ind - 1], out var ruc2Value))
-                {
-                    if (ind == 1)
-                    {
-                        rucValue += ruc2Value;
-                        successFor1 = true;
-                        continue;
-                    }
-
-                    if (ruc2Value < 0)
-                        return null;
-                    ruc2 += ruc2Value;
+                    continue;
                 }
-                else if (ind != 1)
-                    successFor2 = false;
+                if (rucSplit.Length <= ind - 1)
+                    return null;
+                if (ind == 1 && !foundFirstAllele)
+                {
+                    foundFirstAllele = true;
+                    continue;
+                }
+                if (!decimal.TryParse(rucSplit[ind - 1], out var ruc2Value) || ruc2Value < 0)
+                    return null;
+                ruc2 += ruc2Value;
             }
 
-            if (!successFor2 || !nonMissingIndices.Contains(2))
-            {
-                ruc2 = 0.0M;
-                if (refRuc != null)
-                {
-                    var additional = refRuc.Value;
-                    ruc2 = nonMissingIndices.Sum(it => it == 0 ? additional : 0.0M);
-                }
-            }
-
-            if (successFor1) // means this was handled above already
+            if (decimal.TryParse(rucSplit[0], out var rucValue))
                 return rucValue >= 0 ? (ploidy, rucValue, ruc2) : null;
-
+            
             decimal refRucValue;
             if (refRuc == null)
             {

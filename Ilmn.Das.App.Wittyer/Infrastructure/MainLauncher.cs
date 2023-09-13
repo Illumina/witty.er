@@ -124,6 +124,15 @@ namespace Ilmn.Das.App.Wittyer.Infrastructure
             var tandemRepeatSpec = settings.InputSpecs.TryGetValue(WittyerType.CopyNumberTandemRepeat, out var spec)
                 ? spec
                 : null;
+            var cntRefSpec = settings.InputSpecs.TryGetValue(WittyerType.CopyNumberTandemReference, out spec)
+                ? spec
+                : null;
+
+            (MatchSet what, WittyerType? qType, WittyerType? tType) MatchFunc<T>(T query, ICollection<FailedReason> failedReason,
+                T truth,
+                InputSpec trInputSpec, double similarityThreshold) where T : class, IWittyerSimpleVariant
+                => OverlappingUtils.VariantMatch(query, failedReason, truth, trInputSpec, similarityThreshold,
+                    cntRefSpec);
 
             var baseQueryReader = VcfReader.TryCreate(settings.QueryVcf.GetUnzippedFileInfo()).GetOrThrowDebug();
             var baseTruthReader = VcfReader.TryCreate(settings.TruthVcf.GetUnzippedFileInfo()).GetOrThrowDebug();
@@ -182,7 +191,7 @@ namespace Ilmn.Das.App.Wittyer.Infrastructure
                     else
                         EvaluateSerial();
 
-                    return (samplePair, query, truth);
+                    return (samplePair, WittyerResult.RecategorizeVariants(query),WittyerResult.RecategorizeVariants(truth));
 
 
                     void EvaluateParallel()
@@ -191,22 +200,24 @@ namespace Ilmn.Das.App.Wittyer.Infrastructure
                             {
                                 foreach (var variant in variants)
                                     OverlappingUtils.DoOverlapping(
-                                        variantTrees, variant, OverlappingUtils.VariantMatch, isCrossType,
-                                        isSimpleCounting, tandemRepeatSpec, settings.SimilarityThreshold, settings.MaxMatches);
+                                        variantTrees, variant, MatchFunc, isCrossType,
+                                        isSimpleCounting, tandemRepeatSpec, settings.SimilarityThreshold,
+                                        settings.MaxMatches, cntRefSpec);
                                 foreach (var variant in variants)
                                     variant.Finalize(WitDecision.FalsePositive, settings.Mode,
                                         settings.InputSpecs[variant.VariantType].IncludedRegions?.IntervalTree,
-                                        settings.MaxMatches);
+                                        settings.MaxMatches, cntRefSpec);
                             }),
                             () => Parallel.ForEach(query.BreakendPairsInternal, variants =>
                             {
                                 foreach (var variant in variants)
                                     OverlappingUtils.DoOverlapping(truth.BpInsTrees, variant,
                                         OverlappingUtils.MatchBnd,
-                                        isCrossType, isSimpleCounting, tandemRepeatSpec, settings.SimilarityThreshold, settings.MaxMatches);
+                                        isCrossType, isSimpleCounting, tandemRepeatSpec, settings.SimilarityThreshold,
+                                        settings.MaxMatches, cntRefSpec);
                                 foreach (var variant in variants)
                                     variant.Finalize(WitDecision.FalsePositive, settings.Mode,
-                                        settings.InputSpecs[variant.VariantType].IncludedRegions?.IntervalTree, settings.MaxMatches);
+                                        settings.InputSpecs[variant.VariantType].IncludedRegions?.IntervalTree, settings.MaxMatches, cntRefSpec);
                             }));
 
                         Parallel.Invoke(
@@ -215,14 +226,14 @@ namespace Ilmn.Das.App.Wittyer.Infrastructure
                                 {
                                     foreach (var variant in variants)
                                         variant.Finalize(WitDecision.FalseNegative, settings.Mode,
-                                            settings.InputSpecs[variant.VariantType].IncludedRegions?.IntervalTree, settings.MaxMatches);
+                                            settings.InputSpecs[variant.VariantType].IncludedRegions?.IntervalTree, settings.MaxMatches, cntRefSpec);
                                 }),
                             () => Parallel.ForEach(truth.BreakendPairsInternal,
                                 variants =>
                                 {
                                     foreach (var variant in variants)
                                         variant.Finalize(WitDecision.FalseNegative, settings.Mode,
-                                            settings.InputSpecs[variant.VariantType].IncludedRegions?.IntervalTree, settings.MaxMatches);
+                                            settings.InputSpecs[variant.VariantType].IncludedRegions?.IntervalTree, settings.MaxMatches, cntRefSpec);
                                 }));
                     }
 
@@ -232,11 +243,12 @@ namespace Ilmn.Das.App.Wittyer.Infrastructure
                         {
                             foreach (var variant in variants)
                                 OverlappingUtils.DoOverlapping(
-                                    variantTrees, variant, OverlappingUtils.VariantMatch, isCrossType,
-                                    isSimpleCounting, tandemRepeatSpec, settings.SimilarityThreshold, settings.MaxMatches);
+                                    variantTrees, variant, MatchFunc, isCrossType,
+                                    isSimpleCounting, tandemRepeatSpec, settings.SimilarityThreshold,
+                                    settings.MaxMatches, cntRefSpec);
                             foreach (var variant in variants)
                                 variant.Finalize(WitDecision.FalsePositive, settings.Mode,
-                                    settings.InputSpecs[variant.VariantType].IncludedRegions?.IntervalTree, settings.MaxMatches);
+                                    settings.InputSpecs[variant.VariantType].IncludedRegions?.IntervalTree, settings.MaxMatches, cntRefSpec);
                         }
 
                         foreach (var variants in query.BreakendPairsInternal)
@@ -244,17 +256,18 @@ namespace Ilmn.Das.App.Wittyer.Infrastructure
                             foreach (var variant in variants)
                                 OverlappingUtils.DoOverlapping(truth.BpInsTrees, variant,
                                     OverlappingUtils.MatchBnd,
-                                    isCrossType, isSimpleCounting, tandemRepeatSpec, settings.SimilarityThreshold, settings.MaxMatches);
+                                    isCrossType, isSimpleCounting, tandemRepeatSpec, settings.SimilarityThreshold,
+                                    settings.MaxMatches, cntRefSpec);
                             foreach (var variant in variants)
                                 variant.Finalize(WitDecision.FalsePositive, settings.Mode,
-                                    settings.InputSpecs[variant.VariantType].IncludedRegions?.IntervalTree, settings.MaxMatches);
+                                    settings.InputSpecs[variant.VariantType].IncludedRegions?.IntervalTree, settings.MaxMatches, cntRefSpec);
                         }
 
                         foreach (var variant in truth.VariantsInternal
                             .SelectMany(v => v.AsEnumerable<IMutableWittyerSimpleVariant>())
                             .Concat(truth.BreakendPairsInternal.SelectMany(v => v)))
                             variant.Finalize(WitDecision.FalseNegative, settings.Mode,
-                                settings.InputSpecs[variant.VariantType].IncludedRegions?.IntervalTree, settings.MaxMatches);
+                                settings.InputSpecs[variant.VariantType].IncludedRegions?.IntervalTree, settings.MaxMatches, cntRefSpec);
                     }
                 }
             }

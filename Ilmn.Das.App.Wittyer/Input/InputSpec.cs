@@ -155,12 +155,32 @@ namespace Ilmn.Das.App.Wittyer.Input
         /// </summary>
         /// <param name="isCrossTypeOn">if set to <c>true</c> [is cross type on].</param>
         /// <param name="types">The types.</param>
+        /// <param name="excludedFilters">The excluded filters.</param>
+        /// <param name="includedFilters">The included filters.</param>
+        /// <param name="bedFile">The name of the bed file that contains regions to analyze.</param>
         /// <returns></returns>
         [Pure]
-        public static IEnumerable<InputSpec> GenerateDefaultInputSpecs(bool isCrossTypeOn, IEnumerable<WittyerType>? types = null)
-            => GenerateCustomInputSpecs(isCrossTypeOn, types).Select(i =>
-                i.VariantType == WittyerType.Insertion ? WittyerConstants.DefaultInsertionSpec :
-                i.VariantType == WittyerType.CopyNumberTandemRepeat ? WittyerConstants.DefaultTandemRepeatSpec : i);
+        public static IEnumerable<InputSpec> GenerateDefaultInputSpecs(bool isCrossTypeOn,
+            IEnumerable<WittyerType>? types = null,
+            IReadOnlyCollection<string>? excludedFilters = null,
+            IReadOnlyCollection<string>? includedFilters = null,
+            IncludeBedFile? bedFile = null)
+            => GenerateCustomInputSpecs(isCrossTypeOn, types)
+                .Select(i =>
+                {
+                    var spec = (i.VariantType == WittyerType.Insertion
+                        ? WittyerConstants.DefaultInsertionSpec
+                        :
+                        i.VariantType == WittyerType.CopyNumberTandemRepeat
+                            ? WittyerConstants.DefaultTandemRepeatSpec
+                            :
+                            i.VariantType == WittyerType.CopyNumberTandemReference
+                                ?
+                                WittyerConstants.DefaultTandemReferenceSpec
+                                :
+                                i).ReplaceExcludeFilters(excludedFilters).ReplaceIncludeFilters(includedFilters);
+                    return bedFile == null ? spec : spec.ReplaceBedFile(bedFile);
+                });
 
         /// <summary>
         /// Generates custom <see cref="InputSpec"/>s
@@ -228,6 +248,28 @@ namespace Ilmn.Das.App.Wittyer.Input
         public InputSpec ReplaceBedFile(IncludeBedFile? bedFile) 
             => Create(VariantType, BinSizes, AbsoluteThreshold, PercentThreshold, ExcludedFilters,
                 IncludedFilters, bedFile);
+
+        /// <summary>
+        /// Creates a new instance of <see cref="InputSpec"/> with a new value for the <see cref="InputSpec.IncludedFilters"/>
+        /// </summary>
+        [Pure]
+        public InputSpec ReplaceIncludeFilters(
+            IReadOnlyCollection<string>? includedFilters)
+            => includedFilters == null
+                ? this
+                : Create(VariantType, BinSizes, AbsoluteThreshold, PercentThreshold,
+                    ExcludedFilters, includedFilters, IncludedRegions);
+
+        /// <summary>
+        /// Creates a new instance of <see cref="InputSpec"/> with a new value for the <see cref="InputSpec.ExcludedFilters"/>
+        /// </summary>
+        [Pure]
+        public InputSpec ReplaceExcludeFilters(
+            IReadOnlyCollection<string>? excludedFilters)
+            => excludedFilters == null
+                ? this
+                : Create(VariantType, BinSizes, AbsoluteThreshold, PercentThreshold,
+                    excludedFilters, IncludedFilters, IncludedRegions);
 
         /// <summary>
         /// Creates an IEnumerable of <see cref="InputSpec"/>s with a possible override of the <see cref="InputSpec.IncludedRegions"/>

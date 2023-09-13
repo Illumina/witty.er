@@ -73,6 +73,8 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
         new List<OverlapAnnotation> OverlapInfo { get; }
 
         void Finalize(WitDecision falseDecision, EvaluationMode mode,
-            GenomeIntervalTree<IContigAndInterval>? includedRegions, int? maxMatches);
+            GenomeIntervalTree<IContigAndInterval>? includedRegions, int? maxMatches, InputSpec? cntRefSpec);
+
+        void ChangeWittyerType(WittyerType newType);
     }
 }

@@ -20,7 +20,6 @@ using Ilmn.Das.Std.AppUtils.Intervals;
 using Ilmn.Das.Std.AppUtils.Misc;
 using Ilmn.Das.Std.BioinformaticUtils.Contigs;
 using Ilmn.Das.Std.BioinformaticUtils.GenomicFeatures;
-using Ilmn.Das.Std.VariantUtils.SimpleVariants;
 using Ilmn.Das.Std.VariantUtils.Vcf;
 
 namespace Ilmn.Das.App.Wittyer.Infrastructure
@@ -42,8 +41,8 @@ namespace Ilmn.Das.App.Wittyer.Infrastructure
         internal static readonly Category InsAndCnTrGainCategory =
             Category.Create(WittyerType.Insertion, WittyerType.CopyNumberTandemRepeat);
         
-        internal static readonly Category RefAndCnTrCategory = 
-            Category.Create(WittyerType.CopyNumberReference, WittyerType.CopyNumberTandemRepeat);
+        internal static readonly Category RefAndCnTrefCategory = 
+            Category.Create(WittyerType.CopyNumberReference, WittyerType.CopyNumberTandemReference);
 
         internal static readonly IImmutableDictionary<WittyerType, IReadOnlyCollection<Category>> CrossTypeCategories =
             ImmutableDictionary<WittyerType, IReadOnlyCollection<Category>>.Empty
@@ -69,14 +68,14 @@ namespace Ilmn.Das.App.Wittyer.Infrastructure
                 })
                 .Add(WittyerType.CopyNumberReference, new[]
                 {
-                    RefAndCnTrCategory,
+                    RefAndCnTrefCategory,
                 })
                 .Add(WittyerType.CopyNumberTandemRepeat,
                     new[]
                     {
                         InsAndCnTrGainCategory,
                         DelAndCnTrLossCategory,
-                        RefAndCnTrCategory,
+                        RefAndCnTrefCategory,
                     });
 
         /// <summary>
@@ -267,7 +266,7 @@ namespace Ilmn.Das.App.Wittyer.Infrastructure
                         if (sampleCn == null)
                         {
                             categoriesToSkip.Add(DelAndCnTrLossCategory);
-                            categoriesToSkip.Add(RefAndCnTrCategory);
+                            categoriesToSkip.Add(RefAndCnTrefCategory);
                             categoriesToSkip.Add(InsAndCnTrGainCategory);
                         }
                         else
@@ -292,12 +291,12 @@ namespace Ilmn.Das.App.Wittyer.Infrastructure
                             if (sampleCn > gtCount)
                             {
                                 categoriesToSkip.Add(DelAndCnTrLossCategory);
-                                categoriesToSkip.Add(RefAndCnTrCategory);
+                                categoriesToSkip.Add(RefAndCnTrefCategory);
                             }
                             else if (sampleCn < gtCount)
                             {
                                 categoriesToSkip.Add(InsAndCnTrGainCategory);
-                                categoriesToSkip.Add(RefAndCnTrCategory);
+                                categoriesToSkip.Add(RefAndCnTrefCategory);
                             }
                             else // somehow ref?
                             {

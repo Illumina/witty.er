@@ -87,7 +87,7 @@ namespace Wittyer
 
             using (var sw =
                    new StreamWriter(Path.Combine(settings.OutputDirectory.FullName, "Wittyer.ConfigFileUsed.json")))
-                sw.Write(settings.InputSpecs.Values.SerializeToString());
+                sw.Write(settings.InputSpecs.Values.OrderBy(it => it.VariantType.Name).SerializeToString());
 
             Console.WriteLine("--------------------------------");
             Console.WriteLine("Overall Stats:");

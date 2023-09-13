@@ -116,7 +116,7 @@ namespace Ilmn.Das.App.Wittyer.Test
 
             MultiAssert.Equal(expectedStart, wittyerVariant.PosInterval);
             MultiAssert.Equal(expectedEnd, wittyerVariant.EndInterval);
-            MultiAssert.Equal(winner, wittyerVariant.Win.ToString());
+            MultiAssert.Equal(winner, wittyerVariant.Win.ToWinTag(wittyerVariant.VariantType));
             MultiAssert.AssertAll();
         }
 

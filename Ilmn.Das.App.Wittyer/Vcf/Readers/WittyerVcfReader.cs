@@ -20,6 +20,7 @@ using Ilmn.Das.Std.AppUtils.Collections;
 using Ilmn.Das.Std.AppUtils.Enums;
 using Ilmn.Das.Std.AppUtils.Files.FileReader;
 using Ilmn.Das.Std.BioinformaticUtils.GenomicFeatures;
+using Ilmn.Das.Std.VariantUtils.SimpleVariants;
 using Ilmn.Das.Std.VariantUtils.Vcf;
 using Ilmn.Das.Std.VariantUtils.Vcf.Variants.Alleles.BreakEnds;
 using Ilmn.Das.Std.VariantUtils.Vcf.Variants.Samples;
@@ -256,7 +257,8 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Readers
 
             var bins = inputSpec.BinSizes;
 
-            if (wittyerType == WittyerType.CopyNumberReference) // ref site
+            if (wittyerType == WittyerType.CopyNumberReference
+                || wittyerType == WittyerType.CopyNumberTandemRepeat && vcfVariant.IsRefSite()) // ref site
             {
                 breakEarly = true;
                 variants.Add(WittyerVariantInternal.Create(vcfVariant, sample, wittyerType, bins, pd, bpd, altIndex));

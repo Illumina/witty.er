@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Bio.Util;
 using Ilmn.Das.App.Wittyer.Input;
 using Ilmn.Das.App.Wittyer.Results;
 using Ilmn.Das.App.Wittyer.Utilities;
@@ -39,10 +38,10 @@ namespace Ilmn.Das.App.Wittyer.Test
         //public static readonly IContigAndInterval SecondaryContigAndInterval 
 
         [Theory] //1001, 1500, 5001, 5600
-        [InlineData(true, 900, 1100, 5200, 5700, true, FailedReason.Unset, MatchEnum.Coordinate, MatchEnum.Allele, MatchEnum.Genotype)]
-        [InlineData(false, 800, 900, 5500, 5555, true, FailedReason.BordersTooFarOff, MatchEnum.Coordinate, MatchEnum.Genotype)]
-        [InlineData(false, 100, 110, 5110, 5200, false, FailedReason.BordersTooFarOff, MatchEnum.Coordinate)]
-        [InlineData(true, 1000, 1200, 5100, 5700, false, FailedReason.GtMismatch, MatchEnum.Coordinate, MatchEnum.Allele)]
+        [InlineData(true, 900, 1100, 5200, 5700, true, FailedReason.Unset, MatchEnum.Coordinate, MatchEnum.Allele, MatchEnum.Genotype, MatchEnum.Length)]
+        [InlineData(false, 800, 900, 5500, 5555, true, FailedReason.BordersTooFarOff, MatchEnum.Coordinate, MatchEnum.Genotype, MatchEnum.Length)]
+        [InlineData(false, 100, 110, 5110, 5200, false, FailedReason.BordersTooFarOff, MatchEnum.Coordinate, MatchEnum.Length)]
+        [InlineData(true, 1000, 1200, 5100, 5700, false, FailedReason.GtMismatch, MatchEnum.Coordinate, MatchEnum.Allele, MatchEnum.Length)]
         public void GenerateWhatAndWhyWorksForWittyerVariant(bool isAlleleMatch, uint posStart, uint posEnd, uint endStart, uint endEnd, 
             bool isGtMatch, FailedReason reasonResult, params MatchEnum[] matchResults)
         {
@@ -65,20 +64,21 @@ namespace Ilmn.Das.App.Wittyer.Test
 
             otherVariant.SetupGet(v => v.Sample).Returns(otherSample.Object);
             var failedReasons = new List<FailedReason>();
-            var (what, why) = OverlappingUtils.GenerateWhatAndWhy(otherVariant.Object, failedReasons,
+            var (what, why, _, __) = OverlappingUtils.GenerateWhatAndWhy(otherVariant.Object, failedReasons,
                 originalVariant, OverlappingUtils.VariantMatch, false, false,
                 DefaultTandemRepeatSpec);
             Assert.Equal(reasonResult, why);
-            Assert.True(what.SetEquals(matchResults));
+            Assert.Equal(matchResults.OrderBy(it => (int)it).StringJoin(","),
+                what.OrderBy(it => (int)it).StringJoin(","));
         }
 
         [Theory]
-        [InlineData(true, 900, 1100, 5200, 5700, true, 3, FailedReason.Unset, MatchEnum.Coordinate, MatchEnum.Allele, MatchEnum.Genotype)]
-        [InlineData(true, 900, 1100, 5200, 5700, true, 2, FailedReason.CnMismatch, MatchEnum.Coordinate, MatchEnum.Genotype)]
-        [InlineData(false, 800, 900, 5500, 5555, true, 3,  FailedReason.BordersTooFarOff, MatchEnum.Coordinate, MatchEnum.Genotype)]
-        [InlineData(false, 100, 110, 5110, 5200, false, 1, FailedReason.BordersTooFarOff, MatchEnum.Coordinate)]
-        [InlineData(true, 1000, 1200, 5100, 5700, false, 3, FailedReason.GtMismatch, MatchEnum.Coordinate, MatchEnum.Allele)]
-        [InlineData(true, 1000, 1200, 5100, 5700, false, 1, FailedReason.CnMismatch, MatchEnum.Coordinate)]
+        [InlineData(true, 900, 1100, 5200, 5700, true, 3, FailedReason.Unset, MatchEnum.Coordinate, MatchEnum.Allele, MatchEnum.Genotype, MatchEnum.Length)]
+        [InlineData(true, 900, 1100, 5200, 5700, true, 2, FailedReason.CnMismatch, MatchEnum.Coordinate, MatchEnum.Genotype, MatchEnum.Length)]
+        [InlineData(false, 800, 900, 5500, 5555, true, 3,  FailedReason.BordersTooFarOff, MatchEnum.Coordinate, MatchEnum.Genotype, MatchEnum.Length)]
+        [InlineData(false, 100, 110, 5110, 5200, false, 1, FailedReason.BordersTooFarOff, MatchEnum.Coordinate, MatchEnum.Length)]
+        [InlineData(true, 1000, 1200, 5100, 5700, false, 3, FailedReason.GtMismatch, MatchEnum.Coordinate, MatchEnum.Allele, MatchEnum.Length)]
+        [InlineData(true, 1000, 1200, 5100, 5700, false, 1, FailedReason.CnMismatch, MatchEnum.Coordinate, MatchEnum.Length)]
         public void GenerateWhatAndWhyWorksWithCnSample(bool isAlleleMatch, uint posStart, uint posEnd, uint endStart, uint endEnd,
             bool isGtMatch, uint cn, FailedReason reasonResult, params MatchEnum[] matchResults)
         {
@@ -99,7 +99,7 @@ namespace Ilmn.Das.App.Wittyer.Test
 
             otherVariant.SetupGet(v => v.Sample).Returns(otherSample.Object);
 
-            var (what, why) = OverlappingUtils.GenerateWhatAndWhy(otherVariant.Object, new List<FailedReason>(),
+            var (what, why, _, __) = OverlappingUtils.GenerateWhatAndWhy(otherVariant.Object, new List<FailedReason>(),
                 originalVariant, OverlappingUtils.VariantMatch, false, false,
                 DefaultTandemRepeatSpec);
             
@@ -133,6 +133,7 @@ namespace Ilmn.Das.App.Wittyer.Test
             variant.SetupGet(v => v.IsStartInclusive).Returns(contigAndInterval.IsStartInclusive);
             variant.SetupGet(v => v.IsStopInclusive).Returns(contigAndInterval.IsStopInclusive);
             variant.SetupGet(v => v.VariantType).Returns(WittyerType.CopyNumberGain);
+            variant.SetupGet(v => v.SvLenInterval).Returns(contigAndInterval);
             return variant;
         }
 
@@ -175,8 +176,8 @@ namespace Ilmn.Das.App.Wittyer.Test
                 Assert.Equal(WittyerType.Duplication, truthV.VariantType);
                 Assert.Equal(WittyerType.Duplication, queryV.VariantType);
                 OverlappingUtils.DoOverlapping(tree.VariantTrees, queryV, OverlappingUtils.VariantMatch, isCrossTypeOn, true);
-                queryV.Finalize(WitDecision.FalsePositive, EvaluationMode.CrossTypeAndSimpleCounting, null, DefaultMaxMatches);
-                truthV.Finalize(WitDecision.FalseNegative, EvaluationMode.CrossTypeAndSimpleCounting, null, DefaultMaxMatches);
+                queryV.Finalize(WitDecision.FalsePositive, EvaluationMode.CrossTypeAndSimpleCounting, null, DefaultMaxMatches, null);
+                truthV.Finalize(WitDecision.FalseNegative, EvaluationMode.CrossTypeAndSimpleCounting, null, DefaultMaxMatches, null);
                 Assert.Equal(isTp ? WitDecision.TruePositive : WitDecision.FalsePositive, queryV.Sample.Wit);
                 Assert.Equal(isTp ? WitDecision.TruePositive : WitDecision.FalseNegative, truthV.Sample.Wit);
             }
@@ -233,8 +234,8 @@ namespace Ilmn.Das.App.Wittyer.Test
                 Assert.Equal(WittyerType.Deletion, truthV.VariantType);
                 Assert.Equal(WittyerType.Deletion, queryV.VariantType);
                 OverlappingUtils.DoOverlapping(tree.VariantTrees, queryV, OverlappingUtils.VariantMatch, isCrossTypeOn, true);
-                queryV.Finalize(WitDecision.FalsePositive, EvaluationMode.CrossTypeAndSimpleCounting, null, DefaultMaxMatches);
-                truthV.Finalize(WitDecision.FalseNegative, EvaluationMode.CrossTypeAndSimpleCounting, null, DefaultMaxMatches);
+                queryV.Finalize(WitDecision.FalsePositive, EvaluationMode.CrossTypeAndSimpleCounting, null, DefaultMaxMatches, null);
+                truthV.Finalize(WitDecision.FalseNegative, EvaluationMode.CrossTypeAndSimpleCounting, null, DefaultMaxMatches, null);
                 Assert.Equal(isTp ? WitDecision.TruePositive : WitDecision.FalsePositive, queryV.Sample.Wit);
                 Assert.Equal(isTp ? WitDecision.TruePositive : WitDecision.FalseNegative, truthV.Sample.Wit);
             }
@@ -272,8 +273,8 @@ namespace Ilmn.Das.App.Wittyer.Test
                 Assert.Equal(WittyerType.Inversion, truthV.VariantType);
                 Assert.Equal(WittyerType.Inversion, queryV.VariantType);
                 OverlappingUtils.DoOverlapping(tree.VariantTrees, queryV, OverlappingUtils.VariantMatch, isCrossTypeOn, true);
-                queryV.Finalize(WitDecision.FalsePositive, EvaluationMode.CrossTypeAndSimpleCounting, null, DefaultMaxMatches);
-                truthV.Finalize(WitDecision.FalseNegative, EvaluationMode.CrossTypeAndSimpleCounting, null, DefaultMaxMatches);
+                queryV.Finalize(WitDecision.FalsePositive, EvaluationMode.CrossTypeAndSimpleCounting, null, DefaultMaxMatches, null);
+                truthV.Finalize(WitDecision.FalseNegative, EvaluationMode.CrossTypeAndSimpleCounting, null, DefaultMaxMatches, null);
                 Assert.Equal(isTp ? WitDecision.TruePositive : WitDecision.FalsePositive, queryV.Sample.Wit);
                 Assert.Equal(isTp ? WitDecision.TruePositive : WitDecision.FalseNegative, truthV.Sample.Wit);
             }
@@ -324,8 +325,8 @@ namespace Ilmn.Das.App.Wittyer.Test
                 MultiAssert.Equal(WittyerType.CopyNumberTandemRepeat, truthV.VariantType);
                 MultiAssert.Equal(WittyerType.CopyNumberTandemRepeat, queryV.VariantType);
                 OverlappingUtils.DoOverlapping(tree.VariantTrees, queryV, OverlappingUtils.VariantMatch, isCrossTypeOn, true);
-                queryV.Finalize(WitDecision.FalsePositive, EvaluationMode.GenotypeMatching, null, DefaultMaxMatches);
-                truthV.Finalize(WitDecision.FalseNegative, EvaluationMode.GenotypeMatching, null, DefaultMaxMatches);
+                queryV.Finalize(WitDecision.FalsePositive, EvaluationMode.GenotypeMatching, null, DefaultMaxMatches, null);
+                truthV.Finalize(WitDecision.FalseNegative, EvaluationMode.GenotypeMatching, null, DefaultMaxMatches, null);
                 MultiAssert.Equal(isTp ? WitDecision.TruePositive : WitDecision.FalsePositive, queryV.Sample.Wit);
                 MultiAssert.Equal(isTp ? WitDecision.TruePositive : WitDecision.FalseNegative, truthV.Sample.Wit);
             }
@@ -405,8 +406,8 @@ namespace Ilmn.Das.App.Wittyer.Test
             {
                 OverlappingUtils.DoOverlapping(tree.BpInsTrees, queryV, OverlappingUtils.MatchBnd,
                     isCrossTypeOn, true, similarityThreshold: 0.85);
-                queryV.Finalize(WitDecision.FalsePositive, EvaluationMode.CrossTypeAndSimpleCounting, null, DefaultMaxMatches);
-                truthV.Finalize(WitDecision.FalseNegative, EvaluationMode.CrossTypeAndSimpleCounting, null, DefaultMaxMatches);
+                queryV.Finalize(WitDecision.FalsePositive, EvaluationMode.CrossTypeAndSimpleCounting, null, DefaultMaxMatches, null);
+                truthV.Finalize(WitDecision.FalseNegative, EvaluationMode.CrossTypeAndSimpleCounting, null, DefaultMaxMatches, null);
                 if ((isTp ? WitDecision.TruePositive : WitDecision.FalsePositive) != queryV.Sample.Wit)
                     Assert.Equal(MatchSet.AlleleMatch.Select(it => it.ToStringDescription()).StringJoin("|"), queryV.Sample.What.StringJoin(","));
                 if ((isTp ? WitDecision.TruePositive : WitDecision.FalseNegative) != truthV.Sample.Wit)

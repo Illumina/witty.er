@@ -24,7 +24,7 @@ namespace Ilmn.Das.App.Wittyer.Results
 {
     internal static class WittyerVcfWriter
     {
-        private static readonly string[] DefaultSampleNamesPair = new[] {DefaultTruthSampleName, DefaultQuerySampleName};
+        private static readonly string[] DefaultSampleNamesPair = {DefaultTruthSampleName, DefaultQuerySampleName};
         private static readonly string NoOverlapString = FailedReason.NoOverlap.ToString();
 
         internal static IEnumerable<string> GenerateVcfStrings(IWittyerResult? queryResult, IWittyerResult? truthResult,
@@ -145,12 +145,12 @@ namespace Ilmn.Das.App.Wittyer.Results
 
             foreach (var variants in result.Variants.Values)
             foreach (var variant in variants)
-            foreach (var ret in ConvertToVcfVariant(variant))
+            foreach (var ret in ConvertToVcfVariant(variant, sampleIndex, isTruth))
                 yield return ret;
 
             foreach (var variants in result.BreakendPairsAndInsertions.Values)
             foreach (var variant in variants)
-            foreach (var ret in ConvertToVcfVariant(variant))
+            foreach (var ret in ConvertToVcfVariant(variant, sampleIndex, isTruth))
                 yield return ret;
 
             foreach (var ret in result.NotAssessedVariants.Select(ConvertToUnsupportedVcfVariant))
@@ -160,92 +160,9 @@ namespace Ilmn.Das.App.Wittyer.Results
                 => isTruth == null
                     ? originalVariant
                     : originalVariant.ToBuilder().SetSamples(
-                            GetClearedSampleBuilder(originalVariant.Samples[0].SampleDictionary,
+                            GetClearedSampleBuilder(originalVariant.Samples[0].SampleDictionary, sampleIndex,
                                 DefaultTruthSampleName, DefaultQuerySampleName).Build())
                         .Build();
-
-            IEnumerable<IVcfVariant> ConvertToVcfVariant(IWittyerSimpleVariant originalVariant)
-            {
-                //Info tag
-                var win = originalVariant.Win.ToString();
-                var annotations = originalVariant.OverlapInfo;
-
-                var where = annotations.Count == 0
-                    ? MissingValueString
-                    : annotations.Select(x => x.Where?.ToString() ?? MissingValueString)
-                        .StringJoin(WittyerConstants.InfoValueDel);
-                var who = annotations.Count == 0
-                    ? MissingValueString
-                    : annotations.Select(x => x.Who?.ToString() ?? MissingValueString).StringJoin(WittyerConstants.InfoValueDel);
-                var wow = !originalVariant.VariantType.HasOverlappingWindows ||
-                          annotations.Count == 0
-                    ? MissingValueString
-                    : annotations.Select(x => ToWowString(x.Wow))
-                        .StringJoin(WittyerConstants.InfoValueDel);
-
-                var infoDict = new Dictionary<string, string>
-                    {
-                        {Win, win},
-                        {Where, where},
-                        {Who, who},
-                        {Wow, wow}
-                    };
-
-                var samples = AddWitTags(originalVariant.Sample.OriginalSample?.SampleDictionary, isTruth == null
-                    ? new[] {originalVariant.Sample.OriginalSample?.SampleName ?? "SAMPLE"}
-                    : DefaultSampleNamesPair);
-
-                var updatedInfo = originalVariant.OriginalVariant.Info.ToImmutableDictionary().SetItems(infoDict);
-                var firstVariant = originalVariant.OriginalVariant.ToBuilder().SetInfo(updatedInfo).SetSamples(samples);
-
-
-                yield return firstVariant.Build();
-
-                // insertions are secretly two breakends repeated.
-                if (originalVariant is IWittyerBnd bnd && !ReferenceEquals(bnd.OriginalVariant, bnd.EndOriginalVariant))
-                {
-                    var sample = bnd.EndOriginalVariant.Samples.Count > 0
-                        ? bnd.EndOriginalVariant.Samples.Values[0]
-                        : null;
-                    samples = AddWitTags(sample?.SampleDictionary, isTruth == null
-                        ? new[] { sample?.SampleName ?? "SAMPLE" }
-                        : DefaultSampleNamesPair);
-                    yield return bnd.EndOriginalVariant.ToBuilder()
-                        .SetInfo(bnd.EndOriginalVariant.Info.ToImmutableDictionary().SetItems(infoDict)).SetSamples(samples).Build();}
-
-                string ToWowString(IInterval<uint>? interval)
-                    => interval == null ? MissingValueString : $"{interval.Start}-{interval.Stop}";
-
-                SampleDictionaries AddWitTags(IReadOnlyDictionary<string, string>? sampleDict, string[] sampleNames)
-                    => GetClearedSampleBuilder(sampleDict,
-                            sampleNames)
-                        .SetSampleField(sampleIndex,
-                            (Wit, originalVariant.Sample.Wit.ToStringDescription()))
-                        .SetSampleField(sampleIndex,
-                            (Why,
-                                originalVariant.Sample.Why.Count == 0
-                                    ? NoOverlapString
-                                    : originalVariant.Sample.Why.Select(x => x.ToStringDescription())
-                                        .StringJoin(WittyerConstants.SampleValueDel)))
-                        .SetSampleField(sampleIndex,
-                            (What, originalVariant.Sample.What.Count == 0 ? MissingValueString : originalVariant.Sample.What.StringJoin(WittyerConstants.SampleValueDel))).Build();
-            }
-
-            SampleDictionaryBuilder GetClearedSampleBuilder(IReadOnlyDictionary<string, string>? sampleDict, params string[] sampleNames)
-            {
-                var builder = SampleDictionaries.CreateBuilder();
-                foreach (var sampleName in sampleNames)
-                    builder.AddSample(sampleName);
-                var ret = builder.MoveOnToDictionaries();
-
-                if (sampleDict == null)
-                    return ret;
-
-                foreach (var kvp in sampleDict)
-                    ret.SetSampleField(sampleIndex, (kvp.Key, kvp.Value));
-
-                return ret;
-            }
         }
 
         [Pure]
@@ -344,6 +261,91 @@ namespace Ilmn.Das.App.Wittyer.Results
 
                 return i <= 1 ? int.Parse(contig) : int.Parse(contig[i..]);
             }
+        }
+        
+        internal static IEnumerable<IVcfVariant> ConvertToVcfVariant(IWittyerSimpleVariant originalVariant,
+            int sampleIndex, bool? isTruth)
+            {
+                //Info tag
+                var win = originalVariant.Win.ToWinTag(originalVariant.VariantType);
+                var annotations = originalVariant.OverlapInfo;
+
+                var where = annotations.Count == 0
+                    ? MissingValueString
+                    : annotations.Select(x => x.Where?.ToString() ?? MissingValueString)
+                        .StringJoin(WittyerConstants.InfoValueDel);
+                var who = annotations.Count == 0
+                    ? MissingValueString
+                    : annotations.Select(x => x.Who?.ToString() ?? MissingValueString).StringJoin(WittyerConstants.InfoValueDel);
+                var wow = !originalVariant.VariantType.HasOverlappingWindows ||
+                          annotations.Count == 0
+                    ? MissingValueString
+                    : annotations.Select(x => ToWowString(x.Wow))
+                        .StringJoin(WittyerConstants.InfoValueDel);
+
+                var infoDict = new Dictionary<string, string>
+                    {
+                        {Win, win},
+                        {Where, where},
+                        {Who, who},
+                        {Wow, wow}
+                    };
+
+                var samples = AddWitTags(originalVariant.Sample.OriginalSample?.SampleDictionary, isTruth == null
+                    ? new[] {originalVariant.Sample.OriginalSample?.SampleName ?? "SAMPLE"}
+                    : DefaultSampleNamesPair);
+
+                var updatedInfo = originalVariant.OriginalVariant.Info.ToImmutableDictionary().SetItems(infoDict);
+                var firstVariant = originalVariant.OriginalVariant.ToBuilder().SetInfo(updatedInfo).SetSamples(samples);
+
+
+                yield return firstVariant.Build();
+
+                // insertions are secretly two breakends repeated.
+                if (originalVariant is IWittyerBnd bnd && !ReferenceEquals(bnd.OriginalVariant, bnd.EndOriginalVariant))
+                {
+                    var sample = bnd.EndOriginalVariant.Samples.Count > 0
+                        ? bnd.EndOriginalVariant.Samples.Values[0]
+                        : null;
+                    samples = AddWitTags(sample?.SampleDictionary, isTruth == null
+                        ? new[] { sample?.SampleName ?? "SAMPLE" }
+                        : DefaultSampleNamesPair);
+                    yield return bnd.EndOriginalVariant.ToBuilder()
+                        .SetInfo(bnd.EndOriginalVariant.Info.ToImmutableDictionary().SetItems(infoDict)).SetSamples(samples).Build();}
+
+                string ToWowString(IInterval<uint>? interval)
+                    => interval == null ? MissingValueString : $"{interval.Start}-{interval.Stop}";
+
+                SampleDictionaries AddWitTags(IReadOnlyDictionary<string, string>? sampleDict, string[] sampleNames)
+                    => GetClearedSampleBuilder(sampleDict, sampleIndex, sampleNames)
+                        .SetSampleField(sampleIndex,
+                            (Wit, originalVariant.Sample.Wit.ToStringDescription()))
+                        .SetSampleField(sampleIndex,
+                            (Why,
+                                originalVariant.Sample.Why.Count == 0
+                                    ? NoOverlapString
+                                    : originalVariant.Sample.Why.Select(x => x.ToStringDescription())
+                                        .StringJoin(WittyerConstants.SampleValueDel)))
+                        .SetSampleField(sampleIndex,
+                            (What, originalVariant.Sample.What.Count == 0 ? MissingValueString : originalVariant.Sample.What.StringJoin(WittyerConstants.SampleValueDel))).Build();
+            }
+        
+        private static 
+            SampleDictionaryBuilder GetClearedSampleBuilder(IReadOnlyDictionary<string, string>? sampleDict,
+                int sampleIndex, params string[] sampleNames)
+        {
+            var builder = SampleDictionaries.CreateBuilder();
+            foreach (var sampleName in sampleNames)
+                builder.AddSample(sampleName);
+            var ret = builder.MoveOnToDictionaries();
+
+            if (sampleDict == null)
+                return ret;
+
+            foreach (var kvp in sampleDict)
+                ret.SetSampleField(sampleIndex, (kvp.Key, kvp.Value));
+
+            return ret;
         }
     }
 }

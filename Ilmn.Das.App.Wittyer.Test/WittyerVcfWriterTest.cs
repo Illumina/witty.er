@@ -9,7 +9,6 @@ using Ilmn.Das.Core.Tries.Extensions;
 using Ilmn.Das.Std.AppUtils.Collections;
 using Ilmn.Das.Std.AppUtils.Misc;
 using Ilmn.Das.Std.BioinformaticUtils.Contigs;
-using Ilmn.Das.Std.VariantUtils.SimpleVariants;
 using Ilmn.Das.Std.VariantUtils.Vcf;
 using Ilmn.Das.Std.VariantUtils.Vcf.Headers;
 using Xunit;

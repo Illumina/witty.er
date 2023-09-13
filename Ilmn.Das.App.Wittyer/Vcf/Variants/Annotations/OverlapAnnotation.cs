@@ -15,13 +15,14 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Annotations
     public class OverlapAnnotation : IComparable<OverlapAnnotation>
     {
         private OverlapAnnotation(uint? who, MatchSet what, IInterval<uint>? wow, BorderDistance? where,
-            FailedReason why)
+            FailedReason why, WittyerType? matchWittyerType)
         {
             Who = who;
             What = what;
             Wow = wow;
             Where = where;
             Why = why;
+            MatchWittyerType = matchWittyerType;
         }
 
         /// <summary>
@@ -51,6 +52,8 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Annotations
         public BorderDistance? Where { get; }
 
         internal FailedReason Why { get; }
+        
+        public WittyerType? MatchWittyerType { get; }
 
         /// <inheritdoc />
         public int CompareTo(OverlapAnnotation? other)
@@ -76,14 +79,10 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Annotations
         /// <param name="wow">The wow.</param>
         /// <param name="where">The where.</param>
         /// <param name="why">The why.</param>
+        /// <param name="why">The why.</param>
         [Pure]
         public static OverlapAnnotation Create(uint? who, MatchSet what, IInterval<uint>? wow,
-            BorderDistance? where, FailedReason why) 
-            => new(who, what, wow, where, why);
-        
-        [Pure]
-        public static OverlapAnnotation Create(uint? who, IInterval<uint>? wow,
-            BorderDistance? where, FailedReason why) 
-            => new(who, MatchSet.Empty, wow, where, why);
+            BorderDistance? where, FailedReason why, WittyerType? matchWittyerType = null) 
+            => new(who, what, wow, where, why, matchWittyerType);
     }
 }

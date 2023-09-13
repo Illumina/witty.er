@@ -10,20 +10,11 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Annotations
     /// </summary>
     public class Winner
     {
-        private Winner(WittyerType svType, uint? start, uint? end)
+        private Winner(uint? start, uint? end)
         {
-            SvType = svType;
             Start = start;
             End = end;
         }
-
-        /// <summary>
-        ///     Gets the type of the sv.
-        /// </summary>
-        /// <value>
-        ///     The type of the sv.
-        /// </value>
-        public WittyerType SvType { get; }
 
         /// <summary>
         ///     Gets the start.
@@ -41,22 +32,18 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Annotations
         /// </value>
         public uint? End { get; }
 
-        internal static Winner Create(WittyerType svType, IInterval<uint>? variantInterval, 
+        internal static Winner Create(IInterval<uint>? variantInterval, 
             IReadOnlyList<(uint start, bool skip)>? bins)
         {
             if (bins == null || bins.Count == 0 || variantInterval == null)
-                return new Winner(svType, null, null); // means no bins.
+                return new Winner(null, null); // means no bins.
 
             var index = GetBinIndex(bins, variantInterval);
 
             return index < 0
-                ? Create(svType, WittyerConstants.StartingBin, bins[0].start)
-                : Create(svType, bins[index].start, index < bins.Count - 1 ? bins[index + 1].start : default(uint?));
+                ? Create(WittyerConstants.StartingBin, bins[0].start)
+                : Create(bins[index].start, index < bins.Count - 1 ? bins[index + 1].start : default(uint?));
         }
-
-        [Pure]
-        internal static Winner Create(WittyerType svType) 
-            => Create(svType, WittyerConstants.StartingBin, null);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Winner"/> class.
@@ -65,8 +52,8 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Annotations
         /// <param name="start">The start.</param>
         /// <param name="end">The end.</param>
         [Pure]
-        public static Winner Create(WittyerType svType, uint start, uint? end)
-            => new(svType, start, end);
+        public static Winner Create(uint start, uint? end)
+            => new(start, end);
 
         private static int GetBinIndex(IReadOnlyList<(uint start, bool skip)> bins, IInterval<uint> interval)
             => GetBinIndex(bins, interval.GetLength());
@@ -80,13 +67,12 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants.Annotations
             return i;
         }
 
-        /// <inheritdoc />
-        public override string ToString()
+        public string ToWinTag(WittyerType svType)
         {
             if (Start == null)
-                return $"{SvType}|NA";
+                return $"{svType}|NA";
             var endString = End == null ? "+" : $"-{End}";
-            return $"{SvType}|{Start}{endString}";
+            return $"{svType}|{Start}{endString}";
         }
     }
 }

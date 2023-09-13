@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Ilmn.Das.App.Wittyer.Vcf.Variants;
 using Ilmn.Das.Std.BioinformaticUtils.Contigs;
 using Ilmn.Das.Std.VariantUtils.Vcf.Headers;
@@ -109,6 +110,15 @@ namespace Ilmn.Das.App.Wittyer.Results
             BreakendPairsAndInsertions = breakendPairsAndInsertions;
             NotAssessedVariants = notAssessedVariants;
         }
+
+        public static WittyerResult RecategorizeVariants(IWittyerResult result)
+            => Create(result.VcfHeader, result.SampleName, result.Contigs, result.IsTruth,
+                result.Variants.Values.SelectMany(it => it)
+                    .GroupBy(it => it.VariantType)
+                    .ToDictionary(
+                        it => it.Key,
+                        it => (IReadOnlyList<IWittyerVariant>)it.ToList().AsReadOnly()),
+                result.BreakendPairsAndInsertions, result.NotAssessedVariants);
 
         #region Implementation of IWittyerResult
 

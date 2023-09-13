@@ -66,7 +66,7 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
             => ContigAndIntervalComparer.Default.Equals(this, other);
 
         /// <inheritdoc />
-        public WittyerType VariantType { get; }
+        public WittyerType VariantType { get; private set; }
 
         /// <inheritdoc />
         public Winner Win { get; }
@@ -102,7 +102,7 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
 
         /// <inheritdoc />
         public void Finalize(WitDecision falseDecision, EvaluationMode mode,
-            GenomeIntervalTree<IContigAndInterval>? includedRegions, int? maxMatches)
+            GenomeIntervalTree<IContigAndInterval>? includedRegions, int? maxMatches, InputSpec? cntRefSpec)
         {
             bool? isIncluded = null;
             if (includedRegions != null)
@@ -113,8 +113,10 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
                                  || includedRegions.TryGetValue(EndOriginalVariant.Contig, out tree)
                                  && tree.Search(CiEndInterval).Any()); // or end overlaps.
 
-            WittyerVariantInternal.Finalize(this, OverlapInfo, falseDecision, mode, isIncluded, maxMatches);
+            WittyerVariantInternal.Finalize(this, OverlapInfo, falseDecision, mode, isIncluded, maxMatches, cntRefSpec);
         }
+
+        public void ChangeWittyerType(WittyerType newType) => VariantType = newType;
 
         public IVcfVariant EndOriginalVariant { get; }
 
@@ -161,7 +163,7 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
                 }
             }
 
-            var winner = Winner.Create(wittyerType, insertionInterval, bins);
+            var winner = Winner.Create(insertionInterval, bins);
 
             var sample = WittyerSample.CreateFromVariant(first, originalSample, false);
             return new WittyerBndInternal(wittyerType, first, posInterval, ciPosInterval,

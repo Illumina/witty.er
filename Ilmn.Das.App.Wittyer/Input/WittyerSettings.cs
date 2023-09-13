@@ -224,23 +224,28 @@ namespace Ilmn.Das.App.Wittyer.Input
                     }
                     else
                     {
-                        var generatedSpecs = InputSpec.GenerateCustomInputSpecs(
+                        var generatedSpecs = InputSpec.GenerateDefaultInputSpecs(
                             parameters.Mode == EvaluationMode.CrossTypeAndSimpleCounting,
-                            parameters._variantTypes.Argument, parameters._binSizes.Argument,
-                            parameters._absoluteThreshold.Argument,  parameters._percentThreshold.Argument,
-                            parameters._excludedFilters.Argument, 
-                            parameters._includedFilters.Argument, parameters._bedFile.Argument);
+                            parameters._variantTypes.Argument, excludedFilters: parameters._excludedFilters.Argument,
+                            includedFilters: parameters._includedFilters.Argument,
+                            bedFile: parameters._bedFile.Argument);
 
-                        if (!parameters._absoluteThreshold.IsArgumentAssigned) // keep default 
-                            generatedSpecs = generatedSpecs.Select(i =>
-                                i.VariantType == WittyerType.Insertion
-                                    ? InputSpec.Create(i.VariantType, i.BinSizes, DefaultInsertionSpec.BasepairDistance,
-                                        i.PercentThreshold, i.ExcludedFilters, i.IncludedFilters, i.IncludedRegions)
-                                    : i.VariantType == WittyerType.CopyNumberTandemRepeat
-                                        ? InputSpec.Create(i.VariantType, i.BinSizes,
-                                            DefaultTandemRepeatSpec.BasepairDistance,
-                                            i.PercentThreshold, i.ExcludedFilters, i.IncludedFilters, i.IncludedRegions)
-                                        : i);
+                        if (parameters._absoluteThreshold.IsArgumentAssigned)
+                            generatedSpecs = generatedSpecs
+                                .Select(i => InputSpec.Create(i.VariantType, i.BinSizes,
+                                    parameters._absoluteThreshold.Argument,
+                                    i.PercentThreshold, i.ExcludedFilters, i.IncludedFilters, i.IncludedRegions));
+                        if (parameters._percentThreshold.IsArgumentAssigned)
+                            generatedSpecs = generatedSpecs
+                                .Select(i => InputSpec.Create(i.VariantType, i.BinSizes,
+                                    i.AbsoluteThreshold,
+                                    parameters._percentThreshold.Argument, i.ExcludedFilters, i.IncludedFilters,
+                                    i.IncludedRegions));
+                        if (parameters._binSizes.IsArgumentAssigned)
+                            generatedSpecs = generatedSpecs
+                                .Select(i => InputSpec.Create(i.VariantType, parameters._binSizes.Argument,
+                                    i.AbsoluteThreshold,
+                                    i.PercentThreshold, i.ExcludedFilters, i.IncludedFilters, i.IncludedRegions));
                         parameters.InputSpecs = generatedSpecs.ToImmutableDictionary(s => s.VariantType, s => s);
                     }
 

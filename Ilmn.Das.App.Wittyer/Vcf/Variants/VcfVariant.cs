@@ -1,4 +1,3 @@
-using Ilmn.Das.Std.AppUtils.Comparers;
 using Ilmn.Das.Std.VariantUtils.SimpleVariants;
 using Ilmn.Das.Std.VariantUtils.Vcf;
 using SampleBuilder = Ilmn.Das.App.Wittyer.Vcf.Samples.SampleBuilder;

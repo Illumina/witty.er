@@ -24,7 +24,6 @@ using Ilmn.Das.Std.VariantUtils.SimpleVariants;
 using Ilmn.Das.Std.VariantUtils.VariantTypes;
 using Ilmn.Das.Std.VariantUtils.Vcf;
 using Ilmn.Das.Std.VariantUtils.Vcf.Exceptions;
-using Ilmn.Das.Std.VariantUtils.Vcf.Variants.Alleles;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;

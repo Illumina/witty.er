@@ -162,11 +162,17 @@ namespace Ilmn.Das.App.Wittyer.Utilities
                 250U, null, DefaultExcludeFilters, DefaultIncludeFilters, null);
 
         /// <summary>
-        /// The default insertion <see cref="InputSpec"/>
+        /// The default CNTR <see cref="InputSpec"/>
         /// </summary>
         public static readonly InputSpec DefaultTandemRepeatSpec
             = InputSpec.Create(WittyerType.CopyNumberTandemRepeat, WittyerType.CopyNumberTandemRepeat.DefaultBins,
                 DefaultTrThreshold, 0.1, DefaultExcludeFilters, DefaultIncludeFilters, null);
+        /// <summary>
+        /// The default CNTReference <see cref="InputSpec"/>
+        /// </summary>
+        public static readonly InputSpec DefaultTandemReferenceSpec
+            = InputSpec.Create(WittyerType.CopyNumberTandemReference, WittyerType.CopyNumberTandemReference.DefaultBins,
+                0.5M, 0.1, DefaultExcludeFilters, DefaultIncludeFilters, null);
 
         #endregion
 

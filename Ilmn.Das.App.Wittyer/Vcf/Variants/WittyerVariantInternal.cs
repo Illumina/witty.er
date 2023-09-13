@@ -79,7 +79,7 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
         public bool Equals(IContigAndInterval? other) => ContigAndIntervalComparer.Default.Equals(this, other);
 
         /// <inheritdoc />
-        public WittyerType VariantType { get; }
+        public WittyerType VariantType { get; private set; }
 
         /// <inheritdoc />
         public Winner Win { get; }
@@ -115,7 +115,7 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
 
         /// <inheritdoc />
         public void Finalize(WitDecision falseDecision, EvaluationMode mode,
-            GenomeIntervalTree<IContigAndInterval>? includedRegions, int? maxMatches)
+            GenomeIntervalTree<IContigAndInterval>? includedRegions, int? maxMatches, InputSpec? cntRefSpec)
         {
             bool? isIncluded = null;
             if (includedRegions != null)
@@ -141,12 +141,14 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
                 }
             }
 
-            Finalize(this, OverlapInfo, falseDecision, mode, isIncluded, maxMatches);
+            Finalize(this, OverlapInfo, falseDecision, mode, isIncluded, maxMatches, cntRefSpec);
         }
+
+        public void ChangeWittyerType(WittyerType newType) => VariantType = newType;
 
         internal static void Finalize(IMutableWittyerSimpleVariant variant,
             List<OverlapAnnotation> annotations, WitDecision falseDecision, EvaluationMode mode,
-            bool? isIncluded, int? maxMatches)
+            bool? isIncluded, int? maxMatches, InputSpec? cntRefSpec)
         {
             var isTruth = falseDecision == WitDecision.FalseNegative;
             if (isTruth)
@@ -185,23 +187,51 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
             unwrappedSample.What = ImmutableList<MatchSet>.Empty;
             unwrappedSample.Why = ImmutableList<FailedReason>.Empty;
             var isTp = false;
-            var isSymbolic = variant.OriginalVariant.Alts.FirstOrDefault()?.StartsWith("<") ?? false;
+            WittyerType? newType = null;
+            var anyNullNewTypes = false;
+            var any = false;
             for (var i = 0; i < variant.OverlapInfo.Count; i++)
             {
-                var what = variant.OverlapInfo[i].What;
+                any = true;
+                var info = variant.OverlapInfo[i];
+                if (info.MatchWittyerType == null)
+                    anyNullNewTypes = true;
+                else if (!anyNullNewTypes)
+                    newType = info.MatchWittyerType;
+                var what = info.What;
                 unwrappedSample.What = unwrappedSample.What.Add(what);
                 isTp = isTp
                        || what.Contains(MatchEnum.Allele)
                        && (mode is EvaluationMode.SimpleCounting or EvaluationMode.CrossTypeAndSimpleCounting
                            || what.Contains(MatchEnum.Genotype));
                 
-                var why = variant.OverlapInfo[i].Why;
+                var why = info.Why;
                 if (isIncluded == false)
                     why = FailedReason.OutsideBedRegion;
                 else if (why == FailedReason.Unset
                          && (what.Count == 0 || what.Count == 1 && what.First() == MatchEnum.Unmatched))
                     why = FailedReason.NoOverlap;
                 unwrappedSample.Why = unwrappedSample.Why.Add(why);
+            }
+
+            if (!anyNullNewTypes && newType != null)
+                variant.ChangeWittyerType(newType);
+            else if (!any
+                     && cntRefSpec != null
+                     && variant.VariantType == WittyerType.CopyNumberTandemRepeat
+                     && variant.OriginalVariant.Info.TryGetValue(WittyerConstants.RefRucInfoKey, out var refRucStr)
+                     && decimal.TryParse(refRucStr, out var refRuc)
+                     && variant.OriginalVariant.Info.TryGetValue(WittyerConstants.RucInfoKey, out var rucStr))
+            {
+                decimal? refRucTmp = refRuc;
+                var _ = Array.Empty<string>();
+                var tup = OverlappingUtils.ExtractRucValueWithBackup(variant, rucStr, ref refRucTmp, ref _);
+                if (tup != null)
+                {
+                    var (_, rucValue, _) = tup.Value;
+                    if (OverlappingUtils.ShouldConvertToReference(cntRefSpec, refRuc, rucValue))
+                        variant.ChangeWittyerType(WittyerType.CopyNumberTandemReference);
+                }
             }
 
             if (unwrappedSample.Why.Count == 0)
@@ -259,7 +289,7 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
                     cnTrStop = baseInterval.Start + 1;
 
                 return new WittyerVariantInternal(wittyerType, baseVariant, baseInterval,
-                    Winner.Create(wittyerType, baseInterval, bins),
+                    Winner.Create(baseInterval, bins),
                     posInt,
                     posInt, endInt, endInt,
                     WittyerSample.CreateFromVariant(baseVariant, sample, false),
@@ -290,7 +320,7 @@ namespace Ilmn.Das.App.Wittyer.Vcf.Variants
             if (isTr)
                 baseInterval = BedInterval.Create(posInterval.Start, endInterval.Stop);
             return new WittyerVariantInternal(wittyerType, baseVariant, baseInterval,
-                Winner.Create(wittyerType, baseInterval, bins),
+                Winner.Create(baseInterval, bins),
                 posInterval, ciPosInterval, endInterval, ciEndInterval,
                 WittyerSample.CreateFromVariant(baseVariant, sample, wittyerType == WittyerType.CopyNumberReference),
                 originalEnd);
